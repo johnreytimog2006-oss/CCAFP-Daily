@@ -1,594 +1,428 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="pma-crimson">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CCAFP Daily &mdash; Cadet Corps Armed Forces of the Philippines Portal</title>
-  <meta name="description" content="Official daily happenings, council bulletins, duty officers, event calendar, and live spreadsheet displays of the Cadet Corps Armed Forces of the Philippines (CCAFP).">
+  <title>CCAFP Daily &mdash; Cadet Corps Bulletin Board System</title>
+  <meta name="description" content="Official bulletin board system for the Cadet Corps Armed Forces of the Philippines (CCAFP).">
   
   <link rel="icon" type="image/svg+xml" href="assets/ccafp-crest.svg">
   
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            pma: {
-              red: '#991B1B',
-              darkred: '#7F1D1D',
-              gold: '#D4AF37',
-              darkgold: '#AA7C11',
-              blue: '#1E3A8A'
-            }
+            sidebar: '#0c1520',
+            canvas: '#f0f4f8',
+            brandBlue: '#1e3a8a',
+            heroBlue: '#0a2342'
           }
         }
       }
     }
   </script>
 
-  <!-- Lucide Icons & FontAwesome -->
+  <!-- Lucide & FontAwesome Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Custom Stylesheet -->
+  <!-- Custom Alfacoy Style CSS -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="min-h-screen flex flex-col selection:bg-amber-500 selection:text-black">
+<body class="bg-[#f0f4f8] text-slate-800 min-h-screen flex antialiased">
 
-  <!-- Top Strategic Status Ribbon -->
-  <div class="bg-black/40 border-b border-slate-800 text-[11px] font-mono-tactical px-4 py-1.5 flex flex-wrap items-center justify-between gap-2 text-slate-300">
-    <div class="flex items-center gap-4 flex-wrap">
-      <span class="flex items-center gap-1.5 text-amber-400 font-semibold">
-        <i class="fa-solid fa-shield-halved text-xs"></i>
-        <span>HEADQUARTERS, CCAFP &bull; FORT DEL PILAR, BAGUIO CITY</span>
-      </span>
-      <span class="hidden md:inline text-slate-500">|</span>
-      <span class="hidden md:flex items-center gap-1">
-        <i class="fa-solid fa-cloud-sun text-xs text-slate-400"></i>
-        <span>WEATHER: 17°C MISTY &bull; GREEN FLAG HEAT CONDITION</span>
-      </span>
-    </div>
-    <div class="flex items-center gap-3">
-      <span id="pstClock" class="text-amber-300 font-bold tracking-wider">PST: --:--:--</span>
-      <span class="text-slate-500">|</span>
-      <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 live-beacon"></span>
-        <span id="syncStatusBadge" class="text-emerald-400 font-medium">SHEETS LIVE</span>
+  <!-- Mobile Drawer Backdrop -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 hidden md:hidden"></div>
+
+  <!-- Left Dark Sidebar (Exact Alfacoy Layout) -->
+  <aside id="mainSidebar" class="w-64 bg-[#0c1520] border-r border-[#162436] flex flex-col fixed inset-y-0 z-50 transition-transform duration-300 md:translate-x-0 -translate-x-full text-slate-300 shadow-xl">
+    
+    <!-- Sidebar Header: Brand & Crest -->
+    <div class="h-20 px-5 flex items-center gap-3 border-b border-[#162436] cursor-pointer" onclick="navigateToTab('home')">
+      <div class="w-10 h-10 rounded-xl bg-slate-800/80 p-1 flex-shrink-0 border border-slate-700/60 shadow">
+        <img src="assets/ccafp-crest.svg" alt="CCAFP Crest" class="w-full h-full object-contain">
       </div>
-    </div>
-  </div>
-
-  <!-- Main Military Header Bar -->
-  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 transition-colors">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-20">
-        
-        <!-- Left: Crest & Brand -->
-        <div class="flex items-center gap-3.5 cursor-pointer" onclick="navigateToTab('daily')">
-          <div class="w-12 h-12 flex-shrink-0 relative drop-shadow-md">
-            <img id="siteCrestImg" src="assets/ccafp-crest.svg" alt="CCAFP Crest" class="w-full h-full object-contain">
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-heading font-black text-xl sm:text-2xl tracking-wider text-amber-400">CCAFP DAILY</span>
-              <span class="px-1.5 py-0.5 rounded text-[10px] font-mono-tactical font-bold bg-red-900/60 text-red-200 border border-red-700/50">CADET CORPS</span>
-            </div>
-            <p class="text-xs text-slate-400 tracking-wide font-medium">Cadet Corps Armed Forces of the Philippines Operations Portal</p>
-          </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-base tracking-wide text-white font-mono-clean">CCAFP DAILY</span>
         </div>
+        <p class="text-[10px] text-slate-400 font-mono-clean tracking-wider uppercase">CCAFP &bull; BULLETIN BOARD</p>
+      </div>
+    </div>
 
-        <!-- Right Controls: Theme Selector, Settings, Quick Actions -->
-        <div class="flex items-center gap-2 sm:gap-3">
-          <!-- Live Manual Sync Button -->
-          <button id="manualSyncBtn" title="Fetch fresh data from Google Sheets" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono-tactical text-slate-200 transition-all">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-400"></i>
-            <span class="hidden sm:inline">SYNC SHEETS</span>
-          </button>
+    <!-- Scrollable Navigation Items -->
+    <div class="flex-1 overflow-y-auto sidebar-scroll px-3 py-4 space-y-6">
 
-          <!-- Theme Selector Dropdown -->
-          <div class="relative">
-            <button id="themeDropdownBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition-all">
-              <i data-lucide="palette" class="w-3.5 h-3.5 text-amber-400"></i>
-              <span class="hidden md:inline" id="currentThemeLabel">PMA Theme</span>
-              <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i>
-            </button>
-            <div id="themeMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl z-50 py-1 font-medium text-xs">
-              <!-- Dynamically populated themes -->
-            </div>
+      <!-- 1. MAIN NAVIGATION -->
+      <div class="space-y-1">
+        <div class="px-3 pb-1 text-[10px] font-bold text-slate-500 font-mono-clean tracking-wider uppercase">MAIN NAVIGATION</div>
+
+        <!-- Home Overview (Active White Pill with Red Dot) -->
+        <button class="sidebar-link active-pill w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold" data-tab="home">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="home" class="w-4 h-4 text-slate-900"></i>
+            <span>Home Overview</span>
           </div>
-
-          <!-- Google Sheets Settings / Config Modal Trigger -->
-          <button id="openConfigBtn" title="Manage Google Spreadsheet Links" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-900/80 hover:bg-red-800 border border-red-700 text-xs font-semibold text-white shadow-sm transition-all">
-            <i data-lucide="table" class="w-3.5 h-3.5 text-amber-300"></i>
-            <span class="hidden lg:inline">SHEET LINKS</span>
-          </button>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Council Slider Bar (Horizontal Slide Style Directory) -->
-    <div class="border-t border-slate-800/80 bg-slate-950/70">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 relative flex items-center">
-        <!-- Scroll Left -->
-        <button id="scrollCouncilLeft" class="p-1 rounded-md text-slate-400 hover:text-amber-400 hover:bg-slate-800/60 hidden sm:block mr-1">
-          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          <span class="w-2 h-2 rounded-full bg-red-500"></span>
         </button>
 
-        <!-- Slider Strip -->
-        <div id="councilSliderStrip" class="council-slider-container flex items-center gap-2 py-1 flex-1">
-          <!-- Dynamically populated council pills -->
-        </div>
-
-        <!-- Scroll Right -->
-        <button id="scrollCouncilRight" class="p-1 rounded-md text-slate-400 hover:text-amber-400 hover:bg-slate-800/60 hidden sm:block ml-1">
-          <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Flash Announcements Banner -->
-  <div class="bg-red-950/60 border-b border-red-900/40 px-4 py-2 text-xs">
-    <div class="max-w-7xl mx-auto flex items-center gap-3">
-      <span class="flex items-center gap-1.5 font-bold uppercase tracking-wider text-red-400 font-mono-tactical flex-shrink-0">
-        <i data-lucide="alert-octagon" class="w-3.5 h-3.5 animate-pulse text-red-500"></i>
-        <span>DAILY DIRECTIVE:</span>
-      </span>
-      <div id="flashTickerContainer" class="flex-1 overflow-hidden whitespace-nowrap">
-        <span id="flashTickerText" class="text-slate-200 font-medium">UNIFORM OF THE DAY: Full Gala Dress for 1700H Retreat Ceremony. Inspection standards in effect.</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Primary Navigation Bar -->
-  <nav class="bg-slate-900/60 border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between sm:justify-start gap-1 sm:gap-4 overflow-x-auto py-2">
-        <button class="nav-tab active-nav px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all" data-tab="daily">
-          <i data-lucide="layout-grid" class="w-4 h-4 text-amber-400"></i>
-          <span>Corps Daily</span>
-        </button>
-        <button class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-all" data-tab="councils">
-          <i data-lucide="landmark" class="w-4 h-4 text-amber-400"></i>
-          <span>All Councils (18)</span>
-        </button>
-        <button class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-all" data-tab="calendar">
-          <i data-lucide="calendar" class="w-4 h-4 text-amber-400"></i>
-          <span>Event Calendar</span>
-        </button>
-        <button class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-all" data-tab="punishments">
-          <i data-lucide="gavel" class="w-4 h-4 text-amber-400"></i>
-          <span>Punishment List</span>
-        </button>
-        <button class="nav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-all" data-tab="staff">
-          <i data-lucide="users-2" class="w-4 h-4 text-amber-400"></i>
+        <!-- Company Staff -->
+        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="staff">
+          <i data-lucide="star" class="w-4 h-4 text-slate-400"></i>
           <span>Cadet Staff</span>
         </button>
-      </div>
-    </div>
-  </nav>
 
-  <!-- Main Viewport -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <!-- TAC-O's Corner / Duty Officers -->
+        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="duty">
+          <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
+          <span>Duty Officers (OC/AOC)</span>
+        </button>
 
-    <!-- ================= VIEW 1: CORPS DAILY (HAPPENINGS & OFFICERS OF THE DAY) ================= -->
-    <section id="view-daily" class="tab-pane space-y-6">
-      
-      <!-- Duty Officers of the Day (OC, AOC, SOC, Duty Medic) -->
-      <div>
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-heading font-bold text-lg sm:text-xl text-amber-400 flex items-center gap-2">
-            <i data-lucide="shield-check" class="w-5 h-5 text-amber-400"></i>
-            <span>Officers of the Day (OD / OC / AOC / SOC)</span>
-          </h2>
-          <span class="text-xs font-mono-tactical text-slate-400">Cadet Leadership on Post</span>
-        </div>
+        <!-- Event Calendar -->
+        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="calendar">
+          <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>
+          <span>Event Calendar</span>
+        </button>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- OC -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm hover:border-amber-500/40 transition-all relative overflow-hidden group">
-            <div class="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10"></div>
-            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span class="font-mono-tactical uppercase font-bold text-amber-400">Officer in Charge (OC)</span>
-              <span class="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold">POST 1</span>
-            </div>
-            <h3 id="ocName" class="font-bold text-base text-slate-100">Cdt 1CL Bautista, Juan Carlos</h3>
-            <p id="ocUnit" class="text-xs text-slate-400 mt-1">Class of 2027 &bull; Alpha Coy</p>
-            <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono-tactical text-slate-400">
-              <span>Duty Station: Melchor Hall</span>
-              <span class="text-amber-400 font-semibold">Ext. 201</span>
-            </div>
-          </div>
+        <!-- Honor Committee (Sensitive) -->
+        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="honor">
+          <i data-lucide="scale" class="w-4 h-4 text-amber-400"></i>
+          <span>Honor Committee</span>
+        </button>
 
-          <!-- AOC -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm hover:border-amber-500/40 transition-all relative overflow-hidden group">
-            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span class="font-mono-tactical uppercase font-bold text-blue-400">Asst. Officer in Charge (AOC)</span>
-              <span class="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-bold">POST 2</span>
-            </div>
-            <h3 id="aocName" class="font-bold text-base text-slate-100">Cdt 2CL Mercado, Gabriel</h3>
-            <p id="aocUnit" class="text-xs text-slate-400 mt-1">Class of 2028 &bull; Charlie Coy</p>
-            <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono-tactical text-slate-400">
-              <span>Duty Station: Main Guard</span>
-              <span class="text-blue-400 font-semibold">Ext. 202</span>
-            </div>
-          </div>
-
-          <!-- SOC -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm hover:border-amber-500/40 transition-all relative overflow-hidden group">
-            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span class="font-mono-tactical uppercase font-bold text-red-400">Senior Officer of Corps (SOC)</span>
-              <span class="px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[10px] font-bold">COMMAND</span>
-            </div>
-            <h3 id="socName" class="font-bold text-base text-slate-100">Cdt 1CL Villanueva, Marcus</h3>
-            <p id="socUnit" class="text-xs text-slate-400 mt-1">Class of 2027 &bull; Delta Coy</p>
-            <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono-tactical text-slate-400">
-              <span>Duty Station: Headquarters</span>
-              <span class="text-red-400 font-semibold">Ext. 200</span>
-            </div>
-          </div>
-
-          <!-- Duty Medic -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm hover:border-amber-500/40 transition-all relative overflow-hidden group">
-            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span class="font-mono-tactical uppercase font-bold text-emerald-400">Corps Duty Medic</span>
-              <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">24/7 CALL</span>
-            </div>
-            <h3 id="medicName" class="font-bold text-base text-slate-100">Cdt 2CL Ramos, Angela</h3>
-            <p id="medicUnit" class="text-xs text-slate-400 mt-1">Class of 2028 &bull; Bravo Coy</p>
-            <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono-tactical text-slate-400">
-              <span>Station: Station Hospital</span>
-              <span class="text-emerald-400 font-semibold">Ext. 911</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Split: Daily Routine Schedule & Sensitive Reminders / Quick Bulletins -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Left 2 Cols: Today's Routine & Schedule -->
-        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div>
-              <h3 class="font-heading font-bold text-base text-amber-400">Today's Corps Routine & Schedule</h3>
-              <p class="text-xs text-slate-400">Standard Order of the Day &bull; S3 Operations Authorized</p>
-            </div>
-            <span class="text-xs font-mono-tactical px-2.5 py-1 rounded bg-slate-800 text-slate-300">OCTOBER 06, 2026</span>
-          </div>
-
-          <div id="dailyRoutineTimeline" class="space-y-2.5 max-h-[480px] overflow-y-auto pr-1">
-            <!-- Dynamically populated timeline items -->
-          </div>
-        </div>
-
-        <!-- Right Col: Daily Mandates & Sensitive Council Reminders -->
-        <div class="space-y-6">
-          
-          <!-- Sensitive Reminders Card -->
-          <div class="bg-slate-900 border border-red-900/40 rounded-2xl p-5 shadow-sm space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-red-900/30">
-              <div class="flex items-center gap-2 text-red-400 font-bold text-sm">
-                <i data-lucide="shield-alert" class="w-4 h-4 text-red-500"></i>
-                <span>Sensitive Councils Mandates</span>
-              </div>
-              <span class="text-[10px] font-mono-tactical px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800">RESTRICTED</span>
-            </div>
-
-            <p class="text-xs text-slate-400 leading-relaxed">
-              In accordance with Corps regulations, the <strong>GAD, S2, CCPB, and Honor Councils</strong> display standing ethical guidelines, security orders, and conduct reminders only.
-            </p>
-
-            <div class="space-y-2.5 pt-1">
-              <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs">
-                <div class="flex items-center justify-between font-bold text-amber-400 mb-1">
-                  <span>THE CADET HONOR CODE</span>
-                  <span class="text-[10px] font-mono-tactical text-slate-400">Honor Council</span>
-                </div>
-                <p class="text-slate-300 italic">"We, the cadets, do not lie, cheat, steal, nor tolerate among us those who do."</p>
-              </div>
-
-              <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs">
-                <div class="flex items-center justify-between font-bold text-red-400 mb-1">
-                  <span>OPSEC: SOCIAL MEDIA RESTRICTION</span>
-                  <span class="text-[10px] font-mono-tactical text-slate-400">S2 Intelligence</span>
-                </div>
-                <p class="text-slate-300">Strict embargo on capturing or sharing military installations and parade preparations.</p>
-              </div>
-
-              <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs">
-                <div class="flex items-center justify-between font-bold text-indigo-400 mb-1">
-                  <span>GENDER RESPECT DIRECTIVE</span>
-                  <span class="text-[10px] font-mono-tactical text-slate-400">GAD Council</span>
-                </div>
-                <p class="text-slate-300">Zero tolerance for gender bias or micro-aggressions in barracks and tactical formations.</p>
-              </div>
-            </div>
-
-            <button onclick="navigateToTab('councils')" class="w-full mt-2 py-2 text-center rounded-xl bg-slate-800 hover:bg-slate-750 text-amber-400 text-xs font-semibold transition-colors">
-              Access Full Council Reminders &rarr;
-            </button>
-          </div>
-
-          <!-- Cadet Strength Accountability -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
-            <h3 class="font-heading font-bold text-sm text-slate-200 flex items-center justify-between">
-              <span>Cadet Strength Report (S1)</span>
-              <span class="text-xs font-mono-tactical text-emerald-400">98.4% On Duty</span>
-            </h3>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                <span class="text-slate-400 text-[11px] block">Effective Strength</span>
-                <span class="text-lg font-bold font-mono-tactical text-amber-400">1,142</span>
-              </div>
-              <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                <span class="text-slate-400 text-[11px] block">Present for Duty</span>
-                <span class="text-lg font-bold font-mono-tactical text-emerald-400">1,118</span>
-              </div>
-              <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                <span class="text-slate-400 text-[11px] block">Station Hospital</span>
-                <span class="text-lg font-bold font-mono-tactical text-amber-400">14</span>
-              </div>
-              <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                <span class="text-slate-400 text-[11px] block">Authorized Leave</span>
-                <span class="text-lg font-bold font-mono-tactical text-blue-400">10</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ================= VIEW 2: COUNCIL DIRECTORY ================= -->
-    <section id="view-councils" class="tab-pane hidden space-y-6">
-      
-      <!-- Council Header & Switcher -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span id="activeCouncilCategory" class="px-2 py-0.5 rounded text-[10px] font-mono-tactical font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">REGIMENTAL STAFF</span>
-              <span id="activeCouncilSensitiveTag" class="hidden px-2 py-0.5 rounded text-[10px] font-mono-tactical font-bold bg-red-900/60 text-red-300 border border-red-700">SENSITIVE: REMINDERS ONLY</span>
-            </div>
-            <h2 id="activeCouncilTitle" class="font-heading font-black text-2xl text-slate-100">S1 - Personnel & Administration</h2>
-            <p id="activeCouncilDesc" class="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl">Cadet strength accountability, leaves, passes, records, and promotions.</p>
-          </div>
-
-          <!-- Council Actions: Live link status & open in sheet -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <button id="openActiveSheetBtn" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors">
-              <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-400"></i>
-              <span>View Source Sheet</span>
-            </button>
-            <button id="editActiveSheetLinkBtn" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-xs font-semibold text-amber-300 border border-amber-500/30 transition-colors">
-              <i data-lucide="link-2" class="w-3.5 h-3.5"></i>
-              <span>Set Spreadsheet Link</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Council Announcements Callout -->
-        <div id="councilAnnouncementsBox" class="mt-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-xs space-y-1">
-          <!-- Dynamically populated announcements -->
-        </div>
-      </div>
-
-      <!-- Council Content Container: Either Live Table OR Sensitive Policy Cards -->
-      <div id="councilDynamicContainer" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
-        <!-- Rendered dynamically -->
-      </div>
-
-    </section>
-
-    <!-- ================= VIEW 3: EVENT CALENDAR ================= -->
-    <section id="view-calendar" class="tab-pane hidden space-y-6">
-      
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-          <div>
-            <h2 class="font-heading font-bold text-xl text-amber-400 flex items-center gap-2">
-              <i data-lucide="calendar-days" class="w-5 h-5 text-amber-400"></i>
-              <span>CCAFP Master Calendar & Schedule</span>
-            </h2>
-            <p class="text-xs text-slate-400 mt-1">Corps ceremonies, parades, academic schedules, tactic maneuvers, and hops</p>
-          </div>
-
-          <!-- Calendar Filters -->
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <button class="cal-filter active-filter px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30" data-category="all">All Events</button>
-            <button class="cal-filter px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200" data-category="Ceremony">Ceremonies</button>
-            <button class="cal-filter px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200" data-category="Academics">Academics</button>
-            <button class="cal-filter px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200" data-category="Athletics">Athletics</button>
-            <button class="cal-filter px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200" data-category="Spiritual">Spiritual</button>
-          </div>
-        </div>
-
-        <!-- Event Cards Grid -->
-        <div id="calendarEventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Dynamically populated -->
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ================= VIEW 4: CCAFP PUNISHMENT LIST ================= -->
-    <section id="view-punishments" class="tab-pane hidden space-y-6">
-      
-      <!-- Punishments Header & Stats -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div class="text-xs font-mono-tactical text-slate-400 uppercase">Active Tours of Duty</div>
-          <div class="text-2xl font-bold font-mono-tactical text-amber-400 mt-1">24 Tours</div>
-          <p class="text-xs text-slate-500 mt-1">Currently serving on parade ground</p>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div class="text-xs font-mono-tactical text-slate-400 uppercase">Total Demerits Awarded</div>
-          <div class="text-2xl font-bold font-mono-tactical text-red-400 mt-1">39 Demerits</div>
-          <p class="text-xs text-slate-500 mt-1">Class of 2027 to 2030</p>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
-          <div class="text-xs font-mono-tactical text-slate-400 uppercase">Delinquency Clearing Rate</div>
-          <div class="text-2xl font-bold font-mono-tactical text-emerald-400 mt-1">87.5%</div>
-          <p class="text-xs text-slate-500 mt-1">Explanations reviewed by CCPB</p>
-        </div>
-      </div>
-
-      <!-- Punishment Table Container -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-          <div>
-            <h2 class="font-heading font-bold text-xl text-red-400 flex items-center gap-2">
-              <i data-lucide="scale" class="w-5 h-5 text-red-400"></i>
-              <span>CCAFP Delinquency & Punishment List</span>
-            </h2>
-            <p class="text-xs text-slate-400 mt-1">Official register of demerits, tours of duty, and confinements awarded</p>
-          </div>
-
-          <!-- Search & Filter Controls -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <input id="punishmentSearchInput" type="text" placeholder="Search cadet, serial, or offense..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 w-60">
-            <select id="punishmentCompanyFilter" class="px-3 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-amber-500">
-              <option value="all">All Companies</option>
-              <option value="Alpha">Alpha Coy</option>
-              <option value="Bravo">Bravo Coy</option>
-              <option value="Charlie">Charlie Coy</option>
-              <option value="Delta">Delta Coy</option>
-              <option value="Echo">Echo Coy</option>
-              <option value="Foxtrot">Foxtrot Coy</option>
-              <option value="Golf">Golf Coy</option>
-              <option value="Hawk">Hawk Coy</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Table Responsive Wrapper -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead>
-              <tr class="font-mono-tactical text-slate-400 border-b border-slate-800 pb-2 uppercase tracking-wider">
-                <th class="py-3 px-3">Cadet Name</th>
-                <th class="py-3 px-2">Serial No.</th>
-                <th class="py-3 px-2">Class</th>
-                <th class="py-3 px-2">Company</th>
-                <th class="py-3 px-3">Reported Offense</th>
-                <th class="py-3 px-2 text-center">Demerits</th>
-                <th class="py-3 px-2 text-center">Tours</th>
-                <th class="py-3 px-2 text-center">Confinement</th>
-                <th class="py-3 px-3">Status</th>
-              </tr>
-            </thead>
-            <tbody id="punishmentTableBody" class="divide-y divide-slate-800/80 font-mono-tactical">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ================= VIEW 5: CADET STAFF DIRECTORY ================= -->
-    <section id="view-staff" class="tab-pane hidden space-y-6">
-      
-      <!-- Staff Tabs: Regiment / Battalion / Companies -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-          <div>
-            <h2 class="font-heading font-bold text-xl text-amber-400 flex items-center gap-2">
-              <i data-lucide="award" class="w-5 h-5 text-amber-400"></i>
-              <span>Cadet Leadership & Chains of Command</span>
-            </h2>
-            <p class="text-xs text-slate-400 mt-1">Official hierarchy of the Regimental, Battalion, and Respective Company Staffs</p>
-          </div>
-
-          <div class="flex items-center gap-1.5">
-            <button class="staff-tab active-filter px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30" data-level="regiment">Regiment Staff</button>
-            <button class="staff-tab px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200" data-level="battalion">Battalion Staff</button>
-            <button class="staff-tab px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200" data-level="companies">Respective Companies</button>
-          </div>
-        </div>
-
-        <!-- Staff Display Container -->
-        <div id="staffDisplayContainer">
-          <!-- Rendered dynamically -->
-        </div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- ================= SPREADSHEET CONFIGURATION MODAL ================= -->
-  <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-      
-      <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
-            <i data-lucide="sheet" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <h3 class="font-heading font-bold text-base text-slate-100">Google Spreadsheet Live Sources</h3>
-            <p class="text-xs text-slate-400">Configure published CSV links for real-time sync across all 18 councils</p>
-          </div>
-        </div>
-        <button id="closeConfigBtn" class="p-1 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200">
-          <i data-lucide="x" class="w-5 h-5"></i>
+        <!-- EXO Punishment List -->
+        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="punishments">
+          <i data-lucide="file-text" class="w-4 h-4 text-slate-400"></i>
+          <span>EXO Punishment List</span>
         </button>
       </div>
 
-      <!-- Instructions Panel -->
-      <div class="bg-amber-950/30 border-b border-amber-900/40 px-6 py-3 text-xs text-amber-200/90 leading-relaxed flex items-start gap-2.5">
-        <i data-lucide="info" class="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5"></i>
-        <div>
-          <strong>How to link your Council Google Sheet:</strong> In Google Sheets, click <em>File &rarr; Share &rarr; Publish to web</em> &rarr; Choose <em>Entire Document</em> (or sheet) &rarr; Change format to <strong>Comma-separated values (.csv)</strong> &rarr; Click <em>Publish</em> and paste that link below!
-        </div>
-      </div>
-
-      <!-- Links Inputs Form -->
-      <div class="p-6 overflow-y-auto space-y-4 flex-1">
-        <div class="space-y-3" id="sheetLinksInputsList">
-          <!-- Dynamically populated inputs for each council and section -->
-        </div>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
-        <button id="resetLinksBtn" class="text-xs text-rose-400 hover:underline font-medium">Reset to Default Data</button>
-        <div class="flex items-center gap-2">
-          <button id="cancelConfigBtn" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors">Cancel</button>
-          <button id="saveConfigBtn" class="px-5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-black shadow-md shadow-amber-500/20 transition-all flex items-center gap-1.5">
-            <i data-lucide="check" class="w-3.5 h-3.5"></i>
-            <span>Save & Sync All</span>
-          </button>
+      <!-- 2. COUNCILS LIST -->
+      <div class="space-y-1">
+        <div class="px-3 pb-1 text-[10px] font-bold text-slate-500 font-mono-clean tracking-wider uppercase">COUNCILS</div>
+        <div id="sidebarCouncilsList" class="space-y-0.5">
+          <!-- Dynamically populated councils -->
         </div>
       </div>
 
     </div>
+
+    <!-- Sidebar Bottom Footer: System Live & Dark Mode Toggle -->
+    <div class="p-3 border-t border-[#162436] bg-[#090f17] flex flex-col gap-2">
+      <div class="flex items-center gap-2 px-1 text-[11px] font-mono-clean text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 live-beacon"></span>
+        <span class="text-emerald-400 font-bold uppercase">SYSTEM LIVE</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="toggleDarkBtn" class="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-[11px] font-mono-clean text-slate-300 border border-slate-700/60 transition-colors">
+          <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+          <span>DARK MODE</span>
+        </button>
+        <button class="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 border border-slate-700/60 transition-colors" title="Admin">
+          <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- Main Viewport Container -->
+  <div class="flex-1 flex flex-col md:pl-64 min-w-0">
+
+    <!-- Top Navigation Bar (Breadcrumbs & Live Status) -->
+    <header class="h-14 bg-white/70 backdrop-blur border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30">
+      
+      <!-- Left: Mobile Menu & Breadcrumb -->
+      <div class="flex items-center gap-3">
+        <button id="openSidebarBtn" class="md:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <div class="flex items-center gap-1.5 text-[11px] font-mono-clean text-slate-500 uppercase tracking-wider">
+          <span class="font-semibold text-slate-700">CCAFP BULLETIN BOARD</span>
+          <span>/</span>
+          <span id="activeBreadcrumb" class="text-slate-900 font-bold">HOME</span>
+        </div>
+      </div>
+
+      <!-- Right: Live Feed Badge & Manual Refresh -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="manualSyncBtn" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono-clean font-semibold transition-colors" title="Refresh Live Data">
+          <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-500"></i>
+          <span class="hidden sm:inline">SYNC</span>
+        </button>
+
+        <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-mono-clean font-semibold text-emerald-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 live-beacon"></span>
+          <span>LIVE FEED</span>
+        </div>
+      </div>
+
+    </header>
+
+    <!-- News Marquee / Ticker Bar (Exact Alfacoy Style) -->
+    <div class="bg-white border-b border-slate-200 px-4 sm:px-8 py-2 text-xs font-mono-clean flex items-center gap-3 overflow-hidden">
+      <div class="flex items-center gap-1.5 text-blue-900 font-bold flex-shrink-0">
+        <img src="assets/ccafp-crest.svg" alt="CCAFP" class="w-3.5 h-3.5 inline">
+        <span>CCAFP DAILY:</span>
+      </div>
+      <div class="flex items-center gap-2 text-slate-700 truncate">
+        <i class="fa-solid fa-bullhorn text-amber-500 text-xs"></i>
+        <span class="truncate">MAGAZINE: ALL CADETS WITH NO ISSUED AND LOST MAGAZINES WILL WITHDRAW THE SAME TO THE HTG ARMORY AS SOON AS POSSIBLE.</span>
+      </div>
+    </div>
+
+    <!-- Main Content Canvas -->
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
+
+      <!-- ================= VIEW 1: HOME OVERVIEW ================= -->
+      <section id="view-home" class="tab-pane space-y-6">
+
+        <!-- Alfacoy Hero Banner Card (Deep Navy with Stats & Crest Graphic) -->
+        <div class="relative rounded-3xl bg-gradient-to-r from-[#0a2342] via-[#0d2d54] to-[#133b68] text-white p-6 sm:p-8 shadow-md overflow-hidden">
+          
+          <!-- Crest Watermark Graphic in Background -->
+          <div class="absolute right-0 top-0 bottom-0 w-80 opacity-20 pointer-events-none flex items-center justify-end pr-4">
+            <img src="assets/ccafp-crest.svg" alt="Watermark" class="h-64 object-contain">
+          </div>
+
+          <div class="relative z-10 max-w-2xl space-y-4">
+            <div>
+              <h2 class="font-bold text-2xl sm:text-4xl tracking-tight">
+                CCAFP <span class="text-blue-300">DAILY</span>
+              </h2>
+              <p class="text-xs sm:text-sm text-blue-200 mt-1 font-mono-clean flex items-center gap-1.5">
+                <span>▶</span>
+                <span>CADET CORPS ARMED FORCES OF THE PHILIPPINES &bull; BULLETIN BOARD SYSTEM</span>
+              </p>
+            </div>
+
+            <!-- Stats Counters Row (Exact Alfacoy style!) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-blue-400/20">
+              <div>
+                <span class="block text-2xl font-bold font-mono-clean text-white">6</span>
+                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider">ANNOUNCEMENTS</span>
+              </div>
+              <div>
+                <span class="block text-2xl font-bold font-mono-clean text-white">3</span>
+                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider">UPCOMING EVENTS</span>
+              </div>
+              <div>
+                <span class="block text-2xl font-bold font-mono-clean text-white">18</span>
+                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider">COUNCILS</span>
+              </div>
+              <div>
+                <span class="block text-2xl font-bold font-mono-clean text-white">Oct 6</span>
+                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider">TODAY</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Section: PRIORITY BULLETINS (Exact Alfacoy Cards) -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-lg text-slate-900 tracking-tight uppercase">PRIORITY BULLETINS</h3>
+              <p class="text-xs text-slate-500 font-mono-clean tracking-wider uppercase">HIGH-PRIORITY ANNOUNCEMENTS</p>
+            </div>
+            <div class="text-xs font-mono-clean text-slate-500 flex items-center gap-1.5">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span>Updated <span id="lastUpdatedClock">10:17:55 PM</span></span>
+            </div>
+          </div>
+
+          <!-- Bulletins 3-Column Grid -->
+          <div id="priorityBulletinsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Dynamically populated bulletin cards -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= VIEW 2: CADET STAFF ================= -->
+      <section id="view-staff" class="tab-pane hidden space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="font-bold text-lg text-slate-900">Cadet Leadership & Staff</h3>
+              <p class="text-xs text-slate-500 font-mono-clean uppercase">Regiment, Battalion, and Company Chains of Command</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button class="staff-tab active-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-900 text-white" data-level="regiment">Regiment Staff</button>
+              <button class="staff-tab px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100" data-level="battalion">Battalion Staff</button>
+              <button class="staff-tab px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100" data-level="companies">Respective Companies</button>
+            </div>
+          </div>
+          <div id="staffDisplayContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 3: DUTY OFFICERS (TAC-O & OC/AOC) ================= -->
+      <section id="view-duty" class="tab-pane hidden space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div class="border-b border-slate-100 pb-4">
+            <h3 class="font-bold text-lg text-slate-900">Officers of the Day (OD / OC / AOC / SOC)</h3>
+            <p class="text-xs text-slate-500 font-mono-clean uppercase">Tactical Officers & Cadet Leadership on Post</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+              <span class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase">Officer in Charge (OC)</span>
+              <h4 class="font-bold text-sm text-slate-900">Cdt 1CL Bautista, Juan Carlos</h4>
+              <p class="text-xs text-slate-500">Class of 2027 &bull; Alpha Coy</p>
+              <span class="text-[11px] font-mono-clean text-slate-500 block pt-2 border-t border-slate-200">Melchor Hall &bull; Ext. 201</span>
+            </div>
+
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+              <span class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase">Asst. Officer in Charge (AOC)</span>
+              <h4 class="font-bold text-sm text-slate-900">Cdt 2CL Mercado, Gabriel</h4>
+              <p class="text-xs text-slate-500">Class of 2028 &bull; Charlie Coy</p>
+              <span class="text-[11px] font-mono-clean text-slate-500 block pt-2 border-t border-slate-200">Main Guard &bull; Ext. 202</span>
+            </div>
+
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+              <span class="text-[10px] font-bold font-mono-clean text-amber-700 uppercase">Senior Officer of Corps (SOC)</span>
+              <h4 class="font-bold text-sm text-slate-900">Cdt 1CL Villanueva, Marcus</h4>
+              <p class="text-xs text-slate-500">Class of 2027 &bull; Delta Coy</p>
+              <span class="text-[11px] font-mono-clean text-slate-500 block pt-2 border-t border-slate-200">Headquarters &bull; Ext. 200</span>
+            </div>
+
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+              <span class="text-[10px] font-bold font-mono-clean text-emerald-700 uppercase">Corps Duty Medic</span>
+              <h4 class="font-bold text-sm text-slate-900">Cdt 2CL Ramos, Angela</h4>
+              <p class="text-xs text-slate-500">Class of 2028 &bull; Bravo Coy</p>
+              <span class="text-[11px] font-mono-clean text-slate-500 block pt-2 border-t border-slate-200">Hospital &bull; Ext. 911</span>
+            </div>
+          </div>
+
+          <!-- Corps Routine Schedule -->
+          <div class="pt-4 border-t border-slate-100">
+            <h4 class="font-bold text-sm text-slate-800 mb-3 uppercase font-mono-clean">Order of the Day Schedule</h4>
+            <div id="dutyRoutineList" class="space-y-2">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 4: EVENT CALENDAR ================= -->
+      <section id="view-calendar" class="tab-pane hidden space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="font-bold text-lg text-slate-900">Corps Event Calendar</h3>
+              <p class="text-xs text-slate-500 font-mono-clean uppercase">Ceremonies, Parades, Academics, and Athletic Meets</p>
+            </div>
+          </div>
+          <div id="calendarEventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 5: HONOR COMMITTEE ================= -->
+      <section id="view-honor" class="tab-pane hidden space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div class="p-5 rounded-2xl bg-amber-50/50 border border-amber-200/80 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0 mt-0.5 font-bold">
+              <i data-lucide="award" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-amber-950">The Sacred Cadet Honor Code</h3>
+              <p class="text-xs text-amber-900/90 mt-1 italic font-semibold">
+                "WE, THE CADETS, DO NOT LIE, CHEAT, STEAL, NOR TOLERATE AMONG US THOSE WHO DO."
+              </p>
+              <p class="text-xs text-slate-600 mt-2">
+                The Honor Code is not a rule enforced by punishment; it is an unwritten covenant lived by every cadet in the Corps.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bulletin-card stripe-amber p-5 space-y-2">
+              <span class="text-[10px] font-bold font-mono-clean text-amber-700 uppercase">Core Tenet</span>
+              <h4 class="font-bold text-sm text-slate-900">The Non-Toleration Clause</h4>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                A cadet who observes an intentional breach of the Honor Code and remains silent shares equally in the dishonor. Uphold the corps by upholding your fellow cadet's integrity.
+              </p>
+            </div>
+            <div class="bulletin-card stripe-blue p-5 space-y-2">
+              <span class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase">Educational Spirit</span>
+              <h4 class="font-bold text-sm text-slate-900">Honor Education & Reflection</h4>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                The Honor System is character-building. True honor is doing what is right even when no commanding officer or proctor is watching.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 6: EXO PUNISHMENT LIST ================= -->
+      <section id="view-punishments" class="tab-pane hidden space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="font-bold text-lg text-slate-900">EXO Delinquency & Punishment Register</h3>
+              <p class="text-xs text-slate-500 font-mono-clean uppercase">Demerits, Tours of Duty, and Confinements Awarded</p>
+            </div>
+            <input id="punishmentSearchInput" type="text" placeholder="Search cadet, serial, offense..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-60">
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="font-semibold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px] font-mono-clean">
+                  <th class="py-3 px-3">Cadet Name</th>
+                  <th class="py-3 px-2">Serial No.</th>
+                  <th class="py-3 px-2">Class</th>
+                  <th class="py-3 px-2">Company</th>
+                  <th class="py-3 px-3">Offense</th>
+                  <th class="py-3 px-2 text-center">Demerits</th>
+                  <th class="py-3 px-2 text-center">Tours</th>
+                  <th class="py-3 px-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="punishmentTableBody" class="divide-y divide-slate-100 font-mono-clean">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 7: DEDICATED COUNCIL WORKSPACE ================= -->
+      <section id="view-council" class="tab-pane hidden space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <span id="activeCouncilTag" class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase bg-blue-50 px-2 py-0.5 rounded">STAFF COUNCIL</span>
+              <h3 id="activeCouncilTitle" class="font-bold text-xl text-slate-900 mt-1">S1 Personnel</h3>
+              <p id="activeCouncilDesc" class="text-xs text-slate-500 mt-0.5">Cadet strength accountability, leaves, passes, and promotions.</p>
+            </div>
+            <span class="text-xs font-mono-clean px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 self-start">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 live-beacon"></span>
+              <span>LIVE SPREADSHEET</span>
+            </span>
+          </div>
+
+          <div id="councilDynamicContainer">
+            <!-- Dynamically populated table or sensitive policy -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Global Toast Alert Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
   </div>
-
-  <!-- Global Toast Alert Container -->
-  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
-
-  <!-- Footer -->
-  <footer class="border-t border-slate-800/80 bg-slate-950 py-6 text-center text-xs text-slate-500">
-    <div class="max-w-7xl mx-auto px-4 space-y-2">
-      <div class="flex items-center justify-center gap-2 text-slate-400 font-heading">
-        <img src="assets/ccafp-crest.svg" alt="CCAFP" class="w-4 h-4 inline">
-        <span>CADET CORPS ARMED FORCES OF THE PHILIPPINES &bull; PHILIPPINE MILITARY ACADEMY</span>
-      </div>
-      <p class="font-mono-tactical text-[11px] text-slate-600">
-        "Courage, Integrity, Loyalty" &bull; Supervised live sync via Google Antigravity &bull; Ready for Vercel deployment
-      </p>
-    </div>
-  </footer>
 
   <!-- Scripts -->
   <script src="js/data.js"></script>

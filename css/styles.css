@@ -1,164 +1,138 @@
-/* CCAFP Daily - Philippine Military Academy Theme & Custom Styles */
+/* CCAFP Daily - Alfacoy Military Portal Aesthetic */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Default: PMA Crimson & Gold */
-  --bg-primary: #0b0f19;
-  --bg-surface: #111827;
-  --bg-card: #182234;
-  --bg-card-hover: #1f2b42;
-  --border-color: #2e3d55;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --pma-red: #991b1b;
-  --pma-red-bright: #dc2626;
-  --pma-gold: #d4af37;
-  --pma-gold-bright: #f59e0b;
-  --pma-blue: #1e3a8a;
-  --accent-glow: rgba(212, 175, 55, 0.2);
-}
+  /* Alfacoy Deep Slate/Navy Sidebar */
+  --sidebar-bg: #0c1520;
+  --sidebar-border: #162436;
+  --sidebar-text: #94a3b8;
+  --sidebar-text-active: #0f172a;
+  --sidebar-active-pill: #ffffff;
 
-/* Theme 1: PMA Dress White */
-[data-theme="pma-dress-white"] {
-  --bg-primary: #f1f5f9;
-  --bg-surface: #ffffff;
-  --bg-card: #f8fafc;
-  --bg-card-hover: #e2e8f0;
-  --border-color: #cbd5e1;
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --pma-red: #b91c1c;
-  --pma-red-bright: #ef4444;
-  --pma-gold: #b45309;
-  --pma-gold-bright: #d97706;
-  --pma-blue: #1e3a8a;
-  --accent-glow: rgba(185, 28, 28, 0.15);
-}
+  /* Alfacoy Soft Mint/Ice Canvas */
+  --canvas-bg: #f0f4f8;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
 
-/* Theme 2: Tactical BDU / Field Green */
-[data-theme="pma-tactical"] {
-  --bg-primary: #0d140e;
-  --bg-surface: #141f16;
-  --bg-card: #1c2b1e;
-  --bg-card-hover: #263829;
-  --border-color: #354a39;
-  --text-main: #f1f5f0;
-  --text-muted: #94a896;
-  --pma-red: #a12c25;
-  --pma-red-bright: #c2382f;
-  --pma-gold: #c2a649;
-  --pma-gold-bright: #d8ba54;
-  --pma-blue: #233b2e;
-  --accent-glow: rgba(194, 166, 73, 0.2);
-}
-
-/* Theme 3: Night Tactical / Stealth */
-[data-theme="pma-night"] {
-  --bg-primary: #05070a;
-  --bg-surface: #0a0e14;
-  --bg-card: #0f151f;
-  --bg-card-hover: #16202f;
-  --border-color: #1c2638;
-  --text-main: #f8fafc;
-  --text-muted: #64748b;
-  --pma-red: #7f1d1d;
-  --pma-red-bright: #b91c1c;
-  --pma-gold: #ca8a04;
-  --pma-gold-bright: #eab308;
-  --pma-blue: #172554;
-  --accent-glow: rgba(202, 138, 4, 0.18);
-}
-
-/* Theme 4: PMA Fleet Navy & Brass */
-[data-theme="pma-navy"] {
-  --bg-primary: #070d19;
-  --bg-surface: #0b1528;
-  --bg-card: #101e38;
-  --bg-card-hover: #182b4e;
-  --border-color: #1e355f;
-  --text-main: #f0f4fc;
-  --text-muted: #8da2c4;
-  --pma-red: #be123c;
-  --pma-red-bright: #e11d48;
-  --pma-gold: #e5a93b;
-  --pma-gold-bright: #fbbf24;
-  --pma-blue: #1d4ed8;
-  --accent-glow: rgba(229, 169, 59, 0.2);
+  /* Academy Blue & Accents */
+  --blue-primary: #1e3a8a;
+  --blue-hero: #0a2342;
+  --blue-hero-end: #133b68;
+  --accent-cyan: #38bdf8;
+  --accent-gold: #f59e0b;
+  --accent-red: #ef4444;
 }
 
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-main);
-  transition: background-color 0.25s ease, color 0.25s ease;
+  background-color: var(--canvas-bg);
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
 }
 
-.font-mono-tactical {
-  font-family: 'Share Tech Mono', monospace;
+.font-mono-clean {
+  font-family: 'JetBrains Mono', monospace;
 }
 
-.font-heading {
-  font-family: 'Cinzel', serif;
-  letter-spacing: 0.05em;
+/* Sidebar Styling */
+.sidebar-link {
+  transition: all 0.15s ease;
+  color: #94a3b8;
 }
 
-/* Council Slide Strip Container */
-.council-slider-container {
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
+.sidebar-link:hover:not(.active-pill) {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
 }
 
-.council-slider-container::-webkit-scrollbar {
-  height: 4px;
+/* Active Pill (Matching Alfacoy: Crisp white background, dark text, red notification dot) */
+.sidebar-link.active-pill {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.council-slider-container::-webkit-scrollbar-thumb {
-  background: var(--pma-gold);
-  border-radius: 9999px;
+.sidebar-link.active-pill i {
+  color: #0f172a !important;
 }
 
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Sidebar Custom Scrollbar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
 }
-
-::-webkit-scrollbar-track {
+.sidebar-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--pma-gold);
+/* Priority Bulletin Cards (Alfacoy Signature Style) */
+.bulletin-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Military Ribbon / Status Tag */
-.pma-ribbon-gold {
-  background: linear-gradient(135deg, #d4af37, #aa7c11);
-  color: #111827;
-  font-weight: 700;
+.bulletin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
 }
 
-.pma-ribbon-red {
-  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
-  color: #ffffff;
-  font-weight: 700;
+/* Left Accent Stripe */
+.stripe-red {
+  border-left: 4px solid #ef4444;
+}
+.stripe-amber {
+  border-left: 4px solid #f59e0b;
+}
+.stripe-blue {
+  border-left: 4px solid #3b82f6;
+}
+.stripe-emerald {
+  border-left: 4px solid #10b981;
 }
 
-/* Live Pulse Beacon */
-@keyframes pulseGlow {
+/* Badge Tags (Urgent, Priority, Important) */
+.badge-urgent {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.badge-priority {
+  background-color: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+}
+
+.badge-important {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badge-policy {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* Pulsing Live Beacon */
+@keyframes softBeacon {
   0% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
   }
   70% {
-    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
@@ -166,18 +140,12 @@ body {
 }
 
 .live-beacon {
-  animation: pulseGlow 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  animation: softBeacon 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-/* Sensitive Council Shield Badge */
-.sensitive-badge {
-  background: linear-gradient(135deg, rgba(185, 28, 28, 0.2), rgba(127, 29, 29, 0.3));
-  border: 1px solid rgba(239, 68, 68, 0.4);
-}
-
-/* Tab Animation */
+/* Smooth Tab Fade In */
 .tab-pane {
-  animation: tabFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: tabFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes tabFadeIn {
@@ -189,10 +157,4 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Modal Backdrop */
-.modal-overlay {
-  background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
 }
