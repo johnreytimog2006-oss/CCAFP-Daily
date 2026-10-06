@@ -1,4 +1,4 @@
-// CCAFP Daily - Alfacoy Portal Logic & Live Sheets Engine
+// CCAFP Daily - Alfacoy Portal Logic, S1 Sub-Sections & Live Sheets Engine
 
 (function () {
   'use strict';
@@ -9,10 +9,12 @@
   // Application State
   const state = {
     currentTab: 'home',
+    s1ActiveSubTab: 'strength',
     activeCouncilId: 's1',
     liveCache: {},
     staffLevel: 'regiment',
     punishmentQuery: '',
+    s1RosterQuery: '',
     isSyncing: false
   };
 
@@ -27,9 +29,16 @@
     activeBreadcrumb: document.getElementById('activeBreadcrumb'),
     lastUpdatedClock: document.getElementById('lastUpdatedClock'),
     manualSyncBtn: document.getElementById('manualSyncBtn'),
-    toggleDarkBtn: document.getElementById('toggleDarkBtn'),
     // Home View
     priorityBulletinsGrid: document.getElementById('priorityBulletinsGrid'),
+    // S1 View & Subtabs
+    s1SubTabs: document.querySelectorAll('.s1-subtab'),
+    s1SubPanes: document.querySelectorAll('.s1-subpane'),
+    s1StrengthTableBody: document.getElementById('s1StrengthTableBody'),
+    s1RosterTableBody: document.getElementById('s1RosterTableBody'),
+    s1RosterSearch: document.getElementById('s1RosterSearch'),
+    s1StaffGrid: document.getElementById('s1StaffGrid'),
+    s1NonEffectiveTableBody: document.getElementById('s1NonEffectiveTableBody'),
     // Staff View
     staffDisplayContainer: document.getElementById('staffDisplayContainer'),
     staffTabs: document.querySelectorAll('.staff-tab'),
@@ -75,14 +84,14 @@
     // Update Sidebar active state
     dom.sidebarLinks.forEach(link => {
       const target = link.getAttribute('data-tab');
-      if (target === tabId && tabId !== 'council') {
+      const councilTarget = link.getAttribute('data-council-select');
+      if ((target === tabId && tabId !== 'council') || (tabId === 's1' && councilTarget === 's1')) {
         link.classList.add('active-pill');
       } else {
         link.classList.remove('active-pill');
       }
     });
 
-    // If navigating to council, highlight that specific council
     if (tabId === 'council') {
       document.querySelectorAll('[data-council-select]').forEach(btn => {
         if (btn.getAttribute('data-council-select') === state.activeCouncilId) {
@@ -91,8 +100,6 @@
           btn.classList.remove('active-pill');
         }
       });
-    } else {
-      document.querySelectorAll('[data-council-select]').forEach(btn => btn.classList.remove('active-pill'));
     }
 
     // Toggle Panes
@@ -107,6 +114,7 @@
     // Update Breadcrumb
     const labels = {
       home: 'HOME',
+      s1: 'S1 PERSONNEL',
       staff: 'CADET STAFF',
       duty: 'DUTY OFFICERS',
       calendar: 'EVENT CALENDAR',
@@ -122,11 +130,129 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // --- S1 Council Sub-Pages Switching ---
+  function switchS1SubTab(tabName) {
+    state.s1ActiveSubTab = tabName;
+
+    // Subtab pills
+    dom.s1SubTabs.forEach(btn => {
+      if (btn.getAttribute('data-s1-tab') === tabName) {
+        btn.className = 's1-subtab active-pill px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-900 text-white flex items-center gap-1.5 flex-shrink-0';
+      } else {
+        btn.className = 's1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0';
+      }
+    });
+
+    // Subpanes
+    dom.s1SubPanes.forEach(pane => {
+      if (pane.id === `s1-section-${tabName}`) {
+        pane.classList.remove('hidden');
+      } else {
+        pane.classList.add('hidden');
+      }
+    });
+  }
+
+  // --- Render S1 Sub-Sections Data ---
+  function renderS1Data() {
+    // 1. Strength Summary by Company & Gender
+    if (dom.s1StrengthTableBody) {
+      const summary = CCAFP_CONFIG.s1Data.strengthSummary;
+      dom.s1StrengthTableBody.innerHTML = summary.map(row => `
+        <tr class="hover:bg-slate-50/70 transition-colors">
+          <td class="py-3 px-3 font-sans font-bold text-slate-900">${row.company} Coy</td>
+          <td class="py-3 px-2 text-center text-slate-700">${row.firstCL_M} / <span class="text-blue-600 font-semibold">${row.firstCL_F}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${row.secondCL_M} / <span class="text-blue-600 font-semibold">${row.secondCL_F}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${row.thirdCL_M} / <span class="text-blue-600 font-semibold">${row.thirdCL_F}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${row.fourthCL_M} / <span class="text-blue-600 font-semibold">${row.fourthCL_F}</span></td>
+          <td class="py-3 px-3 text-right font-bold text-blue-950 font-mono-clean text-sm">${row.total}</td>
+        </tr>
+      `).join('');
+    }
+
+    // 2. Master Cadet Roster
+    renderS1Roster();
+
+    // 3. Staff for Personnel
+    if (dom.s1StaffGrid) {
+      dom.s1StaffGrid.innerHTML = CCAFP_CONFIG.s1Data.staff.map(st => `
+        <div class="bulletin-card stripe-blue p-5 space-y-2">
+          <div class="flex items-center justify-between text-xs text-slate-500 font-mono-clean">
+            <span class="text-blue-700 font-bold">${st.company}</span>
+            <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-800 text-[10px] font-bold">STAFF</span>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900">${st.name}</h4>
+          <p class="text-xs text-blue-900 font-semibold">${st.role}</p>
+          <p class="text-xs text-slate-500 pt-2 border-t border-slate-100 leading-relaxed">${st.task}</p>
+        </div>
+      `).join('');
+    }
+
+    // 4. Non-Effective Status
+    if (dom.s1NonEffectiveTableBody) {
+      dom.s1NonEffectiveTableBody.innerHTML = CCAFP_CONFIG.s1Data.nonEffective.map(ne => `
+        <tr class="hover:bg-slate-50/70 transition-colors">
+          <td class="py-3 px-3 font-sans font-bold text-slate-900">${ne.name}</td>
+          <td class="py-3 px-2 text-slate-500">${ne.serial}</td>
+          <td class="py-3 px-2 text-blue-700 font-semibold">${ne.company} Coy</td>
+          <td class="py-3 px-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+              ne.status.includes('Hospital') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+              ne.status.includes('Leave') ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+              'bg-purple-50 text-purple-700 border border-purple-200'
+            }">${ne.status}</span>
+          </td>
+          <td class="py-3 px-3 text-slate-600 font-sans">${ne.reason}</td>
+          <td class="py-3 px-3 text-slate-500 font-semibold">${ne.authorizedBy}</td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  // Render S1 Roster with Search Filter
+  function renderS1Roster() {
+    if (!dom.s1RosterTableBody) return;
+    const q = state.s1RosterQuery.toLowerCase();
+    const filtered = CCAFP_CONFIG.s1Data.roster.filter(c => {
+      return c.name.toLowerCase().includes(q) ||
+             c.classYr.toLowerCase().includes(q) ||
+             c.branch.toLowerCase().includes(q) ||
+             c.company.toLowerCase().includes(q) ||
+             c.designation.toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      dom.s1RosterTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="p-8 text-center text-slate-400 font-sans">
+            No cadet records match your search filter.
+          </td>
+        </tr>
+      `;
+    } else {
+      dom.s1RosterTableBody.innerHTML = filtered.map(c => `
+        <tr class="hover:bg-slate-50/70 transition-colors">
+          <td class="py-3 px-3 font-sans font-bold text-slate-900">${c.name}</td>
+          <td class="py-3 px-2 text-slate-600">${c.classYr}</td>
+          <td class="py-3 px-2 text-blue-900 font-bold">${c.branch}</td>
+          <td class="py-3 px-2 text-blue-700 font-semibold">${c.company} Coy</td>
+          <td class="py-3 px-3 text-slate-700 font-sans">${c.designation}</td>
+          <td class="py-3 px-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+              c.status.includes('Present') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+              c.status.includes('Hospital') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+              'bg-blue-50 text-blue-700 border border-blue-200'
+            }">${c.status}</span>
+          </td>
+        </tr>
+      `).join('');
+    }
+  }
+
   // --- Render Sidebar Councils ---
   function renderSidebarCouncils() {
     if (!dom.sidebarCouncilsList) return;
     dom.sidebarCouncilsList.innerHTML = CCAFP_CONFIG.councils.map(council => {
-      const isSensitive = council.sensitive;
       const badge = council.badgeCount ? `<span class="w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center font-mono-clean">${council.badgeCount}</span>` : '';
       return `
         <button data-council-select="${council.id}" class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium">
@@ -144,6 +270,10 @@
 
   function selectCouncil(councilId) {
     state.activeCouncilId = councilId;
+    if (councilId === 's1') {
+      navigateToTab('s1', 'S1 PERSONNEL');
+      return;
+    }
     const council = CCAFP_CONFIG.councils.find(c => c.id === councilId);
     renderActiveCouncilView(council);
     navigateToTab('council', council ? council.name.toUpperCase() : 'COUNCIL');
@@ -202,7 +332,7 @@
     `).join('');
   }
 
-  // --- Active Council View Rendering ---
+  // --- Active General Council View Rendering ---
   async function renderActiveCouncilView(council) {
     if (!council) return;
 
@@ -233,8 +363,8 @@
       `;
     } else {
       const sheetLink = syncManager.getLink(council.id);
-      let headers = council.defaultHeaders;
-      let rows = council.defaultRows;
+      let headers = council.defaultHeaders || ["Item", "Detail", "Status"];
+      let rows = council.defaultRows || [["Record 1", "Information", "Operational"]];
       let isLive = false;
 
       if (sheetLink) {
@@ -408,7 +538,7 @@
     if (dom.manualSyncBtn) {
       dom.manualSyncBtn.querySelector('i')?.classList.add('animate-spin');
     }
-    showToast('Fetching latest Google Sheets updates...', 'info');
+    showToast('Fetching latest updates from Google Sheets...', 'info');
 
     let synced = 0;
     for (const council of CCAFP_CONFIG.councils) {
@@ -422,7 +552,9 @@
       }
     }
 
-    if (state.currentTab === 'council') {
+    if (state.currentTab === 's1') {
+      renderS1Data();
+    } else if (state.currentTab === 'council') {
       const council = CCAFP_CONFIG.councils.find(c => c.id === state.activeCouncilId);
       renderActiveCouncilView(council);
     }
@@ -434,7 +566,7 @@
 
     updateTime();
     if (synced > 0) {
-      showToast(`Synchronized ${synced} councils live from Google Sheets!`, 'success');
+      showToast(`Synchronized S1 & councils live from Google Sheets!`, 'success');
     } else {
       showToast('Cadet Corps bulletin records are current.', 'success');
     }
@@ -465,11 +597,32 @@
     dom.sidebarLinks.forEach(link => {
       link.addEventListener('click', () => {
         const tab = link.getAttribute('data-tab');
-        if (tab) navigateToTab(tab);
+        const council = link.getAttribute('data-council-select');
+        if (council) {
+          selectCouncil(council);
+        } else if (tab) {
+          navigateToTab(tab);
+        }
       });
     });
 
-    // Council Click Handler
+    // S1 Subtabs
+    dom.s1SubTabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const subTab = btn.getAttribute('data-s1-tab');
+        if (subTab) switchS1SubTab(subTab);
+      });
+    });
+
+    // S1 Roster Search
+    if (dom.s1RosterSearch) {
+      dom.s1RosterSearch.addEventListener('input', (e) => {
+        state.s1RosterQuery = e.target.value;
+        renderS1Roster();
+      });
+    }
+
+    // General Council Click Handler
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-council-select]');
       if (btn) {
@@ -526,13 +679,14 @@
 
     renderSidebarCouncils();
     renderPriorityBulletins();
+    renderS1Data();
     renderDutyRoutine();
     renderCalendar();
     renderPunishments();
     renderStaffDirectory();
     setupEventListeners();
 
-    // Auto-polling live sheets every 45s (exactly like alfacoy.com)
+    // Auto-polling live sheets every 45s
     setInterval(performLiveSync, 45000);
 
     lucide.createIcons();

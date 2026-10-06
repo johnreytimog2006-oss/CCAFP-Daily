@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CCAFP Daily &mdash; Cadet Corps Bulletin Board System</title>
-  <meta name="description" content="Official bulletin board system for the Cadet Corps Armed Forces of the Philippines (CCAFP).">
+  <title>CCAFP Daily &mdash; Philippine Military Academy &bull; Cadet Corps Bulletin Board</title>
+  <meta name="description" content="Official bulletin board system for the Cadet Corps Armed Forces of the Philippines (CCAFP), Philippine Military Academy.">
   
-  <link rel="icon" type="image/svg+xml" href="assets/ccafp-crest.svg">
+  <!-- PMA Official Crest Favicon -->
+  <link rel="icon" type="image/png" href="assets/pma-crest.png">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -37,19 +38,20 @@
   <!-- Mobile Drawer Backdrop -->
   <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 hidden md:hidden"></div>
 
-  <!-- Left Dark Sidebar (Exact Alfacoy Layout) -->
+  <!-- Left Dark Sidebar (Official Alfacoy Layout with PMA Logo) -->
   <aside id="mainSidebar" class="w-64 bg-[#0c1520] border-r border-[#162436] flex flex-col fixed inset-y-0 z-50 transition-transform duration-300 md:translate-x-0 -translate-x-full text-slate-300 shadow-xl">
     
-    <!-- Sidebar Header: Brand & Crest -->
-    <div class="h-20 px-5 flex items-center gap-3 border-b border-[#162436] cursor-pointer" onclick="navigateToTab('home')">
-      <div class="w-10 h-10 rounded-xl bg-slate-800/80 p-1 flex-shrink-0 border border-slate-700/60 shadow">
-        <img src="assets/ccafp-crest.svg" alt="CCAFP Crest" class="w-full h-full object-contain">
+    <!-- Sidebar Header: Official PMA Crest & Brand -->
+    <div class="h-20 px-4 flex items-center gap-3 border-b border-[#162436] cursor-pointer" onclick="navigateToTab('home')">
+      <!-- High-res PMA Logo -->
+      <div class="w-12 h-12 flex-shrink-0 drop-shadow-md">
+        <img src="assets/pma-crest.png" alt="Philippine Military Academy Crest" class="w-full h-full object-contain filter drop-shadow">
       </div>
-      <div>
+      <div class="min-w-0">
         <div class="flex items-center gap-1.5">
-          <span class="font-bold text-base tracking-wide text-white font-mono-clean">CCAFP DAILY</span>
+          <span class="font-bold text-base tracking-wide text-white font-mono-clean truncate">CCAFP DAILY</span>
         </div>
-        <p class="text-[10px] text-slate-400 font-mono-clean tracking-wider uppercase">CCAFP &bull; BULLETIN BOARD</p>
+        <p class="text-[9.5px] text-amber-400 font-mono-clean tracking-wider uppercase font-semibold truncate">COURAGE • INTEGRITY • LOYALTY</p>
       </div>
     </div>
 
@@ -60,13 +62,22 @@
       <div class="space-y-1">
         <div class="px-3 pb-1 text-[10px] font-bold text-slate-500 font-mono-clean tracking-wider uppercase">MAIN NAVIGATION</div>
 
-        <!-- Home Overview (Active White Pill with Red Dot) -->
+        <!-- Home Overview -->
         <button class="sidebar-link active-pill w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold" data-tab="home">
           <div class="flex items-center gap-2.5">
             <i data-lucide="home" class="w-4 h-4 text-slate-900"></i>
             <span>Home Overview</span>
           </div>
           <span class="w-2 h-2 rounded-full bg-red-500"></span>
+        </button>
+
+        <!-- S1 Personnel (Featured with Live Sheet Link) -->
+        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-council-select="s1">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="users" class="w-4 h-4 text-blue-400"></i>
+            <span>S1 Personnel</span>
+          </div>
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
         </button>
 
         <!-- Company Staff -->
@@ -87,7 +98,7 @@
           <span>Event Calendar</span>
         </button>
 
-        <!-- Honor Committee (Sensitive) -->
+        <!-- Honor Committee -->
         <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="honor">
           <i data-lucide="scale" class="w-4 h-4 text-amber-400"></i>
           <span>Honor Committee</span>
@@ -100,9 +111,9 @@
         </button>
       </div>
 
-      <!-- 2. COUNCILS LIST -->
+      <!-- 2. COUNCILS DIRECTORY -->
       <div class="space-y-1">
-        <div class="px-3 pb-1 text-[10px] font-bold text-slate-500 font-mono-clean tracking-wider uppercase">COUNCILS</div>
+        <div class="px-3 pb-1 text-[10px] font-bold text-slate-500 font-mono-clean tracking-wider uppercase">ALL COUNCILS</div>
         <div id="sidebarCouncilsList" class="space-y-0.5">
           <!-- Dynamically populated councils -->
         </div>
@@ -110,7 +121,7 @@
 
     </div>
 
-    <!-- Sidebar Bottom Footer: System Live & Dark Mode Toggle -->
+    <!-- Sidebar Bottom Footer -->
     <div class="p-3 border-t border-[#162436] bg-[#090f17] flex flex-col gap-2">
       <div class="flex items-center gap-2 px-1 text-[11px] font-mono-clean text-slate-400">
         <span class="w-2 h-2 rounded-full bg-emerald-500 live-beacon"></span>
@@ -132,7 +143,7 @@
   <!-- Main Viewport Container -->
   <div class="flex-1 flex flex-col md:pl-64 min-w-0">
 
-    <!-- Top Navigation Bar (Breadcrumbs & Live Status) -->
+    <!-- Top Navigation Bar -->
     <header class="h-14 bg-white/70 backdrop-blur border-b border-slate-200/80 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30">
       
       <!-- Left: Mobile Menu & Breadcrumb -->
@@ -140,8 +151,9 @@
         <button id="openSidebarBtn" class="md:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
           <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
-        <div class="flex items-center gap-1.5 text-[11px] font-mono-clean text-slate-500 uppercase tracking-wider">
-          <span class="font-semibold text-slate-700">CCAFP BULLETIN BOARD</span>
+        <div class="flex items-center gap-2 text-[11px] font-mono-clean text-slate-500 uppercase tracking-wider">
+          <img src="assets/pma-crest.png" alt="PMA" class="w-4 h-4 object-contain">
+          <span class="font-semibold text-slate-700">PMA &bull; CCAFP BULLETIN</span>
           <span>/</span>
           <span id="activeBreadcrumb" class="text-slate-900 font-bold">HOME</span>
         </div>
@@ -162,15 +174,15 @@
 
     </header>
 
-    <!-- News Marquee / Ticker Bar (Exact Alfacoy Style) -->
+    <!-- News Marquee / Ticker Bar -->
     <div class="bg-white border-b border-slate-200 px-4 sm:px-8 py-2 text-xs font-mono-clean flex items-center gap-3 overflow-hidden">
       <div class="flex items-center gap-1.5 text-blue-900 font-bold flex-shrink-0">
-        <img src="assets/ccafp-crest.svg" alt="CCAFP" class="w-3.5 h-3.5 inline">
+        <img src="assets/pma-crest.png" alt="PMA" class="w-3.5 h-3.5 inline object-contain">
         <span>CCAFP DAILY:</span>
       </div>
       <div class="flex items-center gap-2 text-slate-700 truncate">
         <i class="fa-solid fa-bullhorn text-amber-500 text-xs"></i>
-        <span class="truncate">MAGAZINE: ALL CADETS WITH NO ISSUED AND LOST MAGAZINES WILL WITHDRAW THE SAME TO THE HTG ARMORY AS SOON AS POSSIBLE.</span>
+        <span class="truncate">S1 PERSONNEL: CADET INFORMATION SHEETS 2026-2027 SYNCHRONIZED LIVE &bull; CHECK YOUR ROSTER AND STATUS.</span>
       </div>
     </div>
 
@@ -180,26 +192,27 @@
       <!-- ================= VIEW 1: HOME OVERVIEW ================= -->
       <section id="view-home" class="tab-pane space-y-6">
 
-        <!-- Alfacoy Hero Banner Card (Deep Navy with Stats & Crest Graphic) -->
+        <!-- Alfacoy Hero Banner Card (Deep Navy with PMA Crest Watermark) -->
         <div class="relative rounded-3xl bg-gradient-to-r from-[#0a2342] via-[#0d2d54] to-[#133b68] text-white p-6 sm:p-8 shadow-md overflow-hidden">
           
           <!-- Crest Watermark Graphic in Background -->
-          <div class="absolute right-0 top-0 bottom-0 w-80 opacity-20 pointer-events-none flex items-center justify-end pr-4">
-            <img src="assets/ccafp-crest.svg" alt="Watermark" class="h-64 object-contain">
+          <div class="absolute right-4 top-2 bottom-2 w-80 opacity-20 pointer-events-none flex items-center justify-end">
+            <img src="assets/pma-crest.png" alt="PMA Watermark" class="h-64 object-contain">
           </div>
 
           <div class="relative z-10 max-w-2xl space-y-4">
             <div>
-              <h2 class="font-bold text-2xl sm:text-4xl tracking-tight">
-                CCAFP <span class="text-blue-300">DAILY</span>
+              <h2 class="font-bold text-2xl sm:text-4xl tracking-tight flex items-center gap-3">
+                <span>CCAFP</span>
+                <span class="text-amber-400">DAILY</span>
               </h2>
               <p class="text-xs sm:text-sm text-blue-200 mt-1 font-mono-clean flex items-center gap-1.5">
                 <span>▶</span>
-                <span>CADET CORPS ARMED FORCES OF THE PHILIPPINES &bull; BULLETIN BOARD SYSTEM</span>
+                <span>PHILIPPINE MILITARY ACADEMY &bull; CADET CORPS BULLETIN BOARD SYSTEM</span>
               </p>
             </div>
 
-            <!-- Stats Counters Row (Exact Alfacoy style!) -->
+            <!-- Stats Counters Row -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-blue-400/20">
               <div>
                 <span class="block text-2xl font-bold font-mono-clean text-white">6</span>
@@ -243,7 +256,172 @@
 
       </section>
 
-      <!-- ================= VIEW 2: CADET STAFF ================= -->
+      <!-- ================= VIEW 2: S1 PERSONNEL COUNCIL (WITH SUB-PAGES & SECTIONS) ================= -->
+      <section id="view-s1" class="tab-pane hidden space-y-6">
+        
+        <!-- S1 Header Banner -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-900 flex items-center justify-center flex-shrink-0 text-xl font-bold border border-blue-100">
+                <i data-lucide="users" class="w-6 h-6 text-blue-700"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-100">REGIMENTAL STAFF</span>
+                  <span class="text-[10px] font-bold font-mono-clean text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>GOOGLE SHEET CONNECTED</span>
+                  </span>
+                </div>
+                <h2 class="font-bold text-2xl text-slate-900 mt-1">S1 Personnel Council</h2>
+                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Cadet Information Sheets 2026-2027 &bull; Strength Accountability, Master Roster, Staff NCOs, and Non-Effective Status.</p>
+              </div>
+            </div>
+
+            <!-- External Google Sheet Quicklink -->
+            <a href="https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/edit?gid=1901671722#gid=1901671722" target="_blank" rel="noopener noreferrer" class="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-semibold shadow-xs transition-colors">
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              <span>Open Source Google Sheet</span>
+            </a>
+          </div>
+
+          <!-- S1 SUB-PAGES / SECTIONS NAVIGATION TABS -->
+          <div class="flex items-center gap-2 border-t border-slate-100 pt-4 overflow-x-auto">
+            <button class="s1-subtab active-pill px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-900 text-white flex items-center gap-1.5 flex-shrink-0" data-s1-tab="strength">
+              <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i>
+              <span>Strength by Company</span>
+            </button>
+            <button class="s1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0" data-s1-tab="roster">
+              <i data-lucide="list" class="w-3.5 h-3.5"></i>
+              <span>Master Cadet Roster</span>
+            </button>
+            <button class="s1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0" data-s1-tab="staff">
+              <i data-lucide="award" class="w-3.5 h-3.5"></i>
+              <span>Staff for Personnel</span>
+            </button>
+            <button class="s1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0" data-s1-tab="noneffective">
+              <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+              <span>Non-Effective Status</span>
+            </button>
+            <button class="s1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0" data-s1-tab="sheetview">
+              <i data-lucide="table" class="w-3.5 h-3.5"></i>
+              <span>Embedded Sheet View</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- S1 SUB-SECTION 1: Strength by Company -->
+        <div id="s1-section-strength" class="s1-subpane bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="font-bold text-base text-slate-900">Corps Strength Breakdown by Company & Gender</h3>
+              <p class="text-xs text-slate-500 font-mono-clean">Official Roll Accountability &bull; Class 2027 to 2030</p>
+            </div>
+            <span class="text-xs font-mono-clean font-semibold px-2.5 py-1 rounded bg-slate-100 text-slate-700">Effective: 1,436 Cadets</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono-clean">
+              <thead>
+                <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px]">
+                  <th class="py-3 px-3">Company</th>
+                  <th class="py-3 px-2 text-center">1CL (M/F)</th>
+                  <th class="py-3 px-2 text-center">2CL (M/F)</th>
+                  <th class="py-3 px-2 text-center">3CL (M/F)</th>
+                  <th class="py-3 px-2 text-center">4CL (M/F)</th>
+                  <th class="py-3 px-3 text-right">Total Company Strength</th>
+                </tr>
+              </thead>
+              <tbody id="s1StrengthTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- S1 SUB-SECTION 2: Master Cadet Roster -->
+        <div id="s1-section-roster" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="font-bold text-base text-slate-900">Cadet Information Roster 2026-2027</h3>
+              <p class="text-xs text-slate-500 font-mono-clean">Cadet Profiles, Service Branch (PA/PAF/PN), and Duty Assignments</p>
+            </div>
+            <input id="s1RosterSearch" type="text" placeholder="Search cadet name, class, branch..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono-clean">
+              <thead>
+                <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px]">
+                  <th class="py-3 px-3">Cadet Name</th>
+                  <th class="py-3 px-2">Class</th>
+                  <th class="py-3 px-2">Service Branch</th>
+                  <th class="py-3 px-2">Company</th>
+                  <th class="py-3 px-3">Designation / Role</th>
+                  <th class="py-3 px-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="s1RosterTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- S1 SUB-SECTION 3: Staff for Personnel -->
+        <div id="s1-section-staff" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-base text-slate-900">Staff for Personnel (S1 NCOs & Officers)</h3>
+            <p class="text-xs text-slate-500 font-mono-clean">Adjutants, Personnel NCOs, and Acquisition Cadre</p>
+          </div>
+          <div id="s1StaffGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- S1 SUB-SECTION 4: Non-Effective Status -->
+        <div id="s1-section-noneffective" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-base text-slate-900">Cadets Not Included in Effective CCAFP Strength</h3>
+            <p class="text-xs text-slate-500 font-mono-clean">Station Hospital Quarters, Detached Service (DS), and Authorized Passes</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono-clean">
+              <thead>
+                <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px]">
+                  <th class="py-3 px-3">Cadet Name</th>
+                  <th class="py-3 px-2">Serial</th>
+                  <th class="py-3 px-2">Company</th>
+                  <th class="py-3 px-3">Status</th>
+                  <th class="py-3 px-3">Remarks / Reason</th>
+                  <th class="py-3 px-3">Authorized By</th>
+                </tr>
+              </thead>
+              <tbody id="s1NonEffectiveTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- S1 SUB-SECTION 5: Embedded Live Google Sheet -->
+        <div id="s1-section-sheetview" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="font-bold text-base text-slate-900">Direct Live Google Sheet Viewer</h3>
+              <p class="text-xs text-slate-500 font-mono-clean">Synchronizing directly from Google Sheets GID 1901671722</p>
+            </div>
+            <a href="https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/edit?gid=1901671722#gid=1901671722" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline font-semibold font-mono-clean">Open in New Tab &rarr;</a>
+          </div>
+          <div class="w-full h-[600px] rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-50">
+            <iframe src="https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/htmlembed?gid=1901671722&widget=true&chrome=false" class="w-full h-full border-0"></iframe>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= VIEW 3: CADET STAFF ================= -->
       <section id="view-staff" class="tab-pane hidden space-y-6">
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
@@ -263,7 +441,7 @@
         </div>
       </section>
 
-      <!-- ================= VIEW 3: DUTY OFFICERS (TAC-O & OC/AOC) ================= -->
+      <!-- ================= VIEW 4: DUTY OFFICERS ================= -->
       <section id="view-duty" class="tab-pane hidden space-y-6">
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div class="border-b border-slate-100 pb-4">
@@ -301,7 +479,6 @@
             </div>
           </div>
 
-          <!-- Corps Routine Schedule -->
           <div class="pt-4 border-t border-slate-100">
             <h4 class="font-bold text-sm text-slate-800 mb-3 uppercase font-mono-clean">Order of the Day Schedule</h4>
             <div id="dutyRoutineList" class="space-y-2">
@@ -311,7 +488,7 @@
         </div>
       </section>
 
-      <!-- ================= VIEW 4: EVENT CALENDAR ================= -->
+      <!-- ================= VIEW 5: EVENT CALENDAR ================= -->
       <section id="view-calendar" class="tab-pane hidden space-y-6">
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div class="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -326,7 +503,7 @@
         </div>
       </section>
 
-      <!-- ================= VIEW 5: HONOR COMMITTEE ================= -->
+      <!-- ================= VIEW 6: HONOR COMMITTEE ================= -->
       <section id="view-honor" class="tab-pane hidden space-y-6">
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div class="p-5 rounded-2xl bg-amber-50/50 border border-amber-200/80 flex items-start gap-4">
@@ -363,7 +540,7 @@
         </div>
       </section>
 
-      <!-- ================= VIEW 6: EXO PUNISHMENT LIST ================= -->
+      <!-- ================= VIEW 7: EXO PUNISHMENT LIST ================= -->
       <section id="view-punishments" class="tab-pane hidden space-y-6">
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
@@ -396,18 +573,18 @@
         </div>
       </section>
 
-      <!-- ================= VIEW 7: DEDICATED COUNCIL WORKSPACE ================= -->
+      <!-- ================= VIEW 8: GENERAL COUNCIL WORKSPACE ================= -->
       <section id="view-council" class="tab-pane hidden space-y-6">
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <span id="activeCouncilTag" class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase bg-blue-50 px-2 py-0.5 rounded">STAFF COUNCIL</span>
-              <h3 id="activeCouncilTitle" class="font-bold text-xl text-slate-900 mt-1">S1 Personnel</h3>
-              <p id="activeCouncilDesc" class="text-xs text-slate-500 mt-0.5">Cadet strength accountability, leaves, passes, and promotions.</p>
+              <span id="activeCouncilTag" class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase bg-blue-50 px-2 py-0.5 rounded">COUNCIL</span>
+              <h3 id="activeCouncilTitle" class="font-bold text-xl text-slate-900 mt-1">Council Workspace</h3>
+              <p id="activeCouncilDesc" class="text-xs text-slate-500 mt-0.5">Council operations and announcements.</p>
             </div>
             <span class="text-xs font-mono-clean px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 self-start">
               <span class="w-2 h-2 rounded-full bg-emerald-500 live-beacon"></span>
-              <span>LIVE SPREADSHEET</span>
+              <span>LIVE BULLETINS</span>
             </span>
           </div>
 

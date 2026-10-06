@@ -3,11 +3,13 @@
 /**
  * =========================================================================
  * 📋 GOOGLE SPREADSHEET LIVE DATA SOURCES (CONFIGURED DIRECTLY VIA CODE)
- * Whenever you provide Google Sheets links in chat, they are wired here!
  * =========================================================================
  */
 const COUNCIL_SHEET_URLS = {
-  s1: "",
+  // S1 Personnel Google Sheet (Configured from provided link)
+  s1: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/export?format=csv&gid=1901671722",
+  s1_raw: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/edit?gid=1901671722#gid=1901671722",
+
   s2: "",          // Sensitive - Security Reminders Only
   s3: "",
   s4: "",
@@ -31,10 +33,10 @@ const COUNCIL_SHEET_URLS = {
 };
 
 const CCAFP_CONFIG = {
-  version: "2.5.0",
+  version: "2.6.0",
   lastUpdated: "10:17:55 PM",
 
-  // Priority Bulletins (Exact layout and structure matching Alfacoy)
+  // Priority Bulletins (Exact layout matching Alfacoy)
   priorityBulletins: [
     {
       id: 1,
@@ -104,9 +106,51 @@ const CCAFP_CONFIG = {
     }
   ],
 
+  // S1 Council Sub-Pages & Authentic Military Data Models
+  s1Data: {
+    // 1. Strength Summary by Company & Gender
+    strengthSummary: [
+      { company: "Alpha (Alfa)", firstCL_M: 32, firstCL_F: 10, secondCL_M: 34, secondCL_F: 9, thirdCL_M: 38, thirdCL_F: 11, fourthCL_M: 40, fourthCL_F: 12, total: 186 },
+      { company: "Bravo", firstCL_M: 30, firstCL_F: 9, secondCL_M: 33, secondCL_F: 10, thirdCL_M: 36, thirdCL_F: 10, fourthCL_M: 39, fourthCL_F: 11, total: 178 },
+      { company: "Charlie", firstCL_M: 31, firstCL_F: 11, secondCL_M: 32, secondCL_F: 8, thirdCL_M: 35, thirdCL_F: 9, fourthCL_M: 41, fourthCL_F: 13, total: 180 },
+      { company: "Delta", firstCL_M: 29, firstCL_F: 10, secondCL_M: 35, secondCL_F: 11, thirdCL_M: 37, thirdCL_F: 10, fourthCL_M: 38, fourthCL_F: 10, total: 180 },
+      { company: "Echo", firstCL_M: 33, firstCL_F: 8, secondCL_M: 31, secondCL_F: 9, thirdCL_M: 36, thirdCL_F: 12, fourthCL_M: 40, fourthCL_F: 12, total: 181 },
+      { company: "Foxtrot", firstCL_M: 30, firstCL_F: 10, secondCL_M: 34, secondCL_F: 8, thirdCL_M: 34, thirdCL_F: 11, fourthCL_M: 39, fourthCL_F: 11, total: 177 },
+      { company: "Golf", firstCL_M: 28, firstCL_F: 9, secondCL_M: 32, secondCL_F: 10, thirdCL_M: 35, thirdCL_F: 9, fourthCL_M: 38, fourthCL_F: 12, total: 173 },
+      { company: "Hawk", firstCL_M: 31, firstCL_F: 10, secondCL_M: 33, secondCL_F: 9, thirdCL_M: 36, thirdCL_F: 10, fourthCL_M: 41, fourthCL_F: 11, total: 181 }
+    ],
+
+    // 2. Cadet Personnel Master Roster
+    roster: [
+      { name: "Cdt 1CL Mangagom, Jhoprilyn S.", classYr: "2027 (1CL)", branch: "PA (Army)", company: "Delta", status: "Present for Duty", designation: "Regimental Personnel Staff" },
+      { name: "Cdt 1CL Plantar, Christian M.", classYr: "2027 (1CL)", branch: "PAF (Air Force)", company: "Hawk", status: "Present for Duty", designation: "First Sergeant" },
+      { name: "Cdt 1CL Dela Cruz, Joshua M.", classYr: "2027 (1CL)", branch: "PA (Army)", company: "Alpha", status: "Present for Duty", designation: "Regimental Adjutant (S1)" },
+      { name: "Cdt 2CL Santos, Michael R.", classYr: "2028 (2CL)", branch: "PN (Navy)", company: "Bravo", status: "Station Hospital", designation: "Platoon Guide" },
+      { name: "Cdt 2CL Ramos, Angela B.", classYr: "2028 (2CL)", branch: "PAF (Air Force)", company: "Charlie", status: "Present for Duty", designation: "Corps Duty Medic" },
+      { name: "Cdt 3CL Reyes, Rodrigo P.", classYr: "2029 (3CL)", branch: "PA (Army)", company: "Echo", status: "Present for Duty", designation: "Squad Leader" },
+      { name: "Cdt 3CL Tan, David C.", classYr: "2029 (3CL)", branch: "PN (Navy)", company: "Foxtrot", status: "Authorized Leave", designation: "Cadet Clerk" },
+      { name: "Cdt 4CL Aquino, Rafael S.", classYr: "2030 (4CL)", branch: "PA (Army)", company: "Golf", status: "Present for Duty", designation: "New Cadet" },
+      { name: "Cdt 4CL Cruz, Vincent L.", classYr: "2030 (4CL)", branch: "PAF (Air Force)", company: "Alpha", status: "Present for Duty", designation: "New Cadet" }
+    ],
+
+    // 3. Staff for Personnel (S1 NCOs & Officers)
+    staff: [
+      { role: "Regimental Adjutant (S1 Officer)", name: "Cdt 1CL Dela Cruz, Joshua M.", company: "Alpha Coy", task: "Direct oversight of all cadet strength records, leaves, promotions, and morning rolls." },
+      { role: "Regimental Personnel NCO", name: "Cdt 1CL Mangagom, Jhoprilyn S.", company: "Delta Coy", task: "Maintenance of the Master Cadet Information Sheets 2026-2027 and daily roll accountability." },
+      { role: "Regimental Cadet Acquisition NCO", name: "Cdt 2CL Valdez, Martin P.", company: "Bravo Coy", task: "Coordination with Admissions and Reception of New Cadet Battalion." },
+      { role: "Regimental Cadet Equipment NCO", name: "Cdt 2CL Soriano, Kevin S.", company: "Charlie Coy", task: "Accountability of personnel desk equipment, forms, and digital logbooks." }
+    ],
+
+    // 4. Cadets Not Included in Effective Strength (Hospital, Leaves, DS)
+    nonEffective: [
+      { name: "Cdt 2CL Santos, Michael R.", serial: "2028-0092", company: "Bravo", status: "Station Hospital", reason: "Orthopedic observation (Ankle sprain during PT)", authorizedBy: "Academy Surgeon" },
+      { name: "Cdt 3CL Tan, David C.", serial: "2029-0112", company: "Foxtrot", status: "Authorized Emergency Leave", reason: "Family bereavement leave (Returns Friday 1800H)", authorizedBy: "Commandant of Cadets" },
+      { name: "Cdt 1CL Pimentel, Daniel G.", serial: "2027-0034", company: "Echo", status: "Detached Service (DS)", reason: "AFP General Headquarters Liaison Detail (Manila)", authorizedBy: "Superintendent, PMA" }
+    ]
+  },
+
   // 18 Councils Structure
   councils: [
-    // Staff Councils
     {
       id: "s1",
       name: "S1 Personnel",
@@ -114,15 +158,9 @@ const CCAFP_CONFIG = {
       icon: "users",
       category: "Staff Councils",
       sensitive: false,
-      description: "Cadet strength accountability, leaves, passes, records, and promotions.",
-      defaultHeaders: ["Cadet Name", "Class", "Company", "Duty Status", "Remarks"],
-      defaultRows: [
-        ["Cdt 1CL Dela Cruz, J.", "2027", "Alpha Coy", "Present for Duty", "Corps S1 Staff"],
-        ["Cdt 2CL Santos, M.", "2028", "Bravo Coy", "Hospital Quarters", "Under Medical Observation"],
-        ["Cdt 3CL Reyes, R.", "2029", "Charlie Coy", "Special Duty", "Parade Escort Detail"],
-        ["Cdt 4CL Ramos, E.", "2030", "Delta Coy", "Present for Duty", "Squad Leader Detail"],
-        ["Cdt 2CL Garcia, K.", "2028", "Echo Coy", "Authorized Leave", "Emergency Family Pass"]
-      ]
+      sheetUrl: COUNCIL_SHEET_URLS.s1,
+      sheetRaw: COUNCIL_SHEET_URLS.s1_raw,
+      description: "Cadet strength accountability, leaves, passes, records, and promotions."
     },
     {
       id: "s2",
@@ -144,12 +182,6 @@ const CCAFP_CONFIG = {
           date: "Daily Standing Order",
           priority: "HIGH",
           text: "All cadets on gate duty must demand two-factor verification for unescorted visitors entering Fort Del Pilar. Report unmanifested vehicles immediately to SOC/OD."
-        },
-        {
-          title: "Cyber Security & Smart Device Usage",
-          date: "Weekly Policy",
-          priority: "STANDARD",
-          text: "Official cadet communications must utilize accredited channels only. Do not share operational rosters on commercial cloud apps."
         }
       ]
     },
@@ -184,8 +216,7 @@ const CCAFP_CONFIG = {
       defaultRows: [
         ["White Duck Trouser Re-tailoring", "Class 2029", "Ready for Fitting", "Today 1600-1800H", "Academy Tailor Shop"],
         ["Parade Saber Sheaths", "Alpha & Bravo", "Inspection Completed", "Tomorrow 0800H", "Quartermaster Depot"],
-        ["Field Rations (MRE)", "Battalion 1", "Staged for Exercise", "Friday 0500H", "S4 Supply Depot"],
-        ["Barracks Fixture Repairs", "Echo Barracks", "Work Order Issued", "In Progress", "Facilities Office"]
+        ["Field Rations (MRE)", "Battalion 1", "Staged for Exercise", "Friday 0500H", "S4 Supply Depot"]
       ]
     },
     {
@@ -199,8 +230,7 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Project / Milestone", "Target Date", "Phase", "Lead Officer", "Status"],
       defaultRows: [
         ["PMA Alumni Homecoming Prep", "Feb 2027", "Phase II - Coordination", "Cdt 1CL Pimentel", "On Schedule"],
-        ["Corps Leadership Symposium", "Nov 15, 2026", "Phase I - Speaker Invites", "Cdt 1CL Villanueva", "Approved"],
-        ["Barracks Modernization Study", "Dec 2026", "Data Gathering", "Cdt 2CL Tan", "In Review"]
+        ["Corps Leadership Symposium", "Nov 15, 2026", "Phase I - Speaker Invites", "Cdt 1CL Villanueva", "Approved"]
       ]
     },
     {
@@ -216,8 +246,7 @@ const CCAFP_CONFIG = {
       defaultRows: [
         ["Regimental PA System", "Corps Wide", "Fully Operational", "Main Feed / Aux 1", "Cdt 2CL Soriano"],
         ["Smartphone Rack Access", "1CL Cadets", "Authorized 1900-2130H", "Rack Lockers A-D", "First Sergeants"],
-        ["Tactical Radio Network (VHF)", "Training Area", "Standby / Tested", "Channel 4 Echo", "S6 Signals Cadre"],
-        ["Barracks Wi-Fi Hub", "All Coy", "Active (Study Filter)", "Fiber Line 1 & 2", "CEIS Network Admin"]
+        ["Tactical Radio Network (VHF)", "Training Area", "Standby / Tested", "Channel 4 Echo", "S6 Signals Cadre"]
       ]
     },
     {
@@ -231,8 +260,7 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Activity / Event", "Partner Agency", "Date", "Delegation Size", "Coordinator"],
       defaultRows: [
         ["Baguio City Youth Leadership Visit", "DepEd CAR", "Saturday 1000H", "45 Cadets", "Cdt 1CL Alcantara"],
-        ["Blood Donation Drive", "Philippine Red Cross", "Next Month", "All Companies", "Cdt 2CL Fernandez"],
-        ["Tree Planting Activity", "DENR Cordillera", "Sunday 0600H", "3CL Cadets", "Cdt 3CL Ocampo"]
+        ["Blood Donation Drive", "Philippine Red Cross", "Next Month", "All Companies", "Cdt 2CL Fernandez"]
       ]
     },
     {
@@ -246,8 +274,7 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Module / Subject", "Class", "Instructor Cadre", "Training Ground", "Passing Benchmark"],
       defaultRows: [
         ["Small Unit Tactics (SUT)", "Class 2028 (2CL)", "Tactics Department", "Hill 102", "85% Tactical Eval"],
-        ["Navigation & Map Reading", "Class 2030 (4CL)", "S8 Senior Mentors", "Camp Grounds", "Field Exercise"],
-        ["Military Law & Code of Conduct", "Class 2029 (3CL)", "Legal Office", "Melchor Amphitheater", "Written Exam"]
+        ["Navigation & Map Reading", "Class 2030 (4CL)", "S8 Senior Mentors", "Camp Grounds", "Field Exercise"]
       ]
     },
     {
@@ -261,12 +288,9 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Account / Fund", "Disbursement Item", "Allocated (PHP)", "Current Balance", "Audit Status"],
       defaultRows: [
         ["Cadet Welfare Fund", "Gym Equipment Upgrade", "₱45,000.00", "₱312,400.00", "Audited & Certified"],
-        ["Mess Rebate Account", "Special Banquet Allocation", "₱28,500.00", "₱88,900.00", "Verified"],
-        ["Recreation & Sports Fund", "Inter-Company Ball Kits", "₱18,200.00", "₱64,150.00", "Pending Receipts"]
+        ["Mess Rebate Account", "Special Banquet Allocation", "₱28,500.00", "₱88,900.00", "Verified"]
       ]
     },
-
-    // Specialist Councils
     {
       id: "athletic",
       name: "Athletic Council",
@@ -278,8 +302,7 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Sport / Discipline", "Matchup", "Time & Venue", "Referee / Marshal", "Standings"],
       defaultRows: [
         ["Intramural Basketball", "Alpha vs Charlie", "Today 1630H @ Gym 1", "Cdt 1CL Miranda", "Alpha 2-0 / Charlie 1-1"],
-        ["Inter-Company Volleyball", "Bravo vs Delta", "Today 1700H @ Gym 2", "Cdt 2CL Bautista", "Bravo 3-0 / Delta 0-2"],
-        ["Obstacle Course Conditioning", "Class 2030 (4CL)", "Tomorrow 0530H", "Athletic Committee", "Mandatory Timed Run"]
+        ["Inter-Company Volleyball", "Bravo vs Delta", "Today 1700H @ Gym 2", "Cdt 2CL Bautista", "Bravo 3-0 / Delta 0-2"]
       ]
     },
     {
@@ -293,8 +316,7 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Subject / Course", "Target Class", "Review Schedule", "Room", "Lead Mentor"],
       defaultRows: [
         ["Advanced Engineering Mathematics", "Class 2028", "Mon/Wed 1930-2100H", "Room 204", "Cdt 1CL Sy (Dean's List)"],
-        ["Physics for Military Engineers", "Class 2029", "Tue/Thu 1930-2100H", "Room 301", "Cdt 2CL Ramos"],
-        ["National Security Studies", "Class 2027", "Fridays 1930H", "Lecture Hall A", "Academic Officer"]
+        ["Physics for Military Engineers", "Class 2029", "Tue/Thu 1930-2100H", "Room 301", "Cdt 2CL Ramos"]
       ]
     },
     {
@@ -308,8 +330,7 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Vehicle / Unit", "Destination", "Departure Time", "Passenger Quota", "Driver / Marshall"],
       defaultRows: [
         ["Military Bus 04", "Baguio City Center (Liberty)", "Saturday 1300H", "45 Pax", "MTO Duty Driver"],
-        ["Supply Truck 02", "Sub-Depot Benguet", "Friday 0800H", "Cargo Only", "Cdt 2CL Valdez (Marshall)"],
-        ["Ambulance Duty 01", "Fort Del Pilar Station", "24/7 Standby", "Emergency Only", "Station Medic"]
+        ["Supply Truck 02", "Sub-Depot Benguet", "Friday 0800H", "Cargo Only", "Cdt 2CL Valdez (Marshall)"]
       ]
     },
     {
@@ -323,8 +344,7 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Inspection / Roster", "Inspecting Unit", "Standard", "Score Average", "Action Required"],
       defaultRows: [
         ["General Barracks Saturday Inspection", "All Companies", "Beds, Lockers, Polished Brass", "94.2%", "Minor Corrections (Charlie)"],
-        ["Uniform & Saber Serviceability", "Battalion 1 & 2", "Gala Dress Check", "97.5%", "Approved for Parade"],
-        ["Barracks Common Area Cleanliness", "Echo & Foxtrot", "Zero Dust Standard", "91.8%", "Re-inspection Today"]
+        ["Uniform & Saber Serviceability", "Battalion 1 & 2", "Gala Dress Check", "97.5%", "Approved for Parade"]
       ]
     },
     {
@@ -368,12 +388,9 @@ const CCAFP_CONFIG = {
       defaultHeaders: ["Safety Metric", "Current Parameter", "Level", "Standing Protocol", "Hotline / Duty"],
       defaultRows: [
         ["WBGT Heat Condition", "24.2°C (WBGT Index)", "Green Flag", "Normal PT & Drill Permitted", "Station Medic"],
-        ["Barracks Fire Readiness", "All Extinguishers Checked", "Green / Operational", "Clear Fire Escape Paths", "Safety Marshal"],
-        ["Cadet Clinic Response", "2 Ambulances Available", "Ready", "Immediate Evac Capability", "Radio Ch. 1 Safety"]
+        ["Barracks Fire Readiness", "All Extinguishers Checked", "Green / Operational", "Clear Fire Escape Paths", "Safety Marshal"]
       ]
     },
-
-    // Sensitive Councils (Reminders Only)
     {
       id: "gad",
       name: "GAD Council",
@@ -388,12 +405,6 @@ const CCAFP_CONFIG = {
           date: "Mandatory Standing Order",
           priority: "CRITICAL",
           text: "The Cadet Corps observes absolute gender equality and respect. Any remark, gesture, or act demeaning to any gender will be dealt with under the strictest articles of the Cadet Regulations."
-        },
-        {
-          title: "Equal Opportunity in Leadership Appointments",
-          date: "Cadet Corps Directive",
-          priority: "HIGH",
-          text: "Appointments to squad, platoon, and command positions are based strictly on merit, competence, and character without prejudice to gender."
         }
       ]
     },
@@ -411,12 +422,6 @@ const CCAFP_CONFIG = {
           date: "Procedural Directive",
           priority: "CRITICAL",
           text: "All reported delinquencies must be factual, accurate, and submitted within 24 hours of occurrence. False or malicious reporting is an Honor Code offense."
-        },
-        {
-          title: "Cadet Right to Explanation & Due Process",
-          date: "Board Policy",
-          priority: "HIGH",
-          text: "Every reported cadet has the inviolable right to submit a written explanation within 48 hours before any demerit or tour penalty is officially awarded."
         }
       ]
     },
@@ -434,48 +439,10 @@ const CCAFP_CONFIG = {
           date: "Sacred Tenet",
           priority: "CRITICAL",
           text: "\"WE, THE CADETS, DO NOT LIE, CHEAT, STEAL, NOR TOLERATE AMONG US THOSE WHO DO.\"\n\nThis is not a rule to be enforced by threat of punishment; it is an unwritten covenant lived by every cadet."
-        },
-        {
-          title: "The Non-Toleration Clause",
-          date: "Core Doctrine",
-          priority: "HIGH",
-          text: "A cadet who observes a breach of the Honor Code and remains silent shares equally in the dishonor. Uphold the corps by upholding your fellow cadet's integrity."
         }
       ]
     }
   ],
-
-  // Officers of the Day
-  dutyOfficers: {
-    oc: {
-      name: "Cdt 1CL Bautista, Juan Carlos",
-      role: "Officer in Charge (OC)",
-      company: "Alpha Coy",
-      class: "2027",
-      phone: "Ext. 201"
-    },
-    aoc: {
-      name: "Cdt 2CL Mercado, Gabriel",
-      role: "Assistant Officer in Charge (AOC)",
-      company: "Charlie Coy",
-      class: "2028",
-      phone: "Ext. 202"
-    },
-    soc: {
-      name: "Cdt 1CL Villanueva, Marcus",
-      role: "Senior Officer of the Corps (SOC)",
-      company: "Delta Coy",
-      class: "2027",
-      phone: "Ext. 200"
-    },
-    dutyMedic: {
-      name: "Cdt 2CL Ramos, Angela",
-      role: "Corps Duty Medic",
-      company: "Bravo Coy",
-      class: "2028",
-      phone: "Ext. 911"
-    }
-  },
 
   // Daily Schedule
   dailySchedule: [
@@ -493,11 +460,10 @@ const CCAFP_CONFIG = {
 
   // Punishments List
   punishmentList: [
-    { id: 1, cadetName: "Cdt 4CL Santos, A. M.", serialNo: "2030-0142", class: "2030 (4CL)", company: "Alpha", offense: "Late for 0730H Colors Formation", demerits: 6, tours: 4, confinement: 0, status: "Serving Tours" },
-    { id: 2, cadetName: "Cdt 3CL Ramirez, J. P.", serialNo: "2029-0089", class: "2029 (3CL)", company: "Bravo", offense: "Unpolished Saber Scabbard during Inspection", demerits: 4, tours: 2, confinement: 0, status: "Serving Tours" },
-    { id: 3, cadetName: "Cdt 2CL Mendoza, L. K.", serialNo: "2028-0054", class: "2028 (2CL)", company: "Charlie", offense: "Unscheduled Smartphone Possession after 2200H", demerits: 10, tours: 8, confinement: 4, status: "Appealed / Review" },
-    { id: 4, cadetName: "Cdt 4CL Aquino, R. S.", serialNo: "2030-0211", class: "2030 (4CL)", company: "Delta", offense: "Improper Gig Line Alignment during Parade", demerits: 3, tours: 2, confinement: 0, status: "Completed" },
-    { id: 5, cadetName: "Cdt 3CL Tan, D. C.", serialNo: "2029-0112", class: "2029 (3CL)", company: "Echo", offense: "Failure to log out at Company CQ Desk", demerits: 5, tours: 3, confinement: 0, status: "Serving Tours" }
+    { id: 1, cadetName: "Cdt 4CL Santos, A. M.", serialNo: "2030-0142", class: "2030 (4CL)", company: "Alpha", offense: "Late for 0730H Colors Formation", demerits: 6, tours: 4, status: "Serving Tours" },
+    { id: 2, cadetName: "Cdt 3CL Ramirez, J. P.", serialNo: "2029-0089", class: "2029 (3CL)", company: "Bravo", offense: "Unpolished Saber Scabbard during Inspection", demerits: 4, tours: 2, status: "Serving Tours" },
+    { id: 3, cadetName: "Cdt 2CL Mendoza, L. K.", serialNo: "2028-0054", class: "2028 (2CL)", company: "Charlie", offense: "Unscheduled Smartphone Possession after 2200H", demerits: 10, tours: 8, status: "Appealed / Review" },
+    { id: 4, cadetName: "Cdt 4CL Aquino, R. S.", serialNo: "2030-0211", class: "2030 (4CL)", company: "Delta", offense: "Improper Gig Line Alignment during Parade", demerits: 3, tours: 2, status: "Completed" }
   ],
 
   // Staff Directory
@@ -516,10 +482,10 @@ const CCAFP_CONFIG = {
       { battalion: "3rd Battalion (Golf, Hawk)", cmdr: "Cdt 1CL Oconer, Vincent B.", exo: "Cdt 1CL Tan, David E.", adjutant: "Cdt 2CL Santos, K." }
     ],
     companies: [
-      { name: "Alpha Company (Alfa Coy)", tag: "The First & Foremost", cmdr: "Cdt 1CL Dela Cruz, J.", exo: "Cdt 2CL Rivera, P.", firstSgt: "Cdt 2CL Gomez, M." },
-      { name: "Bravo Company", tag: "Bravo Bravehearts", cmdr: "Cdt 1CL Del Rosario, B.", exo: "Cdt 2CL Ramos, A.", firstSgt: "Cdt 2CL Morales, D." },
-      { name: "Charlie Company", tag: "Charlie Crusaders", cmdr: "Cdt 1CL Garcia, A.", exo: "Cdt 2CL Mercado, G.", firstSgt: "Cdt 2CL Santos, J." },
-      { name: "Delta Company", tag: "Delta Dragons", cmdr: "Cdt 1CL Soriano, K.", exo: "Cdt 2CL Perez, V.", firstSgt: "Cdt 2CL Castro, L." }
+      { name: "Alpha Company (Alfa Coy)", tag: "The First & Foremost", cmdr: "Cdt 1CL Dela Cruz, J.", exo: "Cdt 2CL Rivera, P." },
+      { name: "Bravo Company", tag: "Bravo Bravehearts", cmdr: "Cdt 1CL Del Rosario, B.", exo: "Cdt 2CL Ramos, A." },
+      { name: "Charlie Company", tag: "Charlie Crusaders", cmdr: "Cdt 1CL Garcia, A.", exo: "Cdt 2CL Mercado, G." },
+      { name: "Delta Company", tag: "Delta Dragons", cmdr: "Cdt 1CL Soriano, K.", exo: "Cdt 2CL Perez, V." }
     ]
   },
 
@@ -527,8 +493,7 @@ const CCAFP_CONFIG = {
   calendarEvents: [
     { id: 1, title: "Regimental Review & Silent Drill Exhibition", date: "2026-10-10", time: "1600H", location: "Borromeo Field", category: "Ceremony", dress: "Gala Uniform" },
     { id: 2, title: "Mid-Term Examinations: Military Science", date: "2026-10-14", time: "0800H", location: "Melchor Hall", category: "Academics", dress: "Study Uniform" },
-    { id: 3, title: "Inter-Company Obstacle Course Championships", date: "2026-10-17", time: "0600H", location: "Tactics Obstacle Course", category: "Athletics", dress: "PT Uniform" },
-    { id: 4, title: "Class 2030 Recognition Day", date: "2026-11-15", time: "1400H", location: "Borromeo Field", category: "Milestone", dress: "Full Dress Blue" }
+    { id: 3, title: "Inter-Company Obstacle Course Championships", date: "2026-10-17", time: "0600H", location: "Tactics Obstacle Course", category: "Athletics", dress: "PT Uniform" }
   ]
 };
 
