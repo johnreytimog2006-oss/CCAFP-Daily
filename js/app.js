@@ -406,22 +406,47 @@
       return;
     }
 
-    dom.s1StaffGridContainer.innerHTML = filtered.map(s => `
-      <div class="bulletin-card ${s.borderClass} p-4 space-y-2">
-        <div class="flex items-center justify-between text-[10px] font-mono-clean">
-          <span class="px-2 py-0.5 rounded bg-slate-100 font-bold text-slate-600">${s.sectionLabel}</span>
-          <span class="text-blue-700 font-bold">${s.coy || ''}</span>
+    dom.s1StaffGridContainer.innerHTML = filtered.map(s => {
+      const initial = s.name.replace(/^(CDT|CPT|LT|SGT|S\/SGT|F\/CPT|MAJ|1CL|2CL|3CL|4CL|\s)+/g, '').trim().charAt(0) || 'C';
+      return `
+        <div class="pma-cadet-card">
+          <div class="pma-cadet-header">
+            <div class="pma-cadet-avatar">${initial}</div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block label-tracked">PMA CLASS 2027</span>
+              <h4 class="font-extrabold text-base text-white tracking-tight leading-snug mt-0.5 uppercase truncate">${s.name}</h4>
+              <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+                ${s.coy ? `<span class="pma-cadet-badge">${s.coy}</span>` : ''}
+                ${s.rank ? `<span class="pma-cadet-badge">${s.rank}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="pma-cadet-body">
+            <div class="pma-cadet-field">
+              <span class="text-[11px] font-medium text-slate-400 block">Appointment / Role</span>
+              <span class="font-bold text-sm text-slate-900 block mt-0.5 leading-snug">${s.role}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="pma-cadet-field">
+                <span class="text-[11px] font-medium text-slate-400 block">Cadet Serial</span>
+                <span class="font-bold text-sm text-slate-900 block mt-0.5 font-mono-clean">${s.serial || '—'}</span>
+              </div>
+              <div class="pma-cadet-field">
+                <span class="text-[11px] font-medium text-slate-400 block">Staff Unit</span>
+                <span class="font-bold text-xs text-blue-900 block mt-1">${s.sectionLabel}</span>
+              </div>
+            </div>
+            <div class="pt-1 text-[11px] text-slate-400 flex items-center justify-between">
+              <span>Source: CCAFP Staff Roster 2027</span>
+              <span class="text-emerald-600 font-semibold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Active</span>
+              </span>
+            </div>
+          </div>
         </div>
-        <div>
-          <h4 class="font-bold text-sm text-slate-900 leading-snug">${s.name}</h4>
-          <p class="text-xs text-blue-900 font-semibold mt-0.5">${s.role}</p>
-        </div>
-        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono-clean text-slate-500">
-          <span>Serial: <strong class="text-slate-700">${s.serial || '-'}</strong></span>
-          ${s.rank ? `<span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-900 font-bold text-[9px]">${s.rank}</span>` : ''}
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   // --- Render Sidebar Councils ---
@@ -661,16 +686,30 @@
     if (level === 'regiment') {
       dom.staffDisplayContainer.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          ${CCAFP_CONFIG.staffDirectory.regiment.map(s => `
-            <div class="bulletin-card stripe-blue p-5 space-y-2">
-              <div class="flex items-center justify-between text-xs text-slate-500">
-                <span class="text-blue-700 font-bold">${s.company} Coy</span>
-                <span class="font-mono-clean">Class of ${s.class}</span>
+          ${CCAFP_CONFIG.staffDirectory.regiment.map(s => {
+            const initial = s.name.replace(/^(CDT|CPT|LT|SGT|S\/SGT|F\/CPT|MAJ|1CL|2CL|3CL|4CL|\s)+/g, '').trim().charAt(0) || 'C';
+            return `
+              <div class="pma-cadet-card">
+                <div class="pma-cadet-header">
+                  <div class="pma-cadet-avatar">${initial}</div>
+                  <div class="min-w-0 flex-1">
+                    <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block label-tracked">PMA CLASS ${s.class}</span>
+                    <h4 class="font-extrabold text-base text-white tracking-tight leading-snug mt-0.5 uppercase truncate">${s.name}</h4>
+                    <div class="flex items-center gap-1.5 mt-2">
+                      <span class="pma-cadet-badge">${s.company} Coy</span>
+                      <span class="pma-cadet-badge">${s.badge || 'Staff'}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="pma-cadet-body">
+                  <div class="pma-cadet-field">
+                    <span class="text-[11px] font-medium text-slate-400 block">Appointment</span>
+                    <span class="font-bold text-sm text-slate-900 block mt-0.5 leading-snug">${s.role}</span>
+                  </div>
+                </div>
               </div>
-              <h4 class="font-bold text-sm text-slate-900">${s.name}</h4>
-              <p class="text-xs text-blue-900 font-semibold">${s.role}</p>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `;
     } else if (level === 'battalion') {
