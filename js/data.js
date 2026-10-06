@@ -6,8 +6,13 @@
  * =========================================================================
  */
 const COUNCIL_SHEET_URLS = {
-  // S1 Personnel Google Sheet (Configured from provided link)
-  s1: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/export?format=csv&gid=1901671722",
+  // S1 Personnel Google Sheet (Live GVIZ CSV Export Endpoints)
+  s1: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=DISPOSITION",
+  s1_disposition: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=DISPOSITION",
+  s1_armory: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=ARMORY",
+  s1_attachment: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=ATTACHMENT",
+  s1_schedule: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=SCHEDULE%20OF%20CALLS",
+  s1_regiment_staff: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=REGIMENTAL%20STAFF%202027",
   s1_raw: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/edit?gid=1901671722#gid=1901671722",
 
   s2: "",          // Sensitive - Security Reminders Only
@@ -106,47 +111,342 @@ const CCAFP_CONFIG = {
     }
   ],
 
-  // S1 Council Sub-Pages & Authentic Military Data Models
+  // =========================================================================
+  // 🏛️ S1 COUNCIL MASTER REPOSITORY (DISPOSITION, ARMORY, ATTACHMENT, CALLS, STAFF)
+  // =========================================================================
   s1Data: {
-    // 1. Strength Summary by Company & Gender
-    strengthSummary: [
-      { company: "Alpha (Alfa)", firstCL_M: 32, firstCL_F: 10, secondCL_M: 34, secondCL_F: 9, thirdCL_M: 38, thirdCL_F: 11, fourthCL_M: 40, fourthCL_F: 12, total: 186 },
-      { company: "Bravo", firstCL_M: 30, firstCL_F: 9, secondCL_M: 33, secondCL_F: 10, thirdCL_M: 36, thirdCL_F: 10, fourthCL_M: 39, fourthCL_F: 11, total: 178 },
-      { company: "Charlie", firstCL_M: 31, firstCL_F: 11, secondCL_M: 32, secondCL_F: 8, thirdCL_M: 35, thirdCL_F: 9, fourthCL_M: 41, fourthCL_F: 13, total: 180 },
-      { company: "Delta", firstCL_M: 29, firstCL_F: 10, secondCL_M: 35, secondCL_F: 11, thirdCL_M: 37, thirdCL_F: 10, fourthCL_M: 38, fourthCL_F: 10, total: 180 },
-      { company: "Echo", firstCL_M: 33, firstCL_F: 8, secondCL_M: 31, secondCL_F: 9, thirdCL_M: 36, thirdCL_F: 12, fourthCL_M: 40, fourthCL_F: 12, total: 181 },
-      { company: "Foxtrot", firstCL_M: 30, firstCL_F: 10, secondCL_M: 34, secondCL_F: 8, thirdCL_M: 34, thirdCL_F: 11, fourthCL_M: 39, fourthCL_F: 11, total: 177 },
-      { company: "Golf", firstCL_M: 28, firstCL_F: 9, secondCL_M: 32, secondCL_F: 10, thirdCL_M: 35, thirdCL_F: 9, fourthCL_M: 38, fourthCL_F: 12, total: 173 },
-      { company: "Hawk", firstCL_M: 31, firstCL_F: 10, secondCL_M: 33, secondCL_F: 9, thirdCL_M: 36, thirdCL_F: 10, fourthCL_M: 41, fourthCL_F: 11, total: 181 }
-    ],
+    // -----------------------------------------------------------------------
+    // 1. DISPOSITION - Completeness Inspection Report (06 2230H OCT 2026)
+    // -----------------------------------------------------------------------
+    disposition: {
+      reportDate: "06 2230H OCTOBER 2026",
+      preparedBy: "JHOPRILYN S MANGAGOM C-27151, CDT LT 1CL 'D' CO CCAFP, Officer-of-the-Day",
+      summary: {
+        ccafpOnPost: { male: 907, female: 306, total: 1213 },
+        effective: { fullDuty: 1131, fad: 42, priv: 0, ob: 0, entrucking: 0, total: 1173 },
+        ineffective: { leave: 0, fdpsh: 4, vluna: 4, bgh: 0, siq: 2, quarantined: 0, holdingCenter: 30, awol: 0, total: 40 },
+        grandTotal: { male: 943, female: 322, total: 1267 }
+      },
+      externalPersonnel: [
+        { category: "CCAFP Cadets On-Post", male: 907, female: 306, total: 1213, status: "Active Regiment" },
+        { category: "FSA On Foreign Service Academies", male: 33, female: 15, total: 48, status: "Detached Service" },
+        { category: "FAEP / CEP RMC Canada", male: 2, female: 1, total: 3, status: "Foreign Exchange" },
+        { category: "Cadets in AFP General Headquarters (GHQ)", male: 1, female: 0, total: 1, status: "Liaison Duty" },
+        { category: "PMA Stockade", male: 2, female: 0, total: 2, status: "Disciplinary Detainment" },
+        { category: "Corps Grand Total Strength", male: 943, female: 322, total: 1267, status: "Complete Master Roll" }
+      ],
+      companies: [
+        { name: "Alpha", code: "A", firstCL_M: 20, firstCL_F: 8, secondCL_M: 26, secondCL_F: 10, thirdCL_M: 26, thirdCL_F: 9, fourthCL_M: 34, fourthCL_F: 10, effectiveTotal: 146, ineffectiveTotal: 4, total: 150, fad: 3, holdingCenter: 4, fdpsh: 0, vluna: 0, siq: 0 },
+        { name: "Bravo", code: "B", firstCL_M: 20, firstCL_F: 9, secondCL_M: 22, secondCL_F: 10, thirdCL_M: 31, thirdCL_F: 8, fourthCL_M: 34, fourthCL_F: 9, effectiveTotal: 145, ineffectiveTotal: 7, total: 152, fad: 2, holdingCenter: 6, fdpsh: 1, vluna: 0, siq: 0 },
+        { name: "Charlie", code: "C", firstCL_M: 20, firstCL_F: 9, secondCL_M: 30, secondCL_F: 9, thirdCL_M: 28, thirdCL_F: 7, fourthCL_M: 32, fourthCL_F: 9, effectiveTotal: 149, ineffectiveTotal: 3, total: 152, fad: 5, holdingCenter: 2, fdpsh: 0, vluna: 0, siq: 1 },
+        { name: "Delta", code: "D", firstCL_M: 19, firstCL_F: 9, secondCL_M: 24, secondCL_F: 10, thirdCL_M: 28, thirdCL_F: 8, fourthCL_M: 30, fourthCL_F: 10, effectiveTotal: 145, ineffectiveTotal: 5, total: 150, fad: 7, holdingCenter: 5, fdpsh: 0, vluna: 0, siq: 0 },
+        { name: "Echo", code: "E", firstCL_M: 14, firstCL_F: 9, secondCL_M: 31, secondCL_F: 9, thirdCL_M: 29, thirdCL_F: 10, fourthCL_M: 34, fourthCL_F: 9, effectiveTotal: 149, ineffectiveTotal: 7, total: 156, fad: 4, holdingCenter: 5, fdpsh: 0, vluna: 2, siq: 0 },
+        { name: "Foxtrot", code: "F", firstCL_M: 17, firstCL_F: 9, secondCL_M: 28, secondCL_F: 11, thirdCL_M: 29, thirdCL_F: 8, fourthCL_M: 34, fourthCL_F: 10, effectiveTotal: 149, ineffectiveTotal: 1, total: 150, fad: 3, holdingCenter: 0, fdpsh: 0, vluna: 1, siq: 0 },
+        { name: "Golf", code: "G", firstCL_M: 17, firstCL_F: 9, secondCL_M: 25, secondCL_F: 10, thirdCL_M: 25, thirdCL_F: 9, fourthCL_M: 33, fourthCL_F: 10, effectiveTotal: 145, ineffectiveTotal: 5, total: 150, fad: 7, holdingCenter: 3, fdpsh: 2, vluna: 0, siq: 0 },
+        { name: "Hawk", code: "H", firstCL_M: 17, firstCL_F: 10, secondCL_M: 25, secondCL_F: 10, thirdCL_M: 25, thirdCL_F: 9, fourthCL_M: 29, fourthCL_F: 9, effectiveTotal: 145, ineffectiveTotal: 8, total: 153, fad: 11, holdingCenter: 5, fdpsh: 1, vluna: 1, siq: 1 }
+      ]
+    },
 
-    // 2. Cadet Personnel Master Roster
-    roster: [
-      { name: "Cdt 1CL Mangagom, Jhoprilyn S.", classYr: "2027 (1CL)", branch: "PA (Army)", company: "Delta", status: "Present for Duty", designation: "Regimental Personnel Staff" },
-      { name: "Cdt 1CL Plantar, Christian M.", classYr: "2027 (1CL)", branch: "PAF (Air Force)", company: "Hawk", status: "Present for Duty", designation: "First Sergeant" },
-      { name: "Cdt 1CL Dela Cruz, Joshua M.", classYr: "2027 (1CL)", branch: "PA (Army)", company: "Alpha", status: "Present for Duty", designation: "Regimental Adjutant (S1)" },
-      { name: "Cdt 2CL Santos, Michael R.", classYr: "2028 (2CL)", branch: "PN (Navy)", company: "Bravo", status: "Station Hospital", designation: "Platoon Guide" },
-      { name: "Cdt 2CL Ramos, Angela B.", classYr: "2028 (2CL)", branch: "PAF (Air Force)", company: "Charlie", status: "Present for Duty", designation: "Corps Duty Medic" },
-      { name: "Cdt 3CL Reyes, Rodrigo P.", classYr: "2029 (3CL)", branch: "PA (Army)", company: "Echo", status: "Present for Duty", designation: "Squad Leader" },
-      { name: "Cdt 3CL Tan, David C.", classYr: "2029 (3CL)", branch: "PN (Navy)", company: "Foxtrot", status: "Authorized Leave", designation: "Cadet Clerk" },
-      { name: "Cdt 4CL Aquino, Rafael S.", classYr: "2030 (4CL)", branch: "PA (Army)", company: "Golf", status: "Present for Duty", designation: "New Cadet" },
-      { name: "Cdt 4CL Cruz, Vincent L.", classYr: "2030 (4CL)", branch: "PAF (Air Force)", company: "Alpha", status: "Present for Duty", designation: "New Cadet" }
-    ],
+    // -----------------------------------------------------------------------
+    // 2. ARMORY - Completeness Inspection Report (06 2230H OCT 2026)
+    // -----------------------------------------------------------------------
+    armory: {
+      reportDate: "06 2230H OCTOBER 2026",
+      totals: {
+        m14In: 831, m14Out: 0, m14Mag: 818,
+        m16In: 342, m16Out: 0,
+        r4In: 130, r4Out: 0,
+        k3In: 2,
+        m1GarandIn: 21,
+        pistol9mmIn: 13,
+        swordsIn: 38,
+        bayonetsIn: 51
+      },
+      rows: [
+        { loc: "1st Floor RH 'A'", m14: 54, mag14: 56, m16: 36, r4: 15, k3: 0, garand: 0, pistol: 0, swords: 38, bayonets: 51, notes: "As of 06 2200H Oct 2026: 1 9mm added (Maj Martinez), 12-13 9mm" },
+        { loc: "2nd Floor RH 'B'", m14: 60, mag14: 59, m16: 31, r4: 12, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "All rifles racked & locked" },
+        { loc: "3rd Floor RH 'D'", m14: 57, mag14: 57, m16: 44, r4: 13, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "Complete count verified" },
+        { loc: "4th Floor RH 'C'", m14: 60, mag14: 57, m16: 44, r4: 12, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "Complete count verified" },
+        { loc: "1st Floor EH 'E'", m14: 65, mag14: 66, m16: 58, r4: 12, k3: 0, garand: 1, pistol: 0, swords: 0, bayonets: 0, notes: "1 M1 Garand on rack" },
+        { loc: "2nd Floor EH 'F'", m14: 59, mag14: 60, m16: 41, r4: 12, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "Complete count verified" },
+        { loc: "3rd Floor EH 'G'", m14: 57, mag14: 60, m16: 45, r4: 12, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "Complete count verified" },
+        { loc: "4th Floor EH 'H'", m14: 62, mag14: 62, m16: 43, r4: 13, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "51 Bayonets at RSO Stockroom" },
+        { loc: "1st Floor FH", m14: 0, mag14: 0, m16: 0, r4: 29, k3: 2, garand: 20, pistol: 13, swords: 0, bayonets: 0, notes: "Special armory: 2 K3 MG, 20 Garand, 13 Pistols" },
+        { loc: "2nd Floor FH", m14: 135, mag14: 132, m16: 0, r4: 0, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "Florendo Hall main rack" },
+        { loc: "3rd Floor FH", m14: 140, mag14: 136, m16: 0, r4: 0, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "14 swords at RSO Stockroom" },
+        { loc: "4th Floor FH", m14: 82, mag14: 73, m16: 0, r4: 0, k3: 0, garand: 0, pistol: 0, swords: 0, bayonets: 0, notes: "5 interior guards, 11 silent drillers, 8 colors utilizing swords" }
+      ],
+      notes: "NOTE: ONLY THE REGIMENT RSO IS AUTHORIZED TO EDIT ARMORY RECORDS. 51 Bayonets & 14 Swords housed in RSO Stockroom.",
+      signOff: {
+        preparedBy: "JHOPRILYN S MANGAGOM C-27151, CDT LT 1CL 'D' CO CCAFP, Officer-of-the-Day",
+        notedBy: ["JULIUS D GIRON LCDR PN (OIC)", "DARYL G VILLA LCDR PN (OIC)", "ROMAN B PALIMA LCDR PN (OIC)"]
+      }
+    },
 
-    // 3. Staff for Personnel (S1 NCOs & Officers)
-    staff: [
-      { role: "Regimental Adjutant (S1 Officer)", name: "Cdt 1CL Dela Cruz, Joshua M.", company: "Alpha Coy", task: "Direct oversight of all cadet strength records, leaves, promotions, and morning rolls." },
-      { role: "Regimental Personnel NCO", name: "Cdt 1CL Mangagom, Jhoprilyn S.", company: "Delta Coy", task: "Maintenance of the Master Cadet Information Sheets 2026-2027 and daily roll accountability." },
-      { role: "Regimental Cadet Acquisition NCO", name: "Cdt 2CL Valdez, Martin P.", company: "Bravo Coy", task: "Coordination with Admissions and Reception of New Cadet Battalion." },
-      { role: "Regimental Cadet Equipment NCO", name: "Cdt 2CL Soriano, Kevin S.", company: "Charlie Coy", task: "Accountability of personnel desk equipment, forms, and digital logbooks." }
-    ],
+    // -----------------------------------------------------------------------
+    // 3. ATTACHMENT - Completeness Inspection Report (06 2230H OCT 2026)
+    // -----------------------------------------------------------------------
+    attachment: {
+      reportDate: "06 2230H OCTOBER 2026",
+      counts: {
+        fad: 42,
+        siq: 2,
+        fdpsh: 4,
+        vluna: 4,
+        holdingCenter: 30,
+        clearingOut: 2,
+        clearingIn: 9,
+        ghq: 1,
+        stockade: 2
+      },
+      // FAD (42 Cadets)
+      fadList: [
+        { no: 1, classYr: "1CL", name: "DE MESA", coy: "A", condition: "LEFT FOOT CLOSE COMPLETE FRACTURE", start: "-", release: "21 October 2026" },
+        { no: 2, classYr: "4CL", name: "DRAPIZA", coy: "B", condition: "RIGHT SHOULDER SPRAIN", start: "-", release: "13 October 2026" },
+        { no: 3, classYr: "4CL", name: "REMO", coy: "A", condition: "SCOLIOSIS", start: "10 September 2026", release: "08 October 2026" },
+        { no: 4, classYr: "4CL", name: "COLIPANO", coy: "F", condition: "URTI", start: "28 September 2026", release: "UNDETERMINED" },
+        { no: 5, classYr: "4CL", name: "BULQUIRIEN", coy: "D", condition: "FRACTURED FINGER", start: "16 September 2026", release: "07 October 2026" },
+        { no: 6, classYr: "4CL", name: "PALLINGAYAN", coy: "D", condition: "LOW GRADE PCL", start: "-", release: "08 October 2026" },
+        { no: 7, classYr: "2CL", name: "VICLAR", coy: "E", condition: "FRACTURED CLAVICLE", start: "02 September 2026", release: "12 October 2026" },
+        { no: 8, classYr: "4CL", name: "BUNDALIAN", coy: "E", condition: "KNEE SPRAIN, MPFL TEAR (RIGHT)", start: "-", release: "07 October 2026" },
+        { no: 9, classYr: "2CL", name: "GENTOLEO", coy: "G", condition: "LEFT ELBOW DISLOCATION", start: "-", release: "14 October 2026" },
+        { no: 10, classYr: "3CL", name: "PIRA", coy: "G", condition: "LEFT ELBOW SPRAIN", start: "-", release: "14 October 2026" },
+        { no: 11, classYr: "3CL", name: "LOMEREZ", coy: "H", condition: "CHRONIC CALCULUS CHOLECYSTITIS", start: "-", release: "15 October 2026" },
+        { no: 12, classYr: "4CL", name: "AUSTRIA", coy: "H", condition: "RIGHT KNEE SPRAIN", start: "-", release: "09 October 2026" },
+        { no: 13, classYr: "4CL", name: "GRANIL", coy: "H", condition: "FOOT SPRAIN", start: "25 September 2026", release: "07 October 2026" },
+        { no: 14, classYr: "3CL", name: "ENCIO", coy: "H", condition: "ANKLE SPRAIN", start: "-", release: "09 October 2026" },
+        { no: 15, classYr: "4CL", name: "AGUSTIN", coy: "H", condition: "ANKLE SPRAIN", start: "-", release: "08 October 2026" },
+        { no: 16, classYr: "4CL", name: "BERGONIO", coy: "D", condition: "HIP SPRAIN", start: "-", release: "08 October 2026" },
+        { no: 17, classYr: "4CL", name: "BARROTA", coy: "H", condition: "LEFT KNEE SPRAIN (FAD EXTEND)", start: "-", release: "08 October 2026" },
+        { no: 18, classYr: "3CL", name: "GEVERO", coy: "C", condition: "PELVIC INSTABILITY, LOW BACK PAIN", start: "30 September 2026", release: "07 October 2026" },
+        { no: 19, classYr: "3CL", name: "NOBELO", coy: "G", condition: "FUNGAL INFECTION", start: "01 October 2026", release: "04 October 2026" },
+        { no: 20, classYr: "4CL", name: "LORENZO", coy: "C", condition: "KNEE PAIN", start: "01 October 2026", release: "06 October 2026" },
+        { no: 21, classYr: "2CL", name: "VICENTE", coy: "B", condition: "T/C ATOPIC DERMATITIS", start: "02 October 2026", release: "09 October 2026" },
+        { no: 22, classYr: "2CL", name: "AGUSTIN", coy: "H", condition: "MYOPIA, OS", start: "02 October 2026", release: "09 October 2026" },
+        { no: 23, classYr: "4CL", name: "CAIRO", coy: "G", condition: "ANTERIOR EPISTAXIS", start: "02 October 2026", release: "09 October 2026" },
+        { no: 24, classYr: "4CL", name: "RACELIS", coy: "C", condition: "POST OPERATION SURGERY OF HERNIA", start: "17 September 2026", release: "17 October 2026" },
+        { no: 25, classYr: "4CL", name: "ARNAIZ", coy: "D", condition: "ACUTE OTITIS MEDIA, AD, URTI", start: "02 October 2026", release: "09 October 2026" },
+        { no: 26, classYr: "1CL", name: "RANA", coy: "C", condition: "RIGHT SHOULDER DISLOCATION", start: "17 September 2026", release: "14 October 2026" },
+        { no: 27, classYr: "1CL", name: "ROSARIO", coy: "E", condition: "RIGHT WRIST INCOMPLETE FRACTURE", start: "16 September 2026", release: "07 October 2026" },
+        { no: 28, classYr: "1CL", name: "RAMIREZ", coy: "E", condition: "SHOULDER DISLOCATION", start: "18 September 2026", release: "07 October 2026" },
+        { no: 29, classYr: "1CL", name: "MACARAYA", coy: "F", condition: "BROKEN HAND BONE", start: "15 September 2026", release: "14 October 2026" },
+        { no: 30, classYr: "1CL", name: "BETITA", coy: "F", condition: "LOWER BACK PAIN SYNDROME", start: "01 October 2026", release: "13 October 2026" },
+        { no: 31, classYr: "1CL", name: "DE VENANCIO", coy: "G", condition: "FRACTURE", start: "22 September 2026", release: "09 October 2026" },
+        { no: 32, classYr: "1CL", name: "SABILLA", coy: "H", condition: "ANKLE SPRAIN", start: "24 September 2026", release: "07 October 2026" },
+        { no: 33, classYr: "1CL", name: "MANCE", coy: "A", condition: "MRI RESULT", start: "30 September 2026", release: "UNDETERMINED" },
+        { no: 34, classYr: "2CL", name: "LABARINTO", coy: "D", condition: "LOWER BACK PAIN (OBSERVATION)", start: "05 October 2026", release: "08 October 2026" },
+        { no: 35, classYr: "4CL", name: "MARCELO", coy: "G", condition: "DYSPEPSIA W/ ACID DISORDER", start: "05 October 2026", release: "07 October 2026" },
+        { no: 36, classYr: "4CL", name: "TENA", coy: "H", condition: "LEFT SHOULDER SPRAIN", start: "05 October 2026", release: "07 October 2026" },
+        { no: 37, classYr: "4CL", name: "DERIQUITO", coy: "H", condition: "RIGHT SHOULDER SPRAIN", start: "05 October 2026", release: "07 October 2026" },
+        { no: 38, classYr: "3CL", name: "CASIPE", coy: "D", condition: "CARBUNCLE", start: "05 October 2026", release: "10 October 2026" },
+        { no: 39, classYr: "3CL", name: "FERRERAS", coy: "C", condition: "PLANTAR WART", start: "05 October 2026", release: "07 October 2026" },
+        { no: 40, classYr: "3CL", name: "REGANIT", coy: "G", condition: "ANKLE SPRAIN", start: "06 October 2026", release: "12 October 2026" },
+        { no: 41, classYr: "4CL", name: "NADIAHAN", coy: "D", condition: "HERNIA", start: "06 October 2026", release: "20 October 2026" },
+        { no: 42, classYr: "4CL", name: "ESLOPAR", coy: "H", condition: "VARICOCELE", start: "06 October 2026", release: "20 October 2026" }
+      ],
+      // SIQ (2 Cadets)
+      siqList: [
+        { no: 1, classYr: "2CL", name: "CASINO", coy: "H", reason: "TOOTH EXTRACTION", start: "06 October 2026", release: "08 October 2026" },
+        { no: 2, classYr: "2CL", name: "BAYOT", coy: "C", reason: "TOOTH EXTRACTION", start: "06 October 2026", release: "09 October 2026" }
+      ],
+      // FDPSH (4 Cadets)
+      fdpshList: [
+        { no: 1, classYr: "2CL", name: "MIRO", coy: "G", reason: "UNDER OBSERVATION", start: "-", release: "UNDETERMINED" },
+        { no: 2, classYr: "4CL", name: "SALES", coy: "B", reason: "POST OPERATION", start: "01 October 2026", release: "UNDETERMINED" },
+        { no: 3, classYr: "4CL", name: "PAREN", coy: "H", reason: "CHICKEN POX", start: "02 October 2026", release: "UNDETERMINED" },
+        { no: 4, classYr: "2CL", name: "FULO", coy: "G", reason: "HIGH FEVER WITH RASHES", start: "28 September 2026", release: "UNDETERMINED" }
+      ],
+      // VLUNA (4 Cadets)
+      vlunaList: [
+        { no: 1, classYr: "4CL", name: "PRIETO", coy: "E", reason: "UNDER OBSERVATION", start: "16 September 2026", release: "UNDETERMINED" },
+        { no: 2, classYr: "3CL", name: "LOVENDINO", coy: "E", reason: "UNDER OBSERVATION", start: "14 June 2026", release: "UNDETERMINED" },
+        { no: 3, classYr: "4CL", name: "ADOBE", coy: "F", reason: "T/C ADJUSTMENT DISORDER", start: "30 September 2026", release: "UNDETERMINED" },
+        { no: 4, classYr: "4CL", name: "FAUSTINO", coy: "H", reason: "UPPER RESPIRATORY TRACT (FOR NP EVALUATION)", start: "10 September 2026", release: "UNDETERMINED" }
+      ],
+      // HOLDING CENTER (30 Cadets)
+      holdingCenterList: [
+        { no: 1, classYr: "2CL", name: "CASTRO", coy: "A", reason: "ALLEGED MALTREATMENT", start: "25 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 2, classYr: "2CL", name: "FOCASAN", coy: "A", reason: "ALLEGED MALTREATMENT", start: "23 June 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 3, classYr: "2CL", name: "SANGALANG", coy: "A", reason: "UNAUTHORIZED PUNISHMENT", start: "09 July 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 4, classYr: "2CL", name: "MAMA", coy: "B", reason: "ALLEGED MALTREATMENT", start: "25 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 5, classYr: "2CL", name: "QUEMADO", coy: "B", reason: "ALLEGED MALTREATMENT", start: "25 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 6, classYr: "4CL", name: "AGNES", coy: "B", reason: "RESIGNING", start: "28 August 2026", barracks: "ARMY DETACHMENT" },
+        { no: 7, classYr: "3CL", name: "ALCANTARA", coy: "D", reason: "ACL RECONSTRUCTION SURGERY", start: "28 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 8, classYr: "1CL", name: "SALAZAR", coy: "E", reason: "HONOR CASE", start: "22 May 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 9, classYr: "1CL", name: "SATURNINO", coy: "E", reason: "RESIGNING", start: "10 June 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 10, classYr: "2CL", name: "LOMUGDANG", coy: "E", reason: "HONOR CASE", start: "22 May 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 11, classYr: "2CL", name: "GENTOLEO", coy: "G", reason: "ALLEGED MALTREATMENT", start: "24 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 12, classYr: "2CL", name: "TAMBADOC", coy: "G", reason: "ALLEGED MALTREATMENT", start: "24 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 13, classYr: "3CL", name: "SILVA", coy: "G", reason: "HONOR CASE", start: "10 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 14, classYr: "2CL", name: "BAUTISTA", coy: "H", reason: "HONOR CASE", start: "27 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 15, classYr: "2CL", name: "PENALOZA", coy: "H", reason: "ALLEGED MALTREATMENT", start: "27 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 16, classYr: "2CL", name: "TANONGON", coy: "H", reason: "ALLEGED MALTREATMENT", start: "24 August 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 17, classYr: "2CL", name: "CRUCILLO", coy: "H", reason: "ALLEGED MALTREATMENT", start: "23 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 18, classYr: "2CL", name: "CARIASO", coy: "D", reason: "UNDER INVESTIGATION", start: "17 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 19, classYr: "2CL", name: "FALCON", coy: "D", reason: "UNDER INVESTIGATION", start: "17 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 20, classYr: "2CL", name: "TAGLE", coy: "D", reason: "UNDER INVESTIGATION", start: "17 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 21, classYr: "2CL", name: "DERILO", coy: "D", reason: "UNDER INVESTIGATION", start: "17 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 22, classYr: "2CL", name: "BINWAG", coy: "B", reason: "UNDER INVESTIGATION", start: "17 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 23, classYr: "2CL", name: "ADAY", coy: "B", reason: "UNDER INVESTIGATION", start: "17 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 24, classYr: "4CL", name: "SISON", coy: "C", reason: "INFLICTING INJURY", start: "16 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 25, classYr: "4CL", name: "DELIVA", coy: "C", reason: "UNDER INVESTIGATION", start: "16 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 26, classYr: "4CL", name: "LACTUD", coy: "E", reason: "ALLEGED MALTREATMENT", start: "-", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 27, classYr: "3CL", name: "PIZON", coy: "A", reason: "UNDER INVESTIGATION (MALTREATMENT)", start: "-", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 28, classYr: "1CL", name: "BERNARDO", coy: "B", reason: "HONOR CASE", start: "25 September 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 29, classYr: "1CL", name: "ALBERTO", coy: "E", reason: "ALLEGED MALTREATMENT", start: "04 July 2026", barracks: "1ST FLOOR FLORENDO HALL" },
+        { no: 30, classYr: "1CL", name: "ESTEBAN", coy: "H", reason: "ALLEGED COUNTENANCING MALTREATMENT", start: "23 September 2026", barracks: "1ST FLOOR FLORENDO HALL" }
+      ],
+      // CLEARING-OUT (2 Cadets)
+      clearingOutList: [
+        { no: 1, classYr: "2CL", name: "MARCELO", coy: "C", reason: "CLEARING OUT", start: "16 August 2026", remarks: "1ST FLOOR FLORENDO HALL" },
+        { no: 2, classYr: "4CL", name: "URSABIA", coy: "C", reason: "VARICOCELE (RESIGNING)", start: "01 October 2026", remarks: "FDPSH" }
+      ],
+      // CLEARING-IN (9 Cadets)
+      clearingInList: [
+        { no: 1, classYr: "2CL", name: "DACWAG", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "4TH FLOOR REGIS HALL" },
+        { no: 2, classYr: "2CL", name: "DELOS REYES", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "1ST FLOOR REGIS HALL" },
+        { no: 3, classYr: "2CL", name: "BLANCO", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "1ST FLOOR REGIS HALL" },
+        { no: 4, classYr: "2CL", name: "BOTIGAN", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "1ST FLOOR REGIS HALL" },
+        { no: 5, classYr: "3CL", name: "GUBANTES", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "3RD FLOOR ENRILE HALL" },
+        { no: 6, classYr: "3CL", name: "MOJICA", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "1ST FLOOR ENRILE HALL" },
+        { no: 7, classYr: "3CL", name: "ALAUYA", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "1ST FLOOR ENRILE HALL" },
+        { no: 8, classYr: "3CL", name: "CARIAGA", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "3RD FLOOR ENRILE HALL" },
+        { no: 9, classYr: "1CL", name: "OLALO", coy: "-", reason: "CLEARING-IN", start: "23 August 2026", remarks: "3RD FLOOR ENRILE HALL" }
+      ],
+      // GHQ (1 Cadet)
+      ghqList: [
+        { no: 1, classYr: "4CL", name: "TENORIO", coy: "B", reason: "LIAISON / UNDETERMINED", start: "04 November 2025", remarks: "AFP GENERAL HEADQUARTERS" }
+      ],
+      // PMA STOCKADE (2 Cadets)
+      stockadeList: [
+        { no: 1, classYr: "1CL", name: "LAUS", coy: "-", reason: "STOCKADE (GAD OFFENSE)", start: "21 July 2026", remarks: "PMA STOCKADE" },
+        { no: 2, classYr: "1CL", name: "SALON", coy: "G", reason: "STOCKADE (FDPSH)(GAD OFFENSE)", start: "27 July 2026", remarks: "PMA STOCKADE" }
+      ],
+      signOff: {
+        preparedBy: "JHOPRILYN S MANGAGOM C-27151, CDT LT 1CL 'D' CO CCAFP, Officer-of-the-Day",
+        checkedBy: "CARL BENEDICT B ACOSTA C-26007, CDT CPT 1CL 'F' CO CCAFP, AC of RS for Personnel, R1"
+      }
+    },
 
-    // 4. Cadets Not Included in Effective Strength (Hospital, Leaves, DS)
-    nonEffective: [
-      { name: "Cdt 2CL Santos, Michael R.", serial: "2028-0092", company: "Bravo", status: "Station Hospital", reason: "Orthopedic observation (Ankle sprain during PT)", authorizedBy: "Academy Surgeon" },
-      { name: "Cdt 3CL Tan, David C.", serial: "2029-0112", company: "Foxtrot", status: "Authorized Emergency Leave", reason: "Family bereavement leave (Returns Friday 1800H)", authorizedBy: "Commandant of Cadets" },
-      { name: "Cdt 1CL Pimentel, Daniel G.", serial: "2027-0034", company: "Echo", status: "Detached Service (DS)", reason: "AFP General Headquarters Liaison Detail (Manila)", authorizedBy: "Superintendent, PMA" }
-    ]
+    // -----------------------------------------------------------------------
+    // 4. SCHEDULE OF CALLS - Daily Routine for 07 October 2026
+    // -----------------------------------------------------------------------
+    scheduleOfCalls: {
+      date: "07 October 2026",
+      officers: {
+        oc: "LCDR JULIUS D GIRON PN",
+        aoc: "CPT BRAGA PA",
+        uniform: "DA w/ CJ (Dress Alpha with Campaign Jacket)"
+      },
+      guardRoster: [
+        { post: "OD (Officer of the Day)", posted: "1CL MANGAGOM 'D'", incoming: "1CL PLANTAR 'H'" },
+        { post: "OG1 (Officer of the Guard 1)", posted: "2CL CERVAS 'A'", incoming: "2CL CARTAGENAS 'A'" },
+        { post: "OG2 (Officer of the Guard 2)", posted: "3CL VALENZUELA 'E'", incoming: "3CL AGGABAO 'E'" },
+        { post: "SG1 (Sergeant of the Guard 1)", posted: "3CL UNDANG 'G'", incoming: "3CL UMALI 'F'" },
+        { post: "SG2 (Sergeant of the Guard 2)", posted: "4CL GUTIERREZ 'E'", incoming: "-" },
+        { post: "RCCQ (Regt Cdt-in-Charge of Quarters)", posted: "3CL TAGAPAN 'F'", incoming: "3CL ABONITA 'D'" },
+        { post: "CCHC (Cdt-in-Charge of Holding Ctr)", posted: "3CL TUBURAN 'B'", incoming: "3CL TRINIDAD 'F'" },
+        { post: "ACCHC (Asst Cdt-in-Charge of HC)", posted: "3CL TUBERA 'E'", incoming: "3CL TUMAPANG 'E'" },
+        { post: "CAL 1 (Cadet Asst for Logistics 1)", posted: "1CL VALDEZ 'H'", incoming: "1CL LATORRE 'E'" },
+        { post: "CAL 2 (Cadet Asst for Logistics 2)", posted: "2CL CASAMAYOR 'B'", incoming: "2CL DE LEON 'B'" },
+        { post: "CAMO 1 (Cadet Asst Mess Officer 1)", posted: "1CL UNILONGO 'G'", incoming: "1CL AGUSTIN 'D'" },
+        { post: "CAMO 2 (Cadet Asst Mess Officer 2)", posted: "2CL CELESTIAL 'B'", incoming: "2CL CANSINO 'H'" },
+        { post: "CAMOD 1 (Cadet Asst Mess OD 1)", posted: "1CL ATIWEN 'A'", incoming: "1CL SARMIENTO 'B'" },
+        { post: "CAMOD 2 (Cadet Asst Mess OD 2)", posted: "2CL DABALOS 'D'", incoming: "2CL COLLADO 'C'" },
+        { post: "HCFI (Honor Committee First Inspector)", posted: "1CL UY 'F'", incoming: "1CL MOLO 'B'" },
+        { post: "CEMA (Cadet Emergency Medical Asst)", posted: "1CL ABBAS 'F'", incoming: "1CL ADORACION 'G'" }
+      ],
+      calls: [
+        { time: "0400", activity: "Reveille / Preparation for Duties", uniform: "-", formation: "-" },
+        { time: "0430", activity: "FC BPWC Participants' Practice", uniform: "BDU", formation: "IFFH" },
+        { time: "0445", activity: "FC 1st Phase BBEAL Participants Practice", uniform: "AU", formation: "IFFH" },
+        { time: "0450", activity: "Early Mess for Slow Driller and Silent Drill Class 2029 Practice", uniform: "SDPU", formation: "IFYH" },
+        { time: "0500", activity: "FC Flag Raising for Cadet-in-Charge of Quarters w/ Color Sergeant", uniform: "DA w/ CJ w/ WB & HG", formation: "GR" },
+        { time: "0510", activity: "FC Team Dagohoy Duty / Late Mess", uniform: "BDU w/ Chest Rig", formation: "-" },
+        { time: "0520", activity: "FC PRP Duty", uniform: "AU", formation: "JH" },
+        { time: "0530", activity: "FC Morning Mess", uniform: "BDU", formation: "QA" },
+        { time: "0620", activity: "FC Late Mess for Cadets from Holding Center", uniform: "DA w/ CJ", formation: "IFFH" },
+        { time: "0625", activity: "FC Late Mess (PMAICC, Paskuhan, BBEAL, Peemayer, Honor Committee)", uniform: "BDU", formation: "-" },
+        { time: "0650", activity: "Police Call", uniform: "-", formation: "IB" },
+        { time: "0700", activity: "FC 1st Period Class", uniform: "BDU / GAU", formation: "IFMH / QAFRH" },
+        { time: "0805", activity: "FC 2nd Period Class", uniform: "BDU / GAU", formation: "-" },
+        { time: "0910", activity: "FC 3rd Period Class", uniform: "BDU / GAU", formation: "-" },
+        { time: "1015", activity: "FC 4th Period Class", uniform: "BDU / GAU", formation: "-" },
+        { time: "1120", activity: "FC 5th Period Class", uniform: "BDU / GAU", formation: "-" },
+        { time: "1240", activity: "FC Noon Mess & Noon Mess for Cadets from Holding Center", uniform: "BDU / DA w/ CJ", formation: "IFYH" },
+        { time: "1345", activity: "FC Corps Formation / Evening Mess Boodle Fight", uniform: "BDU", formation: "-" },
+        { time: "1400", activity: "FC Slow Drill Formation & Silent Drill of Class 2027 Formation", uniform: "SDU", formation: "IFFH" },
+        { time: "1530", activity: "FC Sick Call", uniform: "BDU", formation: "Guardroom" },
+        { time: "1600", activity: "FC Selected 50 Cadets from BRAVO Company for PhilHealth Duty", uniform: "BDU", formation: "-" },
+        { time: "1630", activity: "FC Flag Retreat for Cadet-in-Charge of Quarters w/ Color Sergeant", uniform: "BDU w/ WB & HG", formation: "-" },
+        { time: "1710", activity: "FC Late Mess for Cadets from Holding Center", uniform: "DA w/ CJ", formation: "-" },
+        { time: "1830", activity: "FC Guard Mounting", uniform: "RU", formation: "-" },
+        { time: "1900", activity: "ECTQ (Evening Call to Quarters)", uniform: "Study", formation: "-" },
+        { time: "2130", activity: "TATTOO", uniform: "-", formation: "-" },
+        { time: "2135", activity: "FC Workouts (Honor Committee, PMAICC, Peemayer, Cadet Combo, Fatigue Duty)", uniform: "SU / GAU", formation: "Guardroom" },
+        { time: "2200", activity: "TAPS", uniform: "-", formation: "-" },
+        { time: "2230", activity: "Completeness Inspection", uniform: "DA w/ CJ", formation: "Quarters" }
+      ],
+      changes: [
+        { time: "1500H", activity: "FC BBEAL FEMALE BASKETBALL CORPS SQUAD ENTRUCKING", uniform: "CJS", formation: "GUARDROOM" }
+      ]
+    },
+
+    // -----------------------------------------------------------------------
+    // 5. REGIMENTAL STAFF 2027 - CCAFP Regimental Commander & Staff
+    // -----------------------------------------------------------------------
+    regimentStaff2027: {
+      branchSummary: { army: 9, aero: 9, navy: 9, total: 27 },
+      genderSummary: { male: 17, female: 10, total: 27 },
+      commandSection: [
+        { role: "REGIMENTAL COMMANDER", name: "CDT F/CPT 1CL JOSHUA J MASCULINO", serial: "C-27158", coy: "'G' CO CCAFP", rank: "CDT F/CPT 1CL" },
+        { role: "DEPUTY REGIMENTAL COMMANDER", name: "CDT CPT 1CL FAROUK S MACARAYA", serial: "C-27145", coy: "'F' CO CCAFP", rank: "CDT CPT 1CL" },
+        { role: "CHIEF OF REGIMENTAL STAFF", name: "CDT CPT 1CL JAZEL D LIBATON", serial: "C-27271", coy: "'C' CO CCAFP", rank: "CDT CPT 1CL" }
+      ],
+      coordinatingStaff: [
+        { code: "R1", role: "ASST CHIEF OF REGIMENTAL STAFF FOR PERSONNEL", name: "CDT CPT 1CL CARL BENEDICT B ACOSTA", serial: "C-26007", coy: "'F' CO CCAFP" },
+        { code: "R2", role: "ASST CHIEF OF REGIMENTAL STAFF FOR INTELLIGENCE", name: "CDT CPT 1CL ALDRIN JAY G HUSSIN", serial: "C-27270", coy: "'C' CO CCAFP" },
+        { code: "R3", role: "ASST CHIEF OF REGIMENTAL STAFF FOR OPERATIONS", name: "CDT CPT 1CL MARC OLIVER M NABABLIT", serial: "-", coy: "'G' CO CCAFP" },
+        { code: "R4", role: "ASST CHIEF OF REGIMENTAL STAFF FOR LOGISTICS", name: "CDT CPT 1CL LAKEISHA FELICE V LEVISTE", serial: "C-27138", coy: "'B' CO CCAFP" },
+        { code: "R5", role: "ASST CHIEF OF REGIMENTAL STAFF FOR PLANS AND PROGRAMS", name: "CDT CPT 1CL DENNIS MARIE P MARTINEZ", serial: "C-27157", coy: "'B' CO CCAFP" },
+        { code: "R6", role: "ASST CHIEF OF REGIMENTAL STAFF FOR CEIS", name: "CDT CPT 1CL JERIZ BERNARD D CATACUTAN", serial: "C-27052", coy: "'F' CO CCAFP" },
+        { code: "R7", role: "ASST CHIEF OF REGIMENTAL STAFF FOR CMO", name: "CDT CPT 1CL CHRISSALYN B MELISA", serial: "C-27160", coy: "'B' CO CCAFP" },
+        { code: "R8", role: "ASST CHIEF OF REGIMENTAL STAFF FOR EDUCATION AND TRAINING", name: "CDT CPT 1CL JOHN RAVEN G DELA PEÑA", serial: "C-27080", coy: "'C' CO CCAFP" },
+        { code: "R10", role: "ASST CHIEF OF REGIMENTAL STAFF FOR FINANCIAL MANAGEMENT", name: "CDT CPT 1CL DIANNE B EVANGELISTA", serial: "C-27095", coy: "'B' CO CCAFP" }
+      ],
+      specialStaff: [
+        { no: 1, role: "REGIMENTAL ADJUTANT", name: "CDT CPT 1CL JOSE MIGUEL S PERCIL", serial: "C-27189", coy: "'D' CO CCAFP" },
+        { no: 2, role: "HONOR COMMITTEE CHAIRPERSON", name: "CDT CPT 1CL RALF ANGELO G BALDEMOR", serial: "C-26041", coy: "'A' CO CCAFP" },
+        { no: 3, role: "CADET CONDUCT POLICY BOARD CHAIRPERSON", name: "CDT CPT 1CL APRIL JOY C GEROLA", serial: "C-27112", coy: "'A' CO CCAFP" },
+        { no: 4, role: "REGIMENTAL MESS OFFICER", name: "CDT CPT 1CL DENIS JOYCE C BUSTILLO", serial: "C-27039", coy: "'C' CO CCAFP" },
+        { no: 5, role: "REGIMENTAL GENDER AWARENESS & DEVELOPMENT OFFICER", name: "CDT CPT 1CL ERMALYN G MOLINA", serial: "C-27166", coy: "'H' CO CCAFP" },
+        { no: 6, role: "REGIMENTAL SPIRITUAL TRAINING & DEVELOPMENT OFFICER", name: "CDT CPT 1CL LEA CAMILLE S MONTENEGRO", serial: "C-27168", coy: "'D' CO CCAFP" },
+        { no: 7, role: "REGIMENTAL CADET ACQUISITION OFFICER", name: "CDT CPY 1CL BRYAN JAMES R CABIGO", serial: "C-26072", coy: "'D' CO CCAFP" },
+        { no: 8, role: "REGIMENTAL RESPONSIBLE SUPPLY OFFICER", name: "CDT CPT 1CL CARLO JOSEPH G MAGAYANES", serial: "C-26226", coy: "'A' CO CCAFP" },
+        { no: 9, role: "REGIMENTAL ATHLETIC OFFICER", name: "CDT CPT 1CL MICHAEL RAY V CUTOR", serial: "C-27066", coy: "'G' CO CCAFP" },
+        { no: 10, role: "REGIMENTAL SAFETY OFFICER", name: "CDT CPT 1CL JERKIN P RAÑA", serial: "C-27203", coy: "'C' CO CCAFP" },
+        { no: 11, role: "REGIMENTAL ACADEMIC OFFICER", name: "CDT CPT 1CL MARTIN SIMON S PALERO", serial: "C-27274", coy: "'A' CO CCAFP" },
+        { no: 12, role: "REGIMENTAL MILITARY TRAINING OFFICER", name: "CDT CPT 1CL PATRICK JOHN D MANCE", serial: "C-25207", coy: "'A' CO CCAFP" },
+        { no: 13, role: "REGIMENTAL PUBLIC INFORMATION OFFICER", name: "CDT CPT 1CL ZYNETTE MAINSLEY B GARAY", serial: "C-27104", coy: "'C' CO CCAFP" },
+        { no: 14, role: "REGIMENTAL VALUES ETHICS & STANDARDS OFFICER", name: "CDT CPT 1CL MAX ANTHONY T ROSARIO", serial: "C-26296", coy: "'E' CO CCAFP" },
+        { no: 15, role: "REGIMENTAL SERGEANT MAJOR", name: "CDT SGT MAJ 2CL FIONA LISA C DEMARAYE", serial: "C-27082", coy: "'H' CO CCAFP" }
+      ],
+      ncos: [
+        { no: 1, role: "REGIMENTAL PERSONNEL NCO", name: "CDT S/SGT 2CL JOHN ROFEL F DELA PEÑA", serial: "C-28115", coy: "'E' CO CCAFP" },
+        { no: 2, role: "REGIMENTAL INTELLIGENCE NCO", name: "CDT S/SGT 2CL", serial: "-", coy: "CO CCAFP" },
+        { no: 3, role: "REGIMENTAL OPERATIONS NCO", name: "CDT S/SGT 2CL ROY ADRIEL J BONGAO", serial: "C-28060", coy: "'B' CO CCAFP" },
+        { no: 4, role: "REGIMENTAL SUPPLY SERGEANT", name: "CDT S/SGT 2CL JOHN KENTH B ARINO", serial: "C-28036", coy: "'F' CO CCAFP" },
+        { no: 5, role: "REGIMENTAL FACILITY NCO", name: "CDT S/SGT 2CL RIGEL KENT P ALBURO", serial: "C-27005", coy: "'H' CO CCAFP" },
+        { no: 6, role: "REGIMENTAL FIREPOWER NCO", name: "CDT S/SGT 2CL MICHAEL VINCENT DC DE VENANCIO", serial: "C-28113", coy: "'E' CO CCAFP" },
+        { no: 7, role: "REGIMENTAL CADET EQUIPMENT NCO", name: "CDT S/SGT 2CL JOHN PATRICK M RODRIGUEZ", serial: "C-28298", coy: "'G' CO CCAFP" },
+        { no: 8, role: "REGIMENTAL PLANS AND PROGRAMS NCO", name: "CDT S/SGT 2CL CATHERINE ALMIRA KIDDA C MALOMAY", serial: "C-28216", coy: "'A' CO CCAFP" },
+        { no: 9, role: "REGIMENTAL CEIS NCO", name: "CDT S/SGT JOHNREY S TIMOG", serial: "C-28331", coy: "'A' CO CCAFP" },
+        { no: 10, role: "REGIMENTAL CMO NCO", name: "CDT S/SGT 2CL IRAH MAE G DUEÑAS", serial: "C-27127", coy: "'F' CO CCAFP" },
+        { no: 11, role: "REGIMENTAL TRAINING AND EDUCATION NCO", name: "CDT S/SGT 2CL CHRISTIAN DULOS", serial: "C-28130", coy: "'A' CO CCAFP" },
+        { no: 12, role: "REGIMENTAL FINANCE SERGEANT", name: "CDT S/SGT 2CL PHROILEEN RAVE F AGOD", serial: "C-28009", coy: "'D' CO CCAFP" },
+        { no: 13, role: "REGIMENTAL ATHLETIC SERGEANT", name: "CDT SGT 2CL JUSTINE M GUIEB", serial: "C-28171", coy: "'F' CO CCAFP" }
+      ]
+    }
   },
 
   // 18 Councils Structure

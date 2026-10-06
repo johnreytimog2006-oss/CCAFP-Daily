@@ -9,12 +9,15 @@
   // Application State
   const state = {
     currentTab: 'home',
-    s1ActiveSubTab: 'strength',
+    s1ActiveSubTab: 'disposition',
+    s1AttachmentCat: 'all',
+    s1AttachmentQuery: '',
+    s1StaffCat: 'all',
+    s1StaffQuery: '',
     activeCouncilId: 's1',
     liveCache: {},
     staffLevel: 'regiment',
     punishmentQuery: '',
-    s1RosterQuery: '',
     isSyncing: false
   };
 
@@ -31,14 +34,18 @@
     manualSyncBtn: document.getElementById('manualSyncBtn'),
     // Home View
     priorityBulletinsGrid: document.getElementById('priorityBulletinsGrid'),
-    // S1 View & Subtabs
+    // S1 View & 5 Dedicated Subtabs
     s1SubTabs: document.querySelectorAll('.s1-subtab'),
     s1SubPanes: document.querySelectorAll('.s1-subpane'),
-    s1StrengthTableBody: document.getElementById('s1StrengthTableBody'),
-    s1RosterTableBody: document.getElementById('s1RosterTableBody'),
-    s1RosterSearch: document.getElementById('s1RosterSearch'),
-    s1StaffGrid: document.getElementById('s1StaffGrid'),
-    s1NonEffectiveTableBody: document.getElementById('s1NonEffectiveTableBody'),
+    s1DispositionTableBody: document.getElementById('s1DispositionTableBody'),
+    s1ExternalPersonnelGrid: document.getElementById('s1ExternalPersonnelGrid'),
+    s1ArmoryTableBody: document.getElementById('s1ArmoryTableBody'),
+    s1AttachmentSearch: document.getElementById('s1AttachmentSearch'),
+    s1AttachmentTableBody: document.getElementById('s1AttachmentTableBody'),
+    s1GuardRosterTableBody: document.getElementById('s1GuardRosterTableBody'),
+    s1CallsTableBody: document.getElementById('s1CallsTableBody'),
+    s1StaffSearch: document.getElementById('s1StaffSearch'),
+    s1StaffGridContainer: document.getElementById('s1StaffGridContainer'),
     // Staff View
     staffDisplayContainer: document.getElementById('staffDisplayContainer'),
     staffTabs: document.querySelectorAll('.staff-tab'),
@@ -151,102 +158,270 @@
         pane.classList.add('hidden');
       }
     });
+
+    if (window.lucide) window.lucide.createIcons();
   }
 
   // --- Render S1 Sub-Sections Data ---
   function renderS1Data() {
-    // 1. Strength Summary by Company & Gender
-    if (dom.s1StrengthTableBody) {
-      const summary = CCAFP_CONFIG.s1Data.strengthSummary;
-      dom.s1StrengthTableBody.innerHTML = summary.map(row => `
+    renderS1Disposition();
+    renderS1Armory();
+    renderS1Attachment();
+    renderS1Schedule();
+    renderS1RegimentStaff();
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // 1. DISPOSITION RENDERER
+  function renderS1Disposition() {
+    if (!dom.s1DispositionTableBody) return;
+    const disp = CCAFP_CONFIG.s1Data.disposition;
+    const rows = disp.companies;
+
+    let t1CLM = 0, t1CLF = 0, t2CLM = 0, t2CLF = 0;
+    let t3CLM = 0, t3CLF = 0, t4CLM = 0, t4CLF = 0;
+    let grandEff = 0, grandIneff = 0, grandTotal = 0;
+
+    dom.s1DispositionTableBody.innerHTML = rows.map(r => {
+      t1CLM += r.firstCL_M; t1CLF += r.firstCL_F;
+      t2CLM += r.secondCL_M; t2CLF += r.secondCL_F;
+      t3CLM += r.thirdCL_M; t3CLF += r.thirdCL_F;
+      t4CLM += r.fourthCL_M; t4CLF += r.fourthCL_F;
+      grandEff += r.effectiveTotal;
+      grandIneff += r.ineffectiveTotal;
+      grandTotal += r.total;
+
+      return `
         <tr class="hover:bg-slate-50/70 transition-colors">
-          <td class="py-3 px-3 font-sans font-bold text-slate-900">${row.company} Coy</td>
-          <td class="py-3 px-2 text-center text-slate-700">${row.firstCL_M} / <span class="text-blue-600 font-semibold">${row.firstCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${row.secondCL_M} / <span class="text-blue-600 font-semibold">${row.secondCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${row.thirdCL_M} / <span class="text-blue-600 font-semibold">${row.thirdCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${row.fourthCL_M} / <span class="text-blue-600 font-semibold">${row.fourthCL_F}</span></td>
-          <td class="py-3 px-3 text-right font-bold text-blue-950 font-mono-clean text-sm">${row.total}</td>
+          <td class="py-3 px-3 font-sans font-bold text-slate-900">${r.name} Company ('${r.code}')</td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.firstCL_M} / <span class="text-blue-600 font-semibold">${r.firstCL_F}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.secondCL_M} / <span class="text-blue-600 font-semibold">${r.secondCL_F}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.thirdCL_M} / <span class="text-blue-600 font-semibold">${r.thirdCL_F}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.fourthCL_M} / <span class="text-blue-600 font-semibold">${r.fourthCL_F}</span></td>
+          <td class="py-3 px-2 text-center font-bold text-emerald-700 bg-emerald-50/40 rounded">${r.effectiveTotal}</td>
+          <td class="py-3 px-2 text-center font-bold ${r.ineffectiveTotal > 0 ? 'text-amber-700 bg-amber-50/40' : 'text-slate-400'} rounded">${r.ineffectiveTotal}</td>
+          <td class="py-3 px-3 text-right font-bold text-blue-950 font-mono-clean text-sm">${r.total}</td>
         </tr>
-      `).join('');
-    }
+      `;
+    }).join('') + `
+      <tr class="bg-slate-50 font-bold border-t-2 border-slate-300 text-slate-900">
+        <td class="py-3 px-3 uppercase tracking-wider font-mono-clean text-[11px]">TOTAL CCAFP ON-POST</td>
+        <td class="py-3 px-2 text-center">${t1CLM} / <span class="text-blue-600">${t1CLF}</span></td>
+        <td class="py-3 px-2 text-center">${t2CLM} / <span class="text-blue-600">${t2CLF}</span></td>
+        <td class="py-3 px-2 text-center">${t3CLM} / <span class="text-blue-600">${t3CLF}</span></td>
+        <td class="py-3 px-2 text-center">${t4CLM} / <span class="text-blue-600">${t4CLF}</span></td>
+        <td class="py-3 px-2 text-center text-emerald-800 bg-emerald-100/50">${grandEff}</td>
+        <td class="py-3 px-2 text-center text-amber-800 bg-amber-100/50">${grandIneff}</td>
+        <td class="py-3 px-3 text-right text-blue-950 text-sm font-black">${grandTotal}</td>
+      </tr>
+    `;
 
-    // 2. Master Cadet Roster
-    renderS1Roster();
-
-    // 3. Staff for Personnel
-    if (dom.s1StaffGrid) {
-      dom.s1StaffGrid.innerHTML = CCAFP_CONFIG.s1Data.staff.map(st => `
-        <div class="bulletin-card stripe-blue p-5 space-y-2">
-          <div class="flex items-center justify-between text-xs text-slate-500 font-mono-clean">
-            <span class="text-blue-700 font-bold">${st.company}</span>
-            <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-800 text-[10px] font-bold">STAFF</span>
+    // External Strength summary
+    if (dom.s1ExternalPersonnelGrid) {
+      dom.s1ExternalPersonnelGrid.innerHTML = disp.externalPersonnel.map(ext => `
+        <div class="p-3 rounded-xl bg-white border border-slate-200/80 space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800 text-[11px]">${ext.category}</span>
+            <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 text-[9px] font-bold uppercase">${ext.status}</span>
           </div>
-          <h4 class="font-bold text-sm text-slate-900">${st.name}</h4>
-          <p class="text-xs text-blue-900 font-semibold">${st.role}</p>
-          <p class="text-xs text-slate-500 pt-2 border-t border-slate-100 leading-relaxed">${st.task}</p>
+          <div class="flex items-baseline justify-between pt-1">
+            <span class="text-slate-500 text-[10px]">M: ${ext.male} &bull; F: ${ext.female}</span>
+            <span class="font-mono-clean font-bold text-blue-900 text-sm">${ext.total}</span>
+          </div>
         </div>
-      `).join('');
-    }
-
-    // 4. Non-Effective Status
-    if (dom.s1NonEffectiveTableBody) {
-      dom.s1NonEffectiveTableBody.innerHTML = CCAFP_CONFIG.s1Data.nonEffective.map(ne => `
-        <tr class="hover:bg-slate-50/70 transition-colors">
-          <td class="py-3 px-3 font-sans font-bold text-slate-900">${ne.name}</td>
-          <td class="py-3 px-2 text-slate-500">${ne.serial}</td>
-          <td class="py-3 px-2 text-blue-700 font-semibold">${ne.company} Coy</td>
-          <td class="py-3 px-3">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
-              ne.status.includes('Hospital') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
-              ne.status.includes('Leave') ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-              'bg-purple-50 text-purple-700 border border-purple-200'
-            }">${ne.status}</span>
-          </td>
-          <td class="py-3 px-3 text-slate-600 font-sans">${ne.reason}</td>
-          <td class="py-3 px-3 text-slate-500 font-semibold">${ne.authorizedBy}</td>
-        </tr>
       `).join('');
     }
   }
 
-  // Render S1 Roster with Search Filter
-  function renderS1Roster() {
-    if (!dom.s1RosterTableBody) return;
-    const q = state.s1RosterQuery.toLowerCase();
-    const filtered = CCAFP_CONFIG.s1Data.roster.filter(c => {
-      return c.name.toLowerCase().includes(q) ||
-             c.classYr.toLowerCase().includes(q) ||
-             c.branch.toLowerCase().includes(q) ||
-             c.company.toLowerCase().includes(q) ||
-             c.designation.toLowerCase().includes(q);
-    });
+  // 2. ARMORY RENDERER
+  function renderS1Armory() {
+    if (!dom.s1ArmoryTableBody) return;
+    const arm = CCAFP_CONFIG.s1Data.armory;
+    const rows = arm.rows;
+
+    dom.s1ArmoryTableBody.innerHTML = rows.map(r => `
+      <tr class="hover:bg-slate-50/70 transition-colors">
+        <td class="py-2.5 px-3 font-bold text-slate-900 font-sans">${r.loc}</td>
+        <td class="py-2.5 px-2 text-center text-blue-950 font-bold">${r.m14} <span class="text-slate-400 font-normal">(${r.mag14})</span></td>
+        <td class="py-2.5 px-2 text-center text-slate-700">${r.m16 || '-'}</td>
+        <td class="py-2.5 px-2 text-center text-slate-700">${r.r4 || '-'}</td>
+        <td class="py-2.5 px-2 text-center ${r.garand ? 'text-amber-700 font-bold' : 'text-slate-400'}">${r.garand || '-'}</td>
+        <td class="py-2.5 px-2 text-center ${r.pistol ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${r.pistol || '-'}</td>
+        <td class="py-2.5 px-2 text-center ${r.swords ? 'text-amber-800 font-bold' : 'text-slate-400'}">${r.swords || '-'}</td>
+        <td class="py-2.5 px-2 text-center ${r.bayonets ? 'text-amber-800 font-bold' : 'text-slate-400'}">${r.bayonets || '-'}</td>
+        <td class="py-2.5 px-3 text-slate-500 font-sans text-[11px]">${r.notes || '-'}</td>
+      </tr>
+    `).join('') + `
+      <tr class="bg-slate-50 font-bold border-t-2 border-slate-300 text-slate-900">
+        <td class="py-2.5 px-3 font-mono-clean uppercase text-[11px]">TOTAL INVENTORY</td>
+        <td class="py-2.5 px-2 text-center text-blue-900 font-bold">${arm.totals.m14In} <span class="text-blue-700 font-normal">(${arm.totals.m14Mag})</span></td>
+        <td class="py-2.5 px-2 text-center">${arm.totals.m16In}</td>
+        <td class="py-2.5 px-2 text-center">${arm.totals.r4In}</td>
+        <td class="py-2.5 px-2 text-center text-amber-700">${arm.totals.m1GarandIn}</td>
+        <td class="py-2.5 px-2 text-center text-emerald-700">${arm.totals.pistol9mmIn}</td>
+        <td class="py-2.5 px-2 text-center text-amber-800">${arm.totals.swordsIn}</td>
+        <td class="py-2.5 px-2 text-center text-amber-800">${arm.totals.bayonetsIn}</td>
+        <td class="py-2.5 px-3 text-slate-600 text-[11px]">Full Inspection Verified by RSO</td>
+      </tr>
+    `;
+  }
+
+  // 3. ATTACHMENT RENDERER
+  function renderS1Attachment() {
+    if (!dom.s1AttachmentTableBody) return;
+    const att = CCAFP_CONFIG.s1Data.attachment;
+
+    const allItems = [
+      ...att.fadList.map(x => ({ ...x, category: 'FAD', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', details: x.condition, extra: x.release })),
+      ...att.siqList.map(x => ({ ...x, category: 'SIQ', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', details: x.reason, extra: x.release })),
+      ...att.fdpshList.map(x => ({ ...x, category: 'FDPSH Hospital', badgeColor: 'bg-red-50 text-red-700 border-red-200', details: x.reason, extra: x.release })),
+      ...att.vlunaList.map(x => ({ ...x, category: 'V-Luna Hospital', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', details: x.reason, extra: x.release })),
+      ...att.holdingCenterList.map(x => ({ ...x, category: 'Holding Center', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200', details: x.reason, extra: x.barracks })),
+      ...att.clearingInList.map(x => ({ ...x, category: 'Clearing-In', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', details: x.reason, extra: x.remarks })),
+      ...att.clearingOutList.map(x => ({ ...x, category: 'Clearing-Out', badgeColor: 'bg-orange-50 text-orange-700 border-orange-200', details: x.reason, extra: x.remarks })),
+      ...att.ghqList.map(x => ({ ...x, category: 'GHQ Detail', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200', details: x.reason, extra: x.remarks })),
+      ...att.stockadeList.map(x => ({ ...x, category: 'PMA Stockade', badgeColor: 'bg-slate-100 text-slate-800 border-slate-300', details: x.reason, extra: x.remarks }))
+    ];
+
+    // Update counts
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('count-all', allItems.length);
+    setEl('count-fad', att.fadList.length);
+    setEl('count-holding', att.holdingCenterList.length);
+    setEl('count-clearingin', att.clearingInList.length);
+    setEl('count-fdpsh', att.fdpshList.length);
+    setEl('count-vluna', att.vlunaList.length);
+    setEl('count-siq', att.siqList.length);
+    setEl('count-clearingout', att.clearingOutList.length);
+    setEl('count-stockade', att.ghqList.length + att.stockadeList.length);
+
+    let filtered = allItems;
+    const cat = state.s1AttachmentCat;
+    if (cat === 'fad') filtered = filtered.filter(i => i.category === 'FAD');
+    else if (cat === 'holding') filtered = filtered.filter(i => i.category === 'Holding Center');
+    else if (cat === 'clearing-in') filtered = filtered.filter(i => i.category === 'Clearing-In');
+    else if (cat === 'fdpsh') filtered = filtered.filter(i => i.category.includes('FDPSH'));
+    else if (cat === 'vluna') filtered = filtered.filter(i => i.category.includes('V-Luna'));
+    else if (cat === 'siq') filtered = filtered.filter(i => i.category === 'SIQ');
+    else if (cat === 'clearing-out') filtered = filtered.filter(i => i.category === 'Clearing-Out');
+    else if (cat === 'stockade') filtered = filtered.filter(i => i.category.includes('Stockade') || i.category.includes('GHQ'));
+
+    const q = state.s1AttachmentQuery.toLowerCase();
+    if (q) {
+      filtered = filtered.filter(i =>
+        (i.name && i.name.toLowerCase().includes(q)) ||
+        (i.classYr && i.classYr.toLowerCase().includes(q)) ||
+        (i.coy && i.coy.toLowerCase().includes(q)) ||
+        (i.category && i.category.toLowerCase().includes(q)) ||
+        (i.details && i.details.toLowerCase().includes(q)) ||
+        (i.extra && i.extra.toLowerCase().includes(q))
+      );
+    }
 
     if (filtered.length === 0) {
-      dom.s1RosterTableBody.innerHTML = `
+      dom.s1AttachmentTableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="p-8 text-center text-slate-400 font-sans">
-            No cadet records match your search filter.
+          <td colspan="8" class="p-8 text-center text-slate-400 font-sans">
+            No cadet attachment records found matching current search.
           </td>
         </tr>
       `;
-    } else {
-      dom.s1RosterTableBody.innerHTML = filtered.map(c => `
-        <tr class="hover:bg-slate-50/70 transition-colors">
-          <td class="py-3 px-3 font-sans font-bold text-slate-900">${c.name}</td>
-          <td class="py-3 px-2 text-slate-600">${c.classYr}</td>
-          <td class="py-3 px-2 text-blue-900 font-bold">${c.branch}</td>
-          <td class="py-3 px-2 text-blue-700 font-semibold">${c.company} Coy</td>
-          <td class="py-3 px-3 text-slate-700 font-sans">${c.designation}</td>
-          <td class="py-3 px-3">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
-              c.status.includes('Present') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-              c.status.includes('Hospital') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
-              'bg-blue-50 text-blue-700 border border-blue-200'
-            }">${c.status}</span>
-          </td>
-        </tr>
-      `).join('');
+      return;
     }
+
+    dom.s1AttachmentTableBody.innerHTML = filtered.map((c, idx) => `
+      <tr class="hover:bg-slate-50/70 transition-colors">
+        <td class="py-2.5 px-3 text-slate-400 font-mono-clean text-[11px]">${idx + 1}</td>
+        <td class="py-2.5 px-2 font-bold text-slate-700">${c.classYr || '-'}</td>
+        <td class="py-2.5 px-3 font-sans font-bold text-slate-900">${c.name}</td>
+        <td class="py-2.5 px-2 font-bold text-blue-800">${c.coy && c.coy !== '-' ? c.coy + ' Coy' : '-'}</td>
+        <td class="py-2.5 px-3">
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${c.badgeColor}">${c.category}</span>
+        </td>
+        <td class="py-2.5 px-3 text-slate-700 font-sans text-xs">${c.details || '-'}</td>
+        <td class="py-2.5 px-2 text-slate-500 text-[11px]">${c.start || '-'}</td>
+        <td class="py-2.5 px-3 text-slate-800 font-semibold text-[11px]">${c.extra || '-'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // 4. SCHEDULE OF CALLS RENDERER
+  function renderS1Schedule() {
+    if (!dom.s1GuardRosterTableBody || !dom.s1CallsTableBody) return;
+    const sched = CCAFP_CONFIG.s1Data.scheduleOfCalls;
+
+    // Guard details
+    dom.s1GuardRosterTableBody.innerHTML = sched.guardRoster.map(g => `
+      <tr class="hover:bg-slate-50/70 transition-colors">
+        <td class="py-2 px-3 font-bold text-slate-800">${g.post}</td>
+        <td class="py-2 px-3 text-blue-950 font-bold bg-blue-50/30 rounded">${g.posted}</td>
+        <td class="py-2 px-3 text-emerald-800 font-bold bg-emerald-50/30 rounded">${g.incoming}</td>
+      </tr>
+    `).join('');
+
+    // Calls timeline
+    dom.s1CallsTableBody.innerHTML = sched.calls.map(c => `
+      <tr class="hover:bg-slate-50/70 transition-colors">
+        <td class="py-2.5 px-3 font-mono-clean font-bold text-blue-900">${c.time}H</td>
+        <td class="py-2.5 px-3 font-sans font-medium text-slate-900">${c.activity}</td>
+        <td class="py-2.5 px-2 font-mono-clean text-slate-600">${c.uniform || '-'}</td>
+        <td class="py-2.5 px-2 font-mono-clean text-slate-600">${c.formation || '-'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // 5. REGIMENT STAFF 2027 RENDERER
+  function renderS1RegimentStaff() {
+    if (!dom.s1StaffGridContainer) return;
+    const staffData = CCAFP_CONFIG.s1Data.regimentStaff2027;
+
+    const allEntries = [
+      ...staffData.commandSection.map(s => ({ ...s, section: 'command', sectionLabel: 'COMMAND SECTION', borderClass: 'stripe-red' })),
+      ...staffData.coordinatingStaff.map(s => ({ ...s, section: 'coordinating', sectionLabel: `COORDINATING STAFF (${s.code})`, borderClass: 'stripe-blue' })),
+      ...staffData.specialStaff.map(s => ({ ...s, section: 'special', sectionLabel: 'SPECIAL STAFF OFFICER', borderClass: 'stripe-amber' })),
+      ...staffData.ncos.map(s => ({ ...s, section: 'ncos', sectionLabel: 'REGIMENTAL NCO', borderClass: 'stripe-emerald' }))
+    ];
+
+    let filtered = allEntries;
+    if (state.s1StaffCat !== 'all') {
+      filtered = filtered.filter(s => s.section === state.s1StaffCat);
+    }
+
+    const q = state.s1StaffQuery.toLowerCase();
+    if (q) {
+      filtered = filtered.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        s.role.toLowerCase().includes(q) ||
+        (s.coy && s.coy.toLowerCase().includes(q)) ||
+        (s.serial && s.serial.toLowerCase().includes(q))
+      );
+    }
+
+    if (filtered.length === 0) {
+      dom.s1StaffGridContainer.innerHTML = `
+        <div class="col-span-full p-8 text-center text-slate-400 font-sans">
+          No staff officers or NCOs match your search query.
+        </div>
+      `;
+      return;
+    }
+
+    dom.s1StaffGridContainer.innerHTML = filtered.map(s => `
+      <div class="bulletin-card ${s.borderClass} p-4 space-y-2">
+        <div class="flex items-center justify-between text-[10px] font-mono-clean">
+          <span class="px-2 py-0.5 rounded bg-slate-100 font-bold text-slate-600">${s.sectionLabel}</span>
+          <span class="text-blue-700 font-bold">${s.coy || ''}</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm text-slate-900 leading-snug">${s.name}</h4>
+          <p class="text-xs text-blue-900 font-semibold mt-0.5">${s.role}</p>
+        </div>
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono-clean text-slate-500">
+          <span>Serial: <strong class="text-slate-700">${s.serial || '-'}</strong></span>
+          ${s.rank ? `<span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-900 font-bold text-[9px]">${s.rank}</span>` : ''}
+        </div>
+      </div>
+    `).join('');
   }
 
   // --- Render Sidebar Councils ---
@@ -614,11 +789,43 @@
       });
     });
 
-    // S1 Roster Search
-    if (dom.s1RosterSearch) {
-      dom.s1RosterSearch.addEventListener('input', (e) => {
-        state.s1RosterQuery = e.target.value;
-        renderS1Roster();
+    // S1 Attachment Category Pills
+    document.querySelectorAll('.attachment-cat-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.attachment-cat-pill').forEach(p => {
+          p.className = 'attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200';
+        });
+        pill.className = 'attachment-cat-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold';
+        state.s1AttachmentCat = pill.getAttribute('data-cat') || 'all';
+        renderS1Attachment();
+      });
+    });
+
+    // S1 Attachment Search
+    if (dom.s1AttachmentSearch) {
+      dom.s1AttachmentSearch.addEventListener('input', (e) => {
+        state.s1AttachmentQuery = e.target.value;
+        renderS1Attachment();
+      });
+    }
+
+    // S1 Staff Category Pills
+    document.querySelectorAll('.staff-category-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.staff-category-pill').forEach(p => {
+          p.className = 'staff-category-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200';
+        });
+        pill.className = 'staff-category-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold';
+        state.s1StaffCat = pill.getAttribute('data-staff-cat') || 'all';
+        renderS1RegimentStaff();
+      });
+    });
+
+    // S1 Staff Search
+    if (dom.s1StaffSearch) {
+      dom.s1StaffSearch.addEventListener('input', (e) => {
+        state.s1StaffQuery = e.target.value;
+        renderS1RegimentStaff();
       });
     }
 
