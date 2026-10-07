@@ -2048,7 +2048,7 @@ const COUNCIL_SHEET_URLS = {
 };
 
 const CCAFP_CONFIG = {
-  version: "2.6.0",
+  version: "3.0.0",
   lastUpdated: "10:17:55 PM",
 
   // Priority Bulletins (Exact layout matching Alfacoy)
@@ -3695,7 +3695,7 @@ if (typeof window !== "undefined") {
   }
 
   // --- Automated 15-Minute Sync Manager & Local Storage Persistence ---
-  const CACHE_STORAGE_KEY = 'ccafp_daily_live_cache';
+  const CACHE_STORAGE_KEY = 'ccafp_daily_cache_v3';
   const AUTO_SYNC_INTERVAL_SECONDS = 15 * 60; // 900 seconds (15 minutes)
   let autoSyncCountdownSeconds = AUTO_SYNC_INTERVAL_SECONDS;
   let autoSyncTimerId = null;
@@ -3720,29 +3720,42 @@ if (typeof window !== "undefined") {
 
   function restoreLiveSnapshotFromStorage() {
     try {
+      // Clear legacy cache that may contain incomplete schema
+      localStorage.removeItem('ccafp_daily_live_cache');
+
       const raw = localStorage.getItem(CACHE_STORAGE_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
-      if (parsed) {
+      if (parsed && parsed.version === CCAFP_CONFIG.version && parsed.s1Data && Array.isArray(parsed.s1Data.disposition?.companies)) {
         if (!CCAFP_CONFIG.s1Data) CCAFP_CONFIG.s1Data = {};
-        if (parsed.s1Data) {
-          if (parsed.s1Data.scheduleOfCalls) CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed.s1Data.scheduleOfCalls;
-          if (parsed.s1Data.disposition) CCAFP_CONFIG.s1Data.disposition = parsed.s1Data.disposition;
-          if (parsed.s1Data.armory) CCAFP_CONFIG.s1Data.armory = parsed.s1Data.armory;
-          if (parsed.s1Data.attachment) CCAFP_CONFIG.s1Data.attachment = parsed.s1Data.attachment;
-          if (parsed.s1Data.regimentStaff) CCAFP_CONFIG.s1Data.regimentStaff = parsed.s1Data.regimentStaff;
-          if (parsed.s1Data.expanded) CCAFP_CONFIG.s1Data.expanded = parsed.s1Data.expanded;
-          if (parsed.s1Data.roster) CCAFP_CONFIG.s1Data.roster = parsed.s1Data.roster;
-          if (parsed.s1Data.squads) CCAFP_CONFIG.s1Data.squads = parsed.s1Data.squads;
-          if (parsed.s1Data.clubs) CCAFP_CONFIG.s1Data.clubs = parsed.s1Data.clubs;
-          if (parsed.s1Data.tin) CCAFP_CONFIG.s1Data.tin = parsed.s1Data.tin;
-          if (parsed.s1Data.ape) CCAFP_CONFIG.s1Data.ape = parsed.s1Data.ape;
+        if (parsed.s1Data.scheduleOfCalls && Array.isArray(parsed.s1Data.scheduleOfCalls.guardRoster)) {
+          CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed.s1Data.scheduleOfCalls;
         }
-        if (parsed.spiritualData) CCAFP_CONFIG.spiritualData = parsed.spiritualData;
-        if (parsed.punishmentList) CCAFP_CONFIG.punishmentList = parsed.punishmentList;
+        if (parsed.s1Data.disposition && Array.isArray(parsed.s1Data.disposition.companies)) {
+          CCAFP_CONFIG.s1Data.disposition = parsed.s1Data.disposition;
+        }
+        if (parsed.s1Data.armory && Array.isArray(parsed.s1Data.armory.rows)) {
+          CCAFP_CONFIG.s1Data.armory = parsed.s1Data.armory;
+        }
+        if (parsed.s1Data.attachment && Array.isArray(parsed.s1Data.attachment.fadList)) {
+          CCAFP_CONFIG.s1Data.attachment = parsed.s1Data.attachment;
+        }
+        if (parsed.s1Data.regimentStaff && Array.isArray(parsed.s1Data.regimentStaff.commandSection)) {
+          CCAFP_CONFIG.s1Data.regimentStaff = parsed.s1Data.regimentStaff;
+        }
+        if (Array.isArray(parsed.s1Data.expanded)) CCAFP_CONFIG.s1Data.expanded = parsed.s1Data.expanded;
+        if (Array.isArray(parsed.s1Data.roster)) CCAFP_CONFIG.s1Data.roster = parsed.s1Data.roster;
+        if (parsed.s1Data.squads) CCAFP_CONFIG.s1Data.squads = parsed.s1Data.squads;
+        if (Array.isArray(parsed.s1Data.clubs)) CCAFP_CONFIG.s1Data.clubs = parsed.s1Data.clubs;
+        if (Array.isArray(parsed.s1Data.tin)) CCAFP_CONFIG.s1Data.tin = parsed.s1Data.tin;
+        if (Array.isArray(parsed.s1Data.ape)) CCAFP_CONFIG.s1Data.ape = parsed.s1Data.ape;
+        if (Array.isArray(parsed.spiritualData)) CCAFP_CONFIG.spiritualData = parsed.spiritualData;
+        if (Array.isArray(parsed.punishmentList)) CCAFP_CONFIG.punishmentList = parsed.punishmentList;
         if (parsed.punishmentTotals) CCAFP_CONFIG.punishmentTotals = parsed.punishmentTotals;
         if (parsed.punishmentMeta) CCAFP_CONFIG.punishmentMeta = parsed.punishmentMeta;
         return true;
+      } else {
+        localStorage.removeItem(CACHE_STORAGE_KEY);
       }
     } catch (err) {
       console.warn('Error restoring from localStorage cache:', err);
@@ -3954,7 +3967,9 @@ if (typeof window !== "undefined") {
     }
 
     closeMobileSidebar();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
   window.navigateToTab = navigateToTab;
 
@@ -4011,32 +4026,32 @@ if (typeof window !== "undefined") {
   // 1. DISPOSITION RENDERER
   function renderS1Disposition() {
     if (!dom.s1DispositionTableBody) return;
-    const disp = CCAFP_CONFIG.s1Data.disposition;
-    const rows = disp.companies;
+    const disp = CCAFP_CONFIG.s1Data?.disposition || {};
+    const rows = Array.isArray(disp.companies) ? disp.companies : [];
 
     let t1CLM = 0, t1CLF = 0, t2CLM = 0, t2CLF = 0;
     let t3CLM = 0, t3CLF = 0, t4CLM = 0, t4CLF = 0;
     let grandEff = 0, grandIneff = 0, grandTotal = 0;
 
     dom.s1DispositionTableBody.innerHTML = rows.map(r => {
-      t1CLM += r.firstCL_M; t1CLF += r.firstCL_F;
-      t2CLM += r.secondCL_M; t2CLF += r.secondCL_F;
-      t3CLM += r.thirdCL_M; t3CLF += r.thirdCL_F;
-      t4CLM += r.fourthCL_M; t4CLF += r.fourthCL_F;
-      grandEff += r.effectiveTotal;
-      grandIneff += r.ineffectiveTotal;
-      grandTotal += r.total;
+      t1CLM += (r.firstCL_M || 0); t1CLF += (r.firstCL_F || 0);
+      t2CLM += (r.secondCL_M || 0); t2CLF += (r.secondCL_F || 0);
+      t3CLM += (r.thirdCL_M || 0); t3CLF += (r.thirdCL_F || 0);
+      t4CLM += (r.fourthCL_M || 0); t4CLF += (r.fourthCL_F || 0);
+      grandEff += (r.effectiveTotal || 0);
+      grandIneff += (r.ineffectiveTotal || 0);
+      grandTotal += (r.total || 0);
 
       return `
         <tr class="hover:bg-slate-50/70 transition-colors">
-          <td class="py-3 px-3 font-sans font-bold text-slate-900">${r.name} Company ('${r.code}')</td>
-          <td class="py-3 px-2 text-center text-slate-700">${r.firstCL_M} / <span class="text-blue-600 font-semibold">${r.firstCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${r.secondCL_M} / <span class="text-blue-600 font-semibold">${r.secondCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${r.thirdCL_M} / <span class="text-blue-600 font-semibold">${r.thirdCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${r.fourthCL_M} / <span class="text-blue-600 font-semibold">${r.fourthCL_F}</span></td>
-          <td class="py-3 px-2 text-center font-bold text-emerald-700 bg-emerald-50/40 rounded">${r.effectiveTotal}</td>
-          <td class="py-3 px-2 text-center font-bold ${r.ineffectiveTotal > 0 ? 'text-amber-700 bg-amber-50/40' : 'text-slate-400'} rounded">${r.ineffectiveTotal}</td>
-          <td class="py-3 px-3 text-right font-bold text-blue-950 font-mono-clean text-sm">${r.total}</td>
+          <td class="py-3 px-3 font-sans font-bold text-slate-900">${r.name || 'Coy'} Company ('${r.code || '-'}')</td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.firstCL_M || 0} / <span class="text-blue-600 font-semibold">${r.firstCL_F || 0}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.secondCL_M || 0} / <span class="text-blue-600 font-semibold">${r.secondCL_F || 0}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.thirdCL_M || 0} / <span class="text-blue-600 font-semibold">${r.thirdCL_F || 0}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.fourthCL_M || 0} / <span class="text-blue-600 font-semibold">${r.fourthCL_F || 0}</span></td>
+          <td class="py-3 px-2 text-center font-bold text-emerald-700 bg-emerald-50/40 rounded">${r.effectiveTotal || 0}</td>
+          <td class="py-3 px-2 text-center font-bold ${(r.ineffectiveTotal || 0) > 0 ? 'text-amber-700 bg-amber-50/40' : 'text-slate-400'} rounded">${r.ineffectiveTotal || 0}</td>
+          <td class="py-3 px-3 text-right font-bold text-blue-950 font-mono-clean text-sm">${r.total || 0}</td>
         </tr>
       `;
     }).join('') + `
@@ -4054,15 +4069,16 @@ if (typeof window !== "undefined") {
 
     // External Strength summary
     if (dom.s1ExternalPersonnelGrid) {
-      dom.s1ExternalPersonnelGrid.innerHTML = disp.externalPersonnel.map(ext => `
+      const extList = Array.isArray(disp.externalPersonnel) ? disp.externalPersonnel : [];
+      dom.s1ExternalPersonnelGrid.innerHTML = extList.map(ext => `
         <div class="p-3 rounded-xl bg-white border border-slate-200/80 space-y-1">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-800 text-[11px]">${ext.category}</span>
-            <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 text-[9px] font-bold uppercase">${ext.status}</span>
+            <span class="font-bold text-slate-800 text-[11px]">${ext.category || 'External'}</span>
+            <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 text-[9px] font-bold uppercase">${ext.status || 'Active'}</span>
           </div>
           <div class="flex items-baseline justify-between pt-1">
-            <span class="text-slate-500 text-[10px]">M: ${ext.male} &bull; F: ${ext.female}</span>
-            <span class="font-mono-clean font-bold text-blue-900 text-sm">${ext.total}</span>
+            <span class="text-slate-500 text-[10px]">M: ${ext.male || 0} &bull; F: ${ext.female || 0}</span>
+            <span class="font-mono-clean font-bold text-blue-900 text-sm">${ext.total || 0}</span>
           </div>
         </div>
       `).join('');
@@ -4073,8 +4089,8 @@ if (typeof window !== "undefined") {
   function renderS1Armory() {
     if (!dom.s1ArmoryTableBody) return;
     const arm = CCAFP_CONFIG.s1Data?.armory;
-    if (!arm || !arm.rows) return;
-    const rows = arm.rows;
+    if (!arm) return;
+    const rows = Array.isArray(arm.rows) ? arm.rows : (Array.isArray(arm.items) ? arm.items : []);
 
     dom.s1ArmoryTableBody.innerHTML = rows.map(r => `
       <tr class="hover:bg-slate-50/70 transition-colors">
@@ -4152,31 +4168,41 @@ if (typeof window !== "undefined") {
   // 3. ATTACHMENT RENDERER
   function renderS1Attachment() {
     if (!dom.s1AttachmentTableBody) return;
-    const att = CCAFP_CONFIG.s1Data.attachment;
+    const att = CCAFP_CONFIG.s1Data?.attachment || {};
+
+    const fadList = Array.isArray(att.fadList) ? att.fadList : [];
+    const siqList = Array.isArray(att.siqList) ? att.siqList : [];
+    const fdpshList = Array.isArray(att.fdpshList) ? att.fdpshList : [];
+    const vlunaList = Array.isArray(att.vlunaList) ? att.vlunaList : [];
+    const holdingCenterList = Array.isArray(att.holdingCenterList) ? att.holdingCenterList : [];
+    const clearingInList = Array.isArray(att.clearingInList) ? att.clearingInList : [];
+    const clearingOutList = Array.isArray(att.clearingOutList) ? att.clearingOutList : [];
+    const ghqList = Array.isArray(att.ghqList) ? att.ghqList : [];
+    const stockadeList = Array.isArray(att.stockadeList) ? att.stockadeList : [];
 
     const allItems = [
-      ...att.fadList.map(x => ({ ...x, category: 'FAD', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', details: x.condition, extra: x.release })),
-      ...att.siqList.map(x => ({ ...x, category: 'SIQ', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', details: x.reason, extra: x.release })),
-      ...att.fdpshList.map(x => ({ ...x, category: 'FDPSH Hospital', badgeColor: 'bg-red-50 text-red-700 border-red-200', details: x.reason, extra: x.release })),
-      ...att.vlunaList.map(x => ({ ...x, category: 'V-Luna Hospital', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', details: x.reason, extra: x.release })),
-      ...att.holdingCenterList.map(x => ({ ...x, category: 'Holding Center', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200', details: x.reason, extra: x.barracks })),
-      ...att.clearingInList.map(x => ({ ...x, category: 'Clearing-In', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', details: x.reason, extra: x.remarks })),
-      ...att.clearingOutList.map(x => ({ ...x, category: 'Clearing-Out', badgeColor: 'bg-orange-50 text-orange-700 border-orange-200', details: x.reason, extra: x.remarks })),
-      ...att.ghqList.map(x => ({ ...x, category: 'GHQ Detail', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200', details: x.reason, extra: x.remarks })),
-      ...att.stockadeList.map(x => ({ ...x, category: 'PMA Stockade', badgeColor: 'bg-slate-100 text-slate-800 border-slate-300', details: x.reason, extra: x.remarks }))
+      ...fadList.map(x => ({ ...x, category: 'FAD', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', details: x.condition, extra: x.release })),
+      ...siqList.map(x => ({ ...x, category: 'SIQ', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', details: x.reason, extra: x.release })),
+      ...fdpshList.map(x => ({ ...x, category: 'FDPSH Hospital', badgeColor: 'bg-red-50 text-red-700 border-red-200', details: x.reason, extra: x.release })),
+      ...vlunaList.map(x => ({ ...x, category: 'V-Luna Hospital', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', details: x.reason, extra: x.release })),
+      ...holdingCenterList.map(x => ({ ...x, category: 'Holding Center', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200', details: x.reason, extra: x.barracks })),
+      ...clearingInList.map(x => ({ ...x, category: 'Clearing-In', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', details: x.reason, extra: x.remarks })),
+      ...clearingOutList.map(x => ({ ...x, category: 'Clearing-Out', badgeColor: 'bg-orange-50 text-orange-700 border-orange-200', details: x.reason, extra: x.remarks })),
+      ...ghqList.map(x => ({ ...x, category: 'GHQ Detail', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200', details: x.reason, extra: x.remarks })),
+      ...stockadeList.map(x => ({ ...x, category: 'PMA Stockade', badgeColor: 'bg-slate-100 text-slate-800 border-slate-300', details: x.reason, extra: x.remarks }))
     ];
 
     // Update counts
     const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     setEl('count-all', allItems.length);
-    setEl('count-fad', att.fadList.length);
-    setEl('count-holding', att.holdingCenterList.length);
-    setEl('count-clearingin', att.clearingInList.length);
-    setEl('count-fdpsh', att.fdpshList.length);
-    setEl('count-vluna', att.vlunaList.length);
-    setEl('count-siq', att.siqList.length);
-    setEl('count-clearingout', att.clearingOutList.length);
-    setEl('count-stockade', att.ghqList.length + att.stockadeList.length);
+    setEl('count-fad', fadList.length);
+    setEl('count-holding', holdingCenterList.length);
+    setEl('count-clearingin', clearingInList.length);
+    setEl('count-fdpsh', fdpshList.length);
+    setEl('count-vluna', vlunaList.length);
+    setEl('count-siq', siqList.length);
+    setEl('count-clearingout', clearingOutList.length);
+    setEl('count-stockade', ghqList.length + stockadeList.length);
 
     let filtered = allItems;
     const cat = state.s1AttachmentCat;
@@ -4232,13 +4258,18 @@ if (typeof window !== "undefined") {
   // 5. REGIMENT STAFF 2027 RENDERER
   function renderS1RegimentStaff() {
     if (!dom.s1StaffGridContainer) return;
-    const staffData = CCAFP_CONFIG.s1Data.regimentStaff2027;
+    const staffData = CCAFP_CONFIG.s1Data?.regimentStaff2027 || CCAFP_CONFIG.s1Data?.regimentStaff || {};
+
+    const cmd = Array.isArray(staffData.commandSection) ? staffData.commandSection : [];
+    const coord = Array.isArray(staffData.coordinatingStaff) ? staffData.coordinatingStaff : [];
+    const spec = Array.isArray(staffData.specialStaff) ? staffData.specialStaff : [];
+    const ncos = Array.isArray(staffData.ncos) ? staffData.ncos : [];
 
     const allEntries = [
-      ...staffData.commandSection.map(s => ({ ...s, section: 'command', sectionLabel: 'COMMAND SECTION', borderClass: 'stripe-red' })),
-      ...staffData.coordinatingStaff.map(s => ({ ...s, section: 'coordinating', sectionLabel: `COORDINATING STAFF (${s.code})`, borderClass: 'stripe-blue' })),
-      ...staffData.specialStaff.map(s => ({ ...s, section: 'special', sectionLabel: 'SPECIAL STAFF OFFICER', borderClass: 'stripe-amber' })),
-      ...staffData.ncos.map(s => ({ ...s, section: 'ncos', sectionLabel: 'REGIMENTAL NCO', borderClass: 'stripe-emerald' }))
+      ...cmd.map(s => ({ ...s, section: 'command', sectionLabel: 'COMMAND SECTION', borderClass: 'stripe-red' })),
+      ...coord.map(s => ({ ...s, section: 'coordinating', sectionLabel: `COORDINATING STAFF (${s.code || ''})`, borderClass: 'stripe-blue' })),
+      ...spec.map(s => ({ ...s, section: 'special', sectionLabel: 'SPECIAL STAFF OFFICER', borderClass: 'stripe-amber' })),
+      ...ncos.map(s => ({ ...s, section: 'ncos', sectionLabel: 'REGIMENTAL NCO', borderClass: 'stripe-emerald' }))
     ];
 
     let filtered = allEntries;
@@ -6185,34 +6216,34 @@ if (typeof window !== "undefined") {
 
   // --- Bootstrap Initialization ---
   function init() {
-    initTheme();
-    updateTime();
-    setInterval(updateTime, 1000);
+    try { initTheme(); } catch(e) { console.error('initTheme error:', e); }
+    try { setupEventListeners(); } catch(e) { console.error('setupEventListeners error:', e); }
+    try { updateTime(); } catch(e) {}
+    try { setInterval(updateTime, 1000); } catch(e) {}
 
     // 1. Restore cached state from previous 15-minute sync if available
-    restoreLiveSnapshotFromStorage();
+    try { restoreLiveSnapshotFromStorage(); } catch(e) { console.warn('Cache restore skipped:', e); }
 
-    // 2. Render all initial views with loaded/cached data
-    renderSidebarCouncils();
-    renderCouncilsDirectoryPills();
-    renderPriorityBulletins();
-    renderS1Data();
-    renderRsoArmory();
-    renderScheduleOfCallsView();
-    updateMarqueeTicker();
-    updateHeroStats();
-    renderCalendar();
-    renderPunishments();
-    renderStaffDirectory();
-    setupEventListeners();
+    // 2. Render all initial views with loaded/cached data safely
+    try { renderSidebarCouncils(); } catch(e) { console.error('renderSidebarCouncils error:', e); }
+    try { renderCouncilsDirectoryPills(); } catch(e) { console.error('renderCouncilsDirectoryPills error:', e); }
+    try { renderPriorityBulletins(); } catch(e) { console.error('renderPriorityBulletins error:', e); }
+    try { renderS1Data(); } catch(e) { console.error('renderS1Data error:', e); }
+    try { renderRsoArmory(); } catch(e) { console.error('renderRsoArmory error:', e); }
+    try { renderScheduleOfCallsView(); } catch(e) { console.error('renderScheduleOfCallsView error:', e); }
+    try { updateMarqueeTicker(); } catch(e) { console.error('updateMarqueeTicker error:', e); }
+    try { updateHeroStats(); } catch(e) { console.error('updateHeroStats error:', e); }
+    try { renderCalendar(); } catch(e) { console.error('renderCalendar error:', e); }
+    try { renderPunishments(); } catch(e) { console.error('renderPunishments error:', e); }
+    try { renderStaffDirectory(); } catch(e) { console.error('renderStaffDirectory error:', e); }
 
     // 3. Start 15-Minute Countdown Timer
-    startAutoSync15MinTimer();
+    try { startAutoSync15MinTimer(); } catch(e) {}
 
     // 4. Perform immediate live check in the background
-    performAutomated15MinSync(false);
+    try { performAutomated15MinSync(false); } catch(e) {}
 
-    if (window.lucide) window.lucide.createIcons();
+    try { if (window.lucide) window.lucide.createIcons(); } catch(e) {}
   }
 
   if (document.readyState === 'loading') {
