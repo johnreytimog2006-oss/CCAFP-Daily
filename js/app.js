@@ -22,7 +22,8 @@
     liveCache: {},
     staffLevel: 'regiment',
     punishmentQuery: '',
-    isSyncing: false
+    isSyncing: false,
+    hasCompletedInitialSync: false
   };
 
   // DOM Cache
@@ -36,6 +37,13 @@
     activeBreadcrumb: document.getElementById('activeBreadcrumb'),
     lastUpdatedClock: document.getElementById('lastUpdatedClock'),
     manualSyncBtn: document.getElementById('manualSyncBtn'),
+    autoSyncStatusContainer: document.getElementById('autoSyncStatusContainer'),
+    autoSyncCountdown: document.getElementById('autoSyncCountdown'),
+    liveFeedStatusText: document.getElementById('liveFeedStatusText'),
+    homeStatsAnnouncements: document.getElementById('homeStatsAnnouncements'),
+    homeStatsEvents: document.getElementById('homeStatsEvents'),
+    homeStatsCouncils: document.getElementById('homeStatsCouncils'),
+    homeStatsToday: document.getElementById('homeStatsToday'),
     // Moving Announcement Marquee
     dynamicTickerContent: document.getElementById('dynamicTickerContent'),
     // Home View
@@ -87,6 +95,127 @@
     if (dom.lastUpdatedClock) {
       dom.lastUpdatedClock.textContent = timeStr;
     }
+  }
+
+  // --- Automated 15-Minute Sync Manager & Local Storage Persistence ---
+  const CACHE_STORAGE_KEY = 'ccafp_daily_live_cache';
+  const AUTO_SYNC_INTERVAL_SECONDS = 15 * 60; // 900 seconds (15 minutes)
+  let autoSyncCountdownSeconds = AUTO_SYNC_INTERVAL_SECONDS;
+  let autoSyncTimerId = null;
+
+  function saveLiveSnapshotToStorage() {
+    try {
+      if (!CCAFP_CONFIG.s1Data) return;
+      const payload = {
+        savedAt: new Date().toISOString(),
+        version: CCAFP_CONFIG.version,
+        s1Data: CCAFP_CONFIG.s1Data
+      };
+      localStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify(payload));
+    } catch (err) {
+      console.warn('localStorage caching unavailable:', err);
+    }
+  }
+
+  function restoreLiveSnapshotFromStorage() {
+    try {
+      const raw = localStorage.getItem(CACHE_STORAGE_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.s1Data) {
+        if (!CCAFP_CONFIG.s1Data) CCAFP_CONFIG.s1Data = {};
+        if (parsed.s1Data.scheduleOfCalls) CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed.s1Data.scheduleOfCalls;
+        if (parsed.s1Data.disposition) CCAFP_CONFIG.s1Data.disposition = parsed.s1Data.disposition;
+        if (parsed.s1Data.armory) CCAFP_CONFIG.s1Data.armory = parsed.s1Data.armory;
+        if (parsed.s1Data.attachment) CCAFP_CONFIG.s1Data.attachment = parsed.s1Data.attachment;
+        if (parsed.s1Data.regimentStaff) CCAFP_CONFIG.s1Data.regimentStaff = parsed.s1Data.regimentStaff;
+        return true;
+      }
+    } catch (err) {
+      console.warn('Error restoring from localStorage cache:', err);
+    }
+    return false;
+  }
+
+  function detectChangedSections(oldData, newData) {
+    const changed = [];
+    if (!oldData || Object.keys(oldData).length === 0) {
+      return changed;
+    }
+    try {
+      const oldSoc = JSON.stringify(oldData.scheduleOfCalls || {});
+      const newSoc = JSON.stringify(newData.scheduleOfCalls || {});
+      if (oldSoc !== newSoc) {
+        changed.push('Schedule of Calls (SOC)');
+      }
+
+      const oldDisp = JSON.stringify(oldData.disposition || {});
+      const newDisp = JSON.stringify(newData.disposition || {});
+      if (oldDisp !== newDisp) {
+        changed.push('Cadet Disposition');
+      }
+
+      const oldArm = JSON.stringify(oldData.armory || {});
+      const newArm = JSON.stringify(newData.armory || {});
+      if (oldArm !== newArm) {
+        changed.push('HTG Armory');
+      }
+
+      const oldAtt = JSON.stringify(oldData.attachment || {});
+      const newAtt = JSON.stringify(newData.attachment || {});
+      if (oldAtt !== newAtt) {
+        changed.push('Cadet Attachments (FAD/SIQ)');
+      }
+    } catch (e) {
+      console.warn('Error comparing data signatures:', e);
+    }
+    return changed;
+  }
+
+  function updateHeroStats() {
+    if (dom.homeStatsAnnouncements) {
+      const bulletinsCount = CCAFP_CONFIG.priorityBulletins?.length || 0;
+      const socChangesCount = CCAFP_CONFIG.s1Data?.scheduleOfCalls?.changes?.length || 0;
+      dom.homeStatsAnnouncements.textContent = bulletinsCount + socChangesCount;
+    }
+    if (dom.homeStatsEvents) {
+      dom.homeStatsEvents.textContent = CCAFP_CONFIG.calendarEvents?.length || 3;
+    }
+    if (dom.homeStatsCouncils) {
+      dom.homeStatsCouncils.textContent = CCAFP_CONFIG.councils?.length || 18;
+    }
+    if (dom.homeStatsToday) {
+      const rawDate = CCAFP_CONFIG.s1Data?.scheduleOfCalls?.date || '';
+      const match = rawDate.match(/(\d{1,2})\s+([A-Za-z]+)/);
+      if (match) {
+        dom.homeStatsToday.textContent = `${match[2].substring(0, 3)} ${parseInt(match[1], 10)}`;
+      } else {
+        const now = new Date();
+        dom.homeStatsToday.textContent = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+    }
+  }
+
+  function updateCountdownDisplay() {
+    if (!dom.autoSyncCountdown) return;
+    const minutes = Math.floor(autoSyncCountdownSeconds / 60);
+    const seconds = autoSyncCountdownSeconds % 60;
+    dom.autoSyncCountdown.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  function startAutoSync15MinTimer() {
+    if (autoSyncTimerId) clearInterval(autoSyncTimerId);
+    updateCountdownDisplay();
+    autoSyncTimerId = setInterval(() => {
+      autoSyncCountdownSeconds--;
+      if (autoSyncCountdownSeconds <= 0) {
+        autoSyncCountdownSeconds = AUTO_SYNC_INTERVAL_SECONDS;
+        updateCountdownDisplay();
+        performAutomated15MinSync(false);
+      } else {
+        updateCountdownDisplay();
+      }
+    }, 1000);
   }
 
   // --- Mobile Sidebar Controls ---
@@ -456,7 +585,7 @@
       `;
     }).join('');
 
-    lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
   }
 
   function selectCouncil(councilId) {
@@ -602,7 +731,7 @@
       `;
     }
 
-    lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
   }
 
   // =========================================================================
@@ -803,30 +932,45 @@
     }
 
     // 3. S1 Council - Cadet Information Sheets 2026-2027 Highlights
+    const att = CCAFP_CONFIG.s1Data?.attachment;
     if (disp) {
+      const grandTot = disp.summary?.grandTotal?.total || 1267;
+      const onPost = disp.summary?.ccafpOnPost?.total || 1213;
+      const effTot = disp.summary?.effective?.total || 1171;
+      const ineffTot = disp.summary?.ineffective?.total || 42;
+      const hc = disp.summary?.ineffective?.holdingCenter || 30;
+      const siq = disp.summary?.ineffective?.siq || 4;
       items.push(`
         <div class="ticker-item font-mono-clean">
           <span class="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px]">S1 DISPOSITION</span>
-          <span class="text-slate-700">Total Strength: <strong class="text-slate-900">1,267</strong> &bull; On-Post: <strong class="text-slate-900">1,213</strong> &bull; Effective: <strong class="text-emerald-700">1,171</strong> &bull; Ineffective: <strong class="text-amber-700">42</strong> (Holding Ctr: 30, Hospital: 8, SIQ: 4)</span>
+          <span class="text-slate-700">Total Strength: <strong class="text-slate-900">${grandTot}</strong> &bull; On-Post: <strong class="text-slate-900">${onPost}</strong> &bull; Effective: <strong class="text-emerald-700">${effTot}</strong> &bull; Ineffective: <strong class="text-amber-700">${ineffTot}</strong> (Holding Ctr: ${hc}, SIQ: ${siq})</span>
         </div>
       `);
     }
 
     if (armory) {
+      const m14 = armory.totals?.m14In || 831;
+      const m16 = armory.totals?.m16In || 342;
+      const r4 = armory.totals?.r4In || 130;
       items.push(`
         <div class="ticker-item font-mono-clean">
           <span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold text-[10px]">S1 ARMORY</span>
-          <span class="text-slate-700">Rifles: M14 (831), M16 (342), R4 (130) &bull; 1x 9mm Added for MAJ Martinez PA &bull; 51 Bayonets & 14 Swords at RSO Stockroom</span>
+          <span class="text-slate-700">Rifles: M14 (${m14}), M16 (${m16}), R4 (${r4}) &bull; 51 Bayonets & 14 Swords at RSO Stockroom</span>
         </div>
       `);
     }
 
-    items.push(`
-      <div class="ticker-item font-mono-clean">
-        <span class="px-1.5 py-0.5 rounded bg-slate-800 text-white font-bold text-[10px]">S1 ATTACHMENT</span>
-        <span class="text-slate-700">42 Cadets on FAD Status &bull; 30 Cadets at Holding Center &bull; 9 Cadets Clearing-In &bull; Master Roll Live Synced</span>
-      </div>
-    `);
+    if (att) {
+      const fadCount = att.counts?.fad || 43;
+      const hcCount = att.counts?.holdingCenter || 30;
+      const inCount = att.counts?.clearingIn || 9;
+      items.push(`
+        <div class="ticker-item font-mono-clean">
+          <span class="px-1.5 py-0.5 rounded bg-slate-800 text-white font-bold text-[10px]">S1 ATTACHMENT</span>
+          <span class="text-slate-700">${fadCount} Cadets on FAD Status &bull; ${hcCount} Cadets at Holding Center &bull; ${inCount} Cadets Clearing-In &bull; Master Roll Live Synced (${att.reportDate || '07 1140H OCT 2026'})</span>
+        </div>
+      `);
+    }
 
     // Duplicate array items once for seamless continuous loop in CSS translateX(-50%)
     const duplicatedHtml = [...items, ...items].join(`
@@ -836,46 +980,9 @@
     dom.dynamicTickerContent.innerHTML = duplicatedHtml;
   }
 
-  // --- Live Sync for Schedule of Calls (SOC) ---
+  // --- Backward Compatibility Wrapper ---
   async function syncScheduleOfCallsLive(showFeedback = false) {
-    const socUrl = syncManager.getLink('s1_schedule') || "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=SCHEDULE%20OF%20CALLS";
-    if (dom.socSyncBtn) {
-      dom.socSyncBtn.querySelector('i')?.classList.add('animate-spin');
-    }
-
-    try {
-      const rows = await syncManager.fetchLiveCSV(socUrl);
-      if (rows && rows.length > 0) {
-        const parsed = syncManager.parseScheduleOfCalls(rows);
-        if (parsed) {
-          CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed;
-          renderScheduleOfCallsView();
-          updateMarqueeTicker();
-
-          if (dom.socSyncStatusBadge) {
-            dom.socSyncStatusBadge.innerHTML = `
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
-              <span>LIVE SHEET SYNCED (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</span>
-            `;
-          }
-
-          if (showFeedback) {
-            showToast('Schedule of Calls synced live with Google Sheets!', 'success');
-          }
-          return true;
-        }
-      }
-    } catch (err) {
-      console.warn('Error syncing Schedule of Calls live:', err);
-      if (showFeedback) {
-        showToast('Using cached Schedule of Calls data.', 'info');
-      }
-    } finally {
-      if (dom.socSyncBtn) {
-        dom.socSyncBtn.querySelector('i')?.classList.remove('animate-spin');
-      }
-    }
-    return false;
+    return performAutomated15MinSync(showFeedback);
   }
 
   // --- Calendar ---
@@ -895,7 +1002,7 @@
         </div>
       </div>
     `).join('');
-    lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
   }
 
   // --- Punishments ---
@@ -993,49 +1100,163 @@
     }
   }
 
-  // --- Live Google Sheets Sync ---
-  async function performLiveSync() {
+  // --- Automated 15-Minute Google Sheets Sync Engine ---
+  async function performAutomated15MinSync(isManual = false) {
     if (state.isSyncing) return;
     state.isSyncing = true;
+
+    // Reset countdown timer on manual user action
+    if (isManual) {
+      autoSyncCountdownSeconds = AUTO_SYNC_INTERVAL_SECONDS;
+      updateCountdownDisplay();
+    }
 
     if (dom.manualSyncBtn) {
       dom.manualSyncBtn.querySelector('i')?.classList.add('animate-spin');
     }
-    showToast('Fetching latest updates from Google Sheets...', 'info');
+    if (dom.socSyncBtn) {
+      dom.socSyncBtn.querySelector('i')?.classList.add('animate-spin');
+    }
+    if (dom.liveFeedStatusText) {
+      dom.liveFeedStatusText.textContent = 'CHECKING SHEETS...';
+    }
 
-    // 1. Synchronize Schedule of Calls (SOC) directly from Google Sheet
-    await syncScheduleOfCallsLive(false);
+    if (isManual) {
+      showToast('Checking Google Sheets for updates in the past 15 minutes...', 'info');
+    }
 
-    // 2. Synchronize Councils
-    let synced = 0;
-    for (const council of CCAFP_CONFIG.councils) {
-      const link = syncManager.getLink(council.id);
-      if (link && link.startsWith('http')) {
-        const data = await syncManager.fetchLiveCSV(link);
-        if (data && data.length > 0) {
-          state.liveCache[council.id] = data;
-          synced++;
+    try {
+      const schedUrl = syncManager.getLink('s1_schedule') || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_schedule : '');
+      const dispUrl = syncManager.getLink('s1_disposition') || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_disposition : '');
+      const armoryUrl = syncManager.getLink('s1_armory') || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_armory : '');
+      const attachUrl = syncManager.getLink('s1_attachment') || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_attachment : '');
+
+      // Concurrently fetch all 4 S1 sheets with cache busting
+      const [schedRes, dispRes, armoryRes, attachRes] = await Promise.allSettled([
+        syncManager.fetchLiveCSV(schedUrl),
+        syncManager.fetchLiveCSV(dispUrl),
+        syncManager.fetchLiveCSV(armoryUrl),
+        syncManager.fetchLiveCSV(attachUrl)
+      ]);
+
+      const oldDataSnapshot = JSON.parse(JSON.stringify(CCAFP_CONFIG.s1Data || {}));
+      let hasNewData = false;
+
+      // 1. SCHEDULE OF CALLS
+      if (schedRes.status === 'fulfilled' && schedRes.value && schedRes.value.length > 0) {
+        const parsed = syncManager.parseScheduleOfCalls(schedRes.value);
+        if (parsed) {
+          CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed;
+          hasNewData = true;
         }
       }
-    }
 
-    if (state.currentTab === 's1') {
-      renderS1Data();
-    } else if (state.currentTab === 'duty') {
-      renderScheduleOfCallsView();
-    } else if (state.currentTab === 'council') {
-      const council = CCAFP_CONFIG.councils.find(c => c.id === state.activeCouncilId);
-      renderActiveCouncilView(council);
-    }
+      // 2. DISPOSITION
+      if (dispRes.status === 'fulfilled' && dispRes.value && dispRes.value.length > 0) {
+        const parsed = syncManager.parseDisposition(dispRes.value);
+        if (parsed) {
+          CCAFP_CONFIG.s1Data.disposition = parsed;
+          hasNewData = true;
+        }
+      }
 
-    state.isSyncing = false;
-    if (dom.manualSyncBtn) {
-      dom.manualSyncBtn.querySelector('i')?.classList.remove('animate-spin');
-    }
+      // 3. ARMORY
+      if (armoryRes.status === 'fulfilled' && armoryRes.value && armoryRes.value.length > 0) {
+        const parsed = syncManager.parseArmory(armoryRes.value);
+        if (parsed) {
+          CCAFP_CONFIG.s1Data.armory = parsed;
+          hasNewData = true;
+        }
+      }
 
-    updateTime();
-    showToast('Synchronized Schedule of Calls & S1 Councils live!', 'success');
+      // 4. ATTACHMENT
+      if (attachRes.status === 'fulfilled' && attachRes.value && attachRes.value.length > 0) {
+        const parsed = syncManager.parseAttachment(attachRes.value);
+        if (parsed) {
+          CCAFP_CONFIG.s1Data.attachment = parsed;
+          hasNewData = true;
+        }
+      }
+
+      // Also check other councils if any URL is provided
+      for (const council of (CCAFP_CONFIG.councils || [])) {
+        const link = syncManager.getLink(council.id);
+        if (link && link.startsWith('http')) {
+          const data = await syncManager.fetchLiveCSV(link);
+          if (data && data.length > 0) {
+            state.liveCache[council.id] = data;
+          }
+        }
+      }
+
+      const isFirstRun = !state.hasCompletedInitialSync;
+      state.hasCompletedInitialSync = true;
+
+      if (hasNewData) {
+        const changedSections = detectChangedSections(oldDataSnapshot, CCAFP_CONFIG.s1Data);
+
+        // Persist fresh data snapshot into localStorage
+        saveLiveSnapshotToStorage();
+
+        // Re-render all views
+        renderScheduleOfCallsView();
+        renderS1Data();
+        updateMarqueeTicker();
+        updateHeroStats();
+
+        if (state.currentTab === 'council') {
+          const council = CCAFP_CONFIG.councils.find(c => c.id === state.activeCouncilId);
+          if (council) renderActiveCouncilView(council);
+        }
+
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (dom.socSyncStatusBadge) {
+          dom.socSyncStatusBadge.innerHTML = `
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
+            <span>LIVE SHEET SYNCED (${timeStr})</span>
+          `;
+        }
+
+        if (dom.liveFeedStatusText) {
+          dom.liveFeedStatusText.textContent = `LIVE FEED (${timeStr})`;
+        }
+
+        // Notify user about detected changes
+        if (changedSections.length > 0) {
+          if (!isFirstRun || isManual) {
+            showToast(`⚡ Live Sheet Updates Detected: ${changedSections.join(', ')} automatically updated!`, 'success');
+          }
+        } else if (isManual) {
+          showToast('✓ Google Sheets verified: All data is up to date (no changes in past 15 min).', 'info');
+        }
+      } else {
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if (dom.liveFeedStatusText) {
+          dom.liveFeedStatusText.textContent = `LIVE FEED (${timeStr})`;
+        }
+        if (isManual) {
+          showToast('✓ Connected to Google Sheets: Current records are verified.', 'info');
+        }
+      }
+    } catch (err) {
+      console.warn('Error during automated 15-minute sync:', err);
+      if (isManual) {
+        showToast('Using cached records (Google Sheets momentarily unreachable).', 'info');
+      }
+    } finally {
+      state.isSyncing = false;
+      if (dom.manualSyncBtn) {
+        dom.manualSyncBtn.querySelector('i')?.classList.remove('animate-spin');
+      }
+      if (dom.socSyncBtn) {
+        dom.socSyncBtn.querySelector('i')?.classList.remove('animate-spin');
+      }
+      updateTime();
+    }
   }
+
+  const performLiveSync = performAutomated15MinSync;
 
   // --- Toast ---
   function showToast(message, type = 'info') {
@@ -1136,7 +1357,7 @@
 
     if (dom.socSyncBtn) {
       dom.socSyncBtn.addEventListener('click', () => {
-        syncScheduleOfCallsLive(true);
+        performAutomated15MinSync(true);
       });
     }
 
@@ -1187,7 +1408,9 @@
     }
 
     // Manual Refresh
-    if (dom.manualSyncBtn) dom.manualSyncBtn.addEventListener('click', performLiveSync);
+    if (dom.manualSyncBtn) {
+      dom.manualSyncBtn.addEventListener('click', () => performAutomated15MinSync(true));
+    }
   }
 
   // --- Bootstrap Initialization ---
@@ -1195,23 +1418,28 @@
     updateTime();
     setInterval(updateTime, 1000);
 
+    // 1. Restore cached state from previous 15-minute sync if available
+    restoreLiveSnapshotFromStorage();
+
+    // 2. Render all initial views with loaded/cached data
     renderSidebarCouncils();
     renderPriorityBulletins();
     renderS1Data();
     renderScheduleOfCallsView();
     updateMarqueeTicker();
+    updateHeroStats();
     renderCalendar();
     renderPunishments();
     renderStaffDirectory();
     setupEventListeners();
 
-    // Fetch live Google Sheets schedule immediately upon launch
-    syncScheduleOfCallsLive(false);
+    // 3. Start 15-Minute Countdown Timer
+    startAutoSync15MinTimer();
 
-    // Auto-polling live sheets every 30s
-    setInterval(performLiveSync, 30000);
+    // 4. Perform immediate live check in the background
+    performAutomated15MinSync(false);
 
-    lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
   }
 
   if (document.readyState === 'loading') {

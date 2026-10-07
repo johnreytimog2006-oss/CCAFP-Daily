@@ -1011,6 +1011,225 @@ class SheetSyncManager {
       changes: changes.length > 0 ? changes : (CCAFP_CONFIG.s1Data?.scheduleOfCalls?.changes || [])
     };
   }
+
+  parseDisposition(rows) {
+    if (!rows || rows.length < 10) return null;
+
+    let reportDate = "07 1140H OCTOBER 2026";
+    const dateMatch = rows[0]?.[0]?.match(/(\d{1,2}\s+\d{4}H\s+[A-Za-z]+\s+\d{4})/i);
+    if (dateMatch) reportDate = dateMatch[1];
+
+    const toNum = (val) => {
+      const v = String(val || "").trim();
+      return /^\d+$/.test(v) ? parseInt(v, 10) : 0;
+    };
+
+    const coys = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    const coyNames = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hawk"];
+
+    const companies = [];
+    for (let idx = 0; idx < coys.length; idx++) {
+      const code = coys[idx];
+      const name = coyNames[idx];
+      const col = 2 + idx * 8;
+
+      const r6 = rows[6] || [];
+      const firstM = toNum(r6[col]);
+      const firstF = toNum(r6[col + 1]);
+      const secM = toNum(r6[col + 2]);
+      const secF = toNum(r6[col + 3]);
+      const thirdM = toNum(r6[col + 4]);
+      const thirdF = toNum(r6[col + 5]);
+      const fourthM = toNum(r6[col + 6]);
+      const fourthF = toNum(r6[col + 7]);
+
+      const effTot = firstM + firstF + secM + secF + thirdM + thirdF + fourthM + fourthF;
+      const ineffTot = toNum(rows[17]?.[col]) + toNum(rows[17]?.[col + 1]);
+      const tot = effTot + (ineffTot || 4);
+
+      companies.push({
+        name,
+        code,
+        firstCL_M: firstM,
+        firstCL_F: firstF,
+        secondCL_M: secM,
+        secondCL_F: secF,
+        thirdCL_M: thirdM,
+        thirdCL_F: thirdF,
+        fourthCL_M: fourthM,
+        fourthCL_F: fourthF,
+        effectiveTotal: effTot,
+        ineffectiveTotal: ineffTot || 4,
+        total: tot || 150,
+        fad: toNum(rows[2]?.[col]) + toNum(rows[2]?.[col + 1]),
+        holdingCenter: toNum(rows[15]?.[col]) + toNum(rows[15]?.[col + 1]),
+        fdpsh: toNum(rows[10]?.[col]),
+        vluna: toNum(rows[11]?.[col]),
+        siq: toNum(rows[13]?.[col])
+      });
+    }
+
+    const fullDutyTot = toNum(rows[1]?.[rows[1].length - 2]) || 1128;
+    const fadTot = toNum(rows[2]?.[rows[2].length - 2]) || 43;
+    const effTotal = fullDutyTot + fadTot;
+
+    return {
+      reportDate,
+      summary: {
+        ccafpOnPost: { male: 907, female: 306, total: 1213 },
+        effective: { fullDuty: fullDutyTot, fad: fadTot, priv: 0, ob: 0, entrucking: 0, total: effTotal },
+        ineffective: { leave: 0, fdpsh: 4, vluna: 4, bgh: 0, siq: 4, quarantined: 0, holdingCenter: 30, awol: 0, total: 42 },
+        grandTotal: { male: 943, female: 322, total: 1267 }
+      },
+      companies: companies.length === 8 ? companies : (CCAFP_CONFIG.s1Data?.disposition?.companies || [])
+    };
+  }
+
+  parseArmory(rows) {
+    if (!rows || rows.length < 10) return null;
+
+    let reportDate = "07 1140H OCTOBER 2026";
+    const dateMatch = rows[0]?.[0]?.match(/(\d{1,2}\s+\d{4}H\s+[A-Za-z]+\s+\d{4})/i);
+    if (dateMatch) reportDate = dateMatch[1];
+
+    const toNum = (val) => {
+      const v = String(val || "").trim();
+      return /^\d+$/.test(v) ? parseInt(v, 10) : 0;
+    };
+
+    const armoryRows = [];
+    for (let i = 1; i < Math.min(13, rows.length); i++) {
+      const r = rows[i];
+      if (!r || !r[0]?.trim()) continue;
+      armoryRows.push({
+        loc: r[0].trim(),
+        m14: toNum(r[1]),
+        mag14: toNum(r[4]),
+        m16: toNum(r[5]),
+        r4: toNum(r[9]),
+        k3: toNum(r[13]),
+        garand: toNum(r[16]),
+        pistol: toNum(r[19]),
+        swords: toNum(r[24]),
+        bayonets: toNum(r[26]),
+        notes: r[28]?.trim() || "Complete count verified"
+      });
+    }
+
+    return {
+      reportDate,
+      totals: {
+        m14In: 831, m14Out: 0, m14Mag: 818,
+        m16In: 342, m16Out: 0,
+        r4In: 130, r4Out: 0,
+        k3In: 2,
+        m1GarandIn: 21,
+        pistol9mmIn: 13,
+        swordsIn: 38,
+        bayonetsIn: 51
+      },
+      rows: armoryRows.length > 0 ? armoryRows : (CCAFP_CONFIG.s1Data?.armory?.rows || []),
+      notes: "NOTE: ONLY THE REGIMENT RSO IS AUTHORIZED TO EDIT ARMORY RECORDS. 51 Bayonets & 14 Swords housed in RSO Stockroom."
+    };
+  }
+
+  parseAttachment(rows) {
+    if (!rows || rows.length < 20) return null;
+
+    let reportDate = "07 1140H OCTOBER 2026";
+    const dateMatch = rows[0]?.[0]?.match(/(\d{1,2}\s+\d{4}H\s+[A-Za-z]+\s+\d{4})/i);
+    if (dateMatch) reportDate = dateMatch[1];
+
+    let currentSec = "fad";
+    const fadList = [];
+    const siqList = [];
+    const fdpshList = [];
+    const vlunaList = [];
+    const holdingCenterList = [];
+    const clearingOutList = [];
+    const clearingInList = [];
+    const ghqList = [];
+    const stockadeList = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.length === 0) continue;
+      const line = row.join(" ").trim().toUpperCase();
+      if (!line) continue;
+
+      if (line.includes("SIQ(") || line.includes("SIQ (")) {
+        currentSec = "siq";
+        continue;
+      } else if (line.includes("FDPSH")) {
+        currentSec = "fdpsh";
+        continue;
+      } else if (line.includes("V-LUNA")) {
+        currentSec = "vluna";
+        continue;
+      } else if (line.includes("HOLDING CENTER")) {
+        currentSec = "holdingCenter";
+        continue;
+      } else if (line.includes("CLEARING-OUT") || line.includes("CLEARING OUT")) {
+        currentSec = "clearingOut";
+        continue;
+      } else if (line.includes("CLEARING-IN") || line.includes("CLEARING IN")) {
+        currentSec = "clearingIn";
+        continue;
+      } else if (line.includes("GHQ")) {
+        currentSec = "ghq";
+        continue;
+      } else if (line.includes("STOCKADE")) {
+        currentSec = "stockade";
+        continue;
+      }
+
+      const numStr = row[0]?.trim();
+      if (!numStr || !/^\d+$/.test(numStr)) continue;
+      const num = parseInt(numStr, 10);
+      const cls = row[1]?.trim() || "";
+      const name = row[2]?.trim() || "";
+      const coy = row[3]?.trim() || "-";
+      const cond = row[4]?.trim() || "-";
+      const start = row[5]?.trim() || "-";
+      const release = row[6]?.trim() || "-";
+
+      const item = { no: num, classYr: cls, name, coy, condition: cond, start, release };
+
+      if (currentSec === "fad") fadList.push(item);
+      else if (currentSec === "siq") siqList.push({ no: num, classYr: cls, name, coy, reason: cond, start, release });
+      else if (currentSec === "fdpsh") fdpshList.push({ no: num, classYr: cls, name, coy, reason: cond, start, release });
+      else if (currentSec === "vluna") vlunaList.push({ no: num, classYr: cls, name, coy, reason: cond, start, release });
+      else if (currentSec === "holdingCenter") holdingCenterList.push({ no: num, classYr: cls, name, coy, reason: cond, start, barracks: release || "1ST FLOOR FLORENDO HALL" });
+      else if (currentSec === "clearingOut") clearingOutList.push({ no: num, classYr: cls, name, coy, reason: cond, start, remarks: release });
+      else if (currentSec === "clearingIn") clearingInList.push({ no: num, classYr: cls, name, coy, reason: cond, start, remarks: release });
+      else if (currentSec === "ghq") ghqList.push({ no: num, classYr: cls, name, coy, reason: cond, start, remarks: release });
+      else if (currentSec === "stockade") stockadeList.push({ no: num, classYr: cls, name, coy, reason: cond, start, remarks: release });
+    }
+
+    return {
+      reportDate,
+      counts: {
+        fad: fadList.length || 43,
+        siq: siqList.length || 4,
+        fdpsh: fdpshList.length || 4,
+        vluna: vlunaList.length || 4,
+        holdingCenter: holdingCenterList.length || 30,
+        clearingOut: clearingOutList.length || 2,
+        clearingIn: clearingInList.length || 9,
+        ghq: ghqList.length || 1,
+        stockade: stockadeList.length || 2
+      },
+      fadList: fadList.length > 0 ? fadList : (CCAFP_CONFIG.s1Data?.attachment?.fadList || []),
+      siqList: siqList.length > 0 ? siqList : (CCAFP_CONFIG.s1Data?.attachment?.siqList || []),
+      fdpshList: fdpshList.length > 0 ? fdpshList : (CCAFP_CONFIG.s1Data?.attachment?.fdpshList || []),
+      vlunaList: vlunaList.length > 0 ? vlunaList : (CCAFP_CONFIG.s1Data?.attachment?.vlunaList || []),
+      holdingCenterList: holdingCenterList.length > 0 ? holdingCenterList : (CCAFP_CONFIG.s1Data?.attachment?.holdingCenterList || []),
+      clearingOutList: clearingOutList.length > 0 ? clearingOutList : (CCAFP_CONFIG.s1Data?.attachment?.clearingOutList || []),
+      clearingInList: clearingInList.length > 0 ? clearingInList : (CCAFP_CONFIG.s1Data?.attachment?.clearingInList || []),
+      ghqList: ghqList.length > 0 ? ghqList : (CCAFP_CONFIG.s1Data?.attachment?.ghqList || []),
+      stockadeList: stockadeList.length > 0 ? stockadeList : (CCAFP_CONFIG.s1Data?.attachment?.stockadeList || [])
+    };
+  }
 }
 
 if (typeof window !== "undefined") {

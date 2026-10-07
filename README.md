@@ -105,3 +105,23 @@ git push -u origin main
 4. In the configuration dialog, leave Framework Preset as *Other* and Root Directory as `./`.
 5. Click **Deploy**.
 6. Within ~20 seconds, your site is live globally on `https://ccafp-daily.vercel.app` (or your chosen URL)!
+
+---
+
+## ⚡ 15-Minute Automated Google Sheets Synchronization
+
+The portal includes a **100% automated synchronization engine** that eliminates manual daily updates:
+
+1. **In-Browser Automated Polling**:
+   - The top navigation bar features a live countdown timer (`AUTO-SYNC (15m): 15:00`).
+   - Every 15 minutes, the web client silently queries Google Sheets in parallel for any updates made in the past 15 minutes.
+   - If updates occurred (e.g. Schedule of Calls revised, FAD count adjusted, Duty Officers replaced), the portal immediately re-renders all views, updates the moving announcement marquee, saves a snapshot to `localStorage`, and displays a toast notification.
+   - Clicking **SYNC NOW** triggers an immediate sync and resets the 15-minute countdown.
+
+2. **Headless Background Daemon (`sync_daemon.py`)**:
+   - A standalone Python service is included in the project root to run in the background on your Mac/server:
+   ```bash
+   python3 sync_daemon.py
+   ```
+   - Checks the spreadsheet every 15 minutes, computes MD5 hashes, and writes structured updates to `data/live_data.json`.
+   - To run a one-time check: `python3 sync_daemon.py --once`.
