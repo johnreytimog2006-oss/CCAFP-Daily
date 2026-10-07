@@ -334,61 +334,84 @@ const CCAFP_CONFIG = {
     scheduleOfCalls: {
       date: "07 October 2026",
       officers: {
-        oc: "LCDR JULIUS D GIRON PN",
-        aoc: "CPT BRAGA PA",
-        uniform: "DA w/ CJ (Dress Alpha with Campaign Jacket)"
+        oc: "MAJ JAMES A MARTINEZ PA",
+        aoc: "MAJ PHILIP JOHN U BUGAYONG PA",
+        uniform: "DA w/ CJ"
       },
       guardRoster: [
-        { post: "OD (Officer of the Day)", posted: "1CL MANGAGOM 'D'", incoming: "1CL PLANTAR 'H'" },
-        { post: "OG1 (Officer of the Guard 1)", posted: "2CL CERVAS 'A'", incoming: "2CL CARTAGENAS 'A'" },
-        { post: "OG2 (Officer of the Guard 2)", posted: "3CL VALENZUELA 'E'", incoming: "3CL AGGABAO 'E'" },
-        { post: "SG1 (Sergeant of the Guard 1)", posted: "3CL UNDANG 'G'", incoming: "3CL UMALI 'F'" },
-        { post: "SG2 (Sergeant of the Guard 2)", posted: "4CL GUTIERREZ 'E'", incoming: "-" },
-        { post: "RCCQ (Regt Cdt-in-Charge of Quarters)", posted: "3CL TAGAPAN 'F'", incoming: "3CL ABONITA 'D'" },
-        { post: "CCHC (Cdt-in-Charge of Holding Ctr)", posted: "3CL TUBURAN 'B'", incoming: "3CL TRINIDAD 'F'" },
-        { post: "ACCHC (Asst Cdt-in-Charge of HC)", posted: "3CL TUBERA 'E'", incoming: "3CL TUMAPANG 'E'" },
-        { post: "CAL 1 (Cadet Asst for Logistics 1)", posted: "1CL VALDEZ 'H'", incoming: "1CL LATORRE 'E'" },
-        { post: "CAL 2 (Cadet Asst for Logistics 2)", posted: "2CL CASAMAYOR 'B'", incoming: "2CL DE LEON 'B'" },
-        { post: "CAMO 1 (Cadet Asst Mess Officer 1)", posted: "1CL UNILONGO 'G'", incoming: "1CL AGUSTIN 'D'" },
-        { post: "CAMO 2 (Cadet Asst Mess Officer 2)", posted: "2CL CELESTIAL 'B'", incoming: "2CL CANSINO 'H'" },
-        { post: "CAMOD 1 (Cadet Asst Mess OD 1)", posted: "1CL ATIWEN 'A'", incoming: "1CL SARMIENTO 'B'" },
-        { post: "CAMOD 2 (Cadet Asst Mess OD 2)", posted: "2CL DABALOS 'D'", incoming: "2CL COLLADO 'C'" },
-        { post: "HCFI (Honor Committee First Inspector)", posted: "1CL UY 'F'", incoming: "1CL MOLO 'B'" },
-        { post: "CEMA (Cadet Emergency Medical Asst)", posted: "1CL ABBAS 'F'", incoming: "1CL ADORACION 'G'" }
+        { post: "OD (Officer of the Day)", postCode: "OD", posted: "1CL MANGAGOM 'D'", incoming: "1CL PLANTAR 'H'" },
+        { post: "OG1 (Officer of the Guard 1)", postCode: "OG1", posted: "2CL CERVAS 'A'", incoming: "2CL CARTAGENAS 'A'" },
+        { post: "OG2 (Officer of the Guard 2)", postCode: "OG2", posted: "3CL VALENZUELA 'E'", incoming: "3CL AGGABAO 'E'" },
+        { post: "SG1 (Sergeant of the Guard 1)", postCode: "SG1", posted: "3CL UNDANG 'G'", incoming: "3CL UMALI 'F'" },
+        { post: "SG2 (Sergeant of the Guard 2)", postCode: "SG2", posted: "4CL GUTIERREZ 'E'", incoming: "-" },
+        { post: "RCCQ (Regt Cdt-in-Charge of Quarters)", postCode: "RCCQ", posted: "3CL TAGAPAN 'F'", incoming: "3CL ABONITA 'D'" },
+        { post: "ARCCQ (Asst Regt Cdt-in-Charge)", postCode: "ARCCQ", posted: "4CL TALLONGON 'F'", incoming: "4CL" },
+        { post: "CCHC (Cdt-in-Charge of Holding Ctr)", postCode: "CCHC", posted: "3CL PENAREDONDO 'B'", incoming: "3CL TRINIDAD 'F'" },
+        { post: "ACCHC (Asst Cdt-in-Charge of HC)", postCode: "ACCHC", posted: "3CL TUBERA 'E'", incoming: "3CL TUMAPANG 'E'" },
+        { post: "CAL 1 (Cadet Asst for Logistics 1)", postCode: "CAL 1", posted: "1CL AMANGAN 'A'", incoming: "1CL LATORRE 'E'" },
+        { post: "CAL 2 (Cadet Asst for Logistics 2)", postCode: "CAL 2", posted: "2CL CASAMAYOR 'B'", incoming: "2CL DE LEON 'B'" },
+        { post: "CAMO 1 (Cadet Asst Mess Officer 1)", postCode: "CAMO 1", posted: "1CL UNILONGO 'G'", incoming: "1CL AGUSTIN 'D'" },
+        { post: "CAMO 2 (Cadet Asst Mess Officer 2)", postCode: "CAMO 2", posted: "2CL CELESTIAL 'B'", incoming: "2CL CANSINO 'H'" },
+        { post: "CAMOD 1 (Cadet Asst Mess OD 1)", postCode: "CAMOD 1", posted: "1CL ATIWEN 'A'", incoming: "1CL SARMIENTO 'B'" },
+        { post: "CAMOD 2 (Cadet Asst Mess OD 2)", postCode: "CAMOD 2", posted: "2CL DABALOS 'D'", incoming: "2CL COLLADO 'C'" },
+        { post: "HCFI (Honor Committee First Inspector)", postCode: "HCFI", posted: "1CL UY 'F'", incoming: "1CL MOLO 'B'" },
+        { post: "CEMA (Cadet Emergency Medical Asst)", postCode: "CEMA", posted: "1CL ABBAS 'F'", incoming: "1CL ADORACION 'G'" }
       ],
       calls: [
         { time: "0400", activity: "Reveille / Preparation for Duties", uniform: "-", formation: "-" },
-        { time: "0430", activity: "FC BPWC Participants' Practice", uniform: "BDU", formation: "IFFH" },
-        { time: "0445", activity: "FC 1st Phase BBEAL Participants Practice", uniform: "AU", formation: "IFFH" },
-        { time: "0450", activity: "Early Mess for Slow Driller and Silent Drill Class 2029 Practice", uniform: "SDPU", formation: "IFYH" },
-        { time: "0500", activity: "FC Flag Raising for Cadet-in-Charge of Quarters w/ Color Sergeant", uniform: "DA w/ CJ w/ WB & HG", formation: "GR" },
-        { time: "0510", activity: "FC Team Dagohoy Duty / Late Mess", uniform: "BDU w/ Chest Rig", formation: "-" },
+        { time: "0430", activity: "FC BPWC Participants’ Practice", uniform: "BDU", formation: "IFFH" },
+        { time: "0430", activity: "FC Mr. and Ms. CCAFP Duty", uniform: "AU", formation: "-" },
+        { time: "0445", activity: "FC 1st Phase BBEAL Participants Practice", uniform: "-", formation: "-" },
+        { time: "0450", activity: "Early Mess for Slow Driller and Silent Drill of Class 2029", uniform: "SDPU", formation: "IFYH" },
+        { time: "0450", activity: "IF Practice", uniform: "-", formation: "-" },
+        { time: "0450", activity: "Early Mess for Cadet Combo", uniform: "GAU", formation: "-" },
+        { time: "0500", activity: "FC Flag Raising for Cadet-in-Charge of Quarters w/ Selected Color Sergeant", uniform: "DA w/ CJ w/ WB & HG", formation: "GR" },
+        { time: "0510", activity: "FC Team Dagohoy Duty / IF Late Mess", uniform: "BDU w/ Chest Rig", formation: "-" },
         { time: "0520", activity: "FC PRP Duty", uniform: "AU", formation: "JH" },
-        { time: "0530", activity: "FC Morning Mess", uniform: "BDU", formation: "QA" },
+        { time: "0530", activity: "FC Morning Mess", uniform: "DA w/ CJ", formation: "QA" },
         { time: "0620", activity: "FC Late Mess for Cadets from Holding Center", uniform: "DA w/ CJ", formation: "IFFH" },
-        { time: "0625", activity: "FC Late Mess (PMAICC, Paskuhan, BBEAL, Peemayer, Honor Committee)", uniform: "BDU", formation: "-" },
+        { time: "0620", activity: "FC Late Mess for PMAICC Committee Members", uniform: "-", formation: "-" },
+        { time: "0620", activity: "FC Late Mess for Paskuhan Planning Committee Members", uniform: "-", formation: "-" },
+        { time: "0620", activity: "FC Late Mess for 1st Phase BBEAL Participants", uniform: "-", formation: "-" },
+        { time: "0620", activity: "FC Late Mess for Peemayer", uniform: "-", formation: "-" },
+        { time: "0620", activity: "FC Late Mess for Selected Honor Committee Members Who Attended Workout", uniform: "-", formation: "-" },
         { time: "0650", activity: "Police Call", uniform: "-", formation: "IB" },
-        { time: "0700", activity: "FC 1st Period Class", uniform: "BDU / GAU", formation: "IFMH / QAFRH" },
-        { time: "0805", activity: "FC 2nd Period Class", uniform: "BDU / GAU", formation: "-" },
-        { time: "0910", activity: "FC 3rd Period Class", uniform: "BDU / GAU", formation: "-" },
-        { time: "1015", activity: "FC 4th Period Class", uniform: "BDU / GAU", formation: "-" },
-        { time: "1120", activity: "FC 5th Period Class", uniform: "BDU / GAU", formation: "-" },
-        { time: "1240", activity: "FC Noon Mess & Noon Mess for Cadets from Holding Center", uniform: "BDU / DA w/ CJ", formation: "IFYH" },
-        { time: "1345", activity: "FC Corps Formation / Evening Mess Boodle Fight", uniform: "BDU", formation: "-" },
-        { time: "1400", activity: "FC Slow Drill Formation & Silent Drill of Class 2027 Formation", uniform: "SDU", formation: "IFFH" },
-        { time: "1530", activity: "FC Sick Call", uniform: "BDU", formation: "Guardroom" },
-        { time: "1600", activity: "FC Selected 50 Cadets from BRAVO Company for PhilHealth Duty", uniform: "BDU", formation: "-" },
-        { time: "1630", activity: "FC Flag Retreat for Cadet-in-Charge of Quarters w/ Color Sergeant", uniform: "BDU w/ WB & HG", formation: "-" },
+        { time: "0710", activity: "FC 1st Period Class", uniform: "DA w/ CJ / GAU", formation: "IFMH / QAFRH" },
+        { time: "0835", activity: "FC 2nd Period Class", uniform: "-", formation: "-" },
+        { time: "1000", activity: "FC 3rd Period Class", uniform: "-", formation: "-" },
+        { time: "1140", activity: "FC Noon Mess", uniform: "DA", formation: "IFYH" },
+        { time: "1140", activity: "FC Noon Mess for Cadets from Holding Center", uniform: "DA w/ CJ", formation: "Guardroom" },
+        { time: "1240", activity: "FC 4th Period Class", uniform: "DA / GAU", formation: "IFMH / QAFRH" },
+        { time: "1405", activity: "FC 5th Period Class", uniform: "-", formation: "-" },
+        { time: "1530", activity: "FC Sick Call", uniform: "DA w/ CJ", formation: "Guardroom" },
+        { time: "1530-1615", activity: "FC Student-Faculty Consultation", uniform: "-", formation: "RA" },
+        { time: "1550", activity: "FC Selected 4CL for Intake Interview", uniform: "-", formation: "Guardroom" },
+        { time: "1550", activity: "FC Selected 50 Cadets from Bravo Company for PhilHealth Duty", uniform: "-", formation: "IFFH" },
+        { time: "1600", activity: "FC 2CL Cadets PABT / BMI Screening", uniform: "FDU", formation: "IFJH" },
+        { time: "1620", activity: "FC Selected Honor Committee Workout", uniform: "SU", formation: "Guardroom" },
+        { time: "1620", activity: "FC CAMP Proficiency Period", uniform: "RU", formation: "IFNS" },
+        { time: "1620", activity: "FC 1st Phase BBEAL Participants Practice", uniform: "AU", formation: "-" },
+        { time: "1620", activity: "FC Volleyball Corps Squad Practice", uniform: "-", formation: "-" },
+        { time: "1620", activity: "FC Taekwondo Corps Squad Practice", uniform: "GAU", formation: "-" },
+        { time: "1630", activity: "FC Flag Retreat for Cadet-in-Charge of Quarters w/ Selected Color Sergeant", uniform: "DA w/ CJ w/ WB & HG", formation: "Guardroom" },
         { time: "1710", activity: "FC Late Mess for Cadets from Holding Center", uniform: "DA w/ CJ", formation: "-" },
+        { time: "1730-1845", activity: "FC Flexible Evening Mess for Upperclass Cadets", uniform: "RU", formation: "YH" },
+        { time: "1730", activity: "FC 1CL and 2CL Midshipmen Duty", uniform: "SU", formation: "IFLH" },
+        { time: "1745", activity: "FC Evening Mess for 4CL Cadets and Detailed Upperclass", uniform: "-", formation: "IFYH" },
         { time: "1830", activity: "FC Guard Mounting", uniform: "RU", formation: "-" },
         { time: "1900", activity: "ECTQ (Evening Call to Quarters)", uniform: "Study", formation: "-" },
         { time: "2130", activity: "TATTOO", uniform: "-", formation: "-" },
-        { time: "2135", activity: "FC Workouts (Honor Committee, PMAICC, Peemayer, Cadet Combo, Fatigue Duty)", uniform: "SU / GAU", formation: "Guardroom" },
+        { time: "2135", activity: "FC Workouts (Honor Committee, PMAICC, Peemayer, S6, Combo)", uniform: "SU / GAU", formation: "Guardroom" },
         { time: "2200", activity: "TAPS", uniform: "-", formation: "-" },
         { time: "2230", activity: "Completeness Inspection", uniform: "DA w/ CJ", formation: "Quarters" }
       ],
       changes: [
-        { time: "1500H", activity: "FC BBEAL FEMALE BASKETBALL CORPS SQUAD ENTRUCKING", uniform: "CJS", formation: "GUARDROOM" }
+        { time: "1600H", activity: "FC ADFA Cadets Formation & Entrucking", uniform: "CA", formation: "GR" },
+        { time: "1600H", activity: "FC Basketball Corps Squad Entrucking", uniform: "CJS", formation: "GR" },
+        { time: "1620H", activity: "Archery Corps Squad Practice", uniform: "AU", formation: "JH" },
+        { time: "1730H", activity: "FC Early Mess for Paskuhan Participants", uniform: "SU", formation: "IFYH" },
+        { time: "1830H", activity: "FC Study Period for Paskuhan Participants", uniform: "SU", formation: "IB" },
+        { time: "1910H", activity: "FC Paskuhan Participants Workout", uniform: "GAU", formation: "GR" }
       ]
     },
 
@@ -847,7 +870,11 @@ class SheetSyncManager {
   async fetchLiveCSV(url) {
     if (!url || !url.startsWith("http")) return null;
     try {
-      const response = await fetch(url);
+      // Bust browser & intermediary cache with timestamp parameter
+      const cacheBustUrl = url.includes("?") 
+        ? `${url}&_t=${Date.now()}` 
+        : `${url}?_t=${Date.now()}`;
+      const response = await fetch(cacheBustUrl, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const text = await response.text();
       return SheetSyncManager.parseCSV(text);
@@ -856,4 +883,138 @@ class SheetSyncManager {
       return null;
     }
   }
+
+  parseScheduleOfCalls(rows) {
+    if (!rows || rows.length === 0) return null;
+
+    let date = "07 October 2026";
+    let oc = "MAJ JAMES A MARTINEZ PA";
+    let aoc = "MAJ PHILIP JOHN U BUGAYONG PA";
+    let uniform = "DA w/ CJ";
+    const guardRoster = [];
+    const calls = [];
+    const changes = [];
+
+    let isChangesSection = false;
+    let inCallsSection = false;
+
+    const postNameMap = {
+      "OD": "OD (Officer of the Day)",
+      "OG1": "OG1 (Officer of the Guard 1)",
+      "OG2": "OG2 (Officer of the Guard 2)",
+      "SG1": "SG1 (Sergeant of the Guard 1)",
+      "SG2": "SG2 (Sergeant of the Guard 2)",
+      "RCCQ": "RCCQ (Regt Cdt-in-Charge of Quarters)",
+      "ARCCQ": "ARCCQ (Asst Regt Cdt-in-Charge)",
+      "CCHC": "CCHC (Cdt-in-Charge of Holding Ctr)",
+      "ACCHC": "ACCHC (Asst Cdt-in-Charge of HC)",
+      "CAL 1": "CAL 1 (Cadet Asst for Logistics 1)",
+      "CAL1": "CAL 1 (Cadet Asst for Logistics 1)",
+      "CAL 2": "CAL 2 (Cadet Asst for Logistics 2)",
+      "CAL2": "CAL 2 (Cadet Asst for Logistics 2)",
+      "CAMO 1": "CAMO 1 (Cadet Asst Mess Officer 1)",
+      "CAMO1": "CAMO 1 (Cadet Asst Mess Officer 1)",
+      "CAMO 2": "CAMO 2 (Cadet Asst Mess Officer 2)",
+      "CAMO2": "CAMO 2 (Cadet Asst Mess Officer 2)",
+      "CAMOD 1": "CAMOD 1 (Cadet Asst Mess OD 1)",
+      "CAMOD1": "CAMOD 1 (Cadet Asst Mess OD 1)",
+      "CAMOD 2": "CAMOD 2 (Cadet Asst Mess OD 2)",
+      "CAMOD2": "CAMOD 2 (Cadet Asst Mess OD 2)",
+      "HCFI": "HCFI (Honor Committee First Inspector)",
+      "CEMA": "CEMA (Cadet Emergency Medical Asst)"
+    };
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.length === 0) continue;
+      const fullRowText = row.join(" ").trim();
+      if (!fullRowText) continue;
+
+      // Check for date in early rows
+      const dateMatch = fullRowText.match(/(\d{1,2}\s+[A-Za-z]+\s+\d{4})/);
+      if (dateMatch && i < 4 && !fullRowText.includes("MAJ") && !fullRowText.includes("OC:")) {
+        date = dateMatch[1];
+      }
+
+      // Check for OC, AOC, Uniform
+      for (const cell of row) {
+        const trimmed = cell.trim();
+        if (/^OC\s*:\s*/i.test(trimmed)) {
+          oc = trimmed.replace(/^OC\s*:\s*/i, "").trim();
+        } else if (/^AOC\s*:\s*/i.test(trimmed)) {
+          aoc = trimmed.replace(/^AOC\s*:\s*/i, "").trim();
+        } else if (/^Uniform(\s+of\s+the\s+Day)?\s*:\s*/i.test(trimmed)) {
+          uniform = trimmed.replace(/^Uniform(\s+of\s+the\s+Day)?\s*:\s*/i, "").trim();
+        }
+      }
+
+      // Section triggers
+      if (/^CHANGES\b/i.test(row[0]?.trim() || fullRowText)) {
+        isChangesSection = true;
+        continue;
+      }
+
+      // Check for guard detail posts
+      if (row.length > 6) {
+        const post = row[6]?.trim();
+        const posted = row[5]?.trim() || "";
+        const incoming = row[7]?.trim() || "";
+        if (post && !["POSTED", "INCOMING", "POST", "Guard Detail Post", "UNIFORM"].includes(post)) {
+          guardRoster.push({
+            post: postNameMap[post] || post,
+            postCode: post,
+            posted: posted || "-",
+            incoming: incoming || "-"
+          });
+        }
+      }
+
+      if (/^TIME\b/i.test(row[0]?.trim())) {
+        inCallsSection = true;
+        continue;
+      }
+
+      if (isChangesSection) {
+        const time = row[0]?.trim() || "";
+        const act = row[1]?.trim() || "";
+        const uni = row[2]?.trim() || "-";
+        const form = row[3]?.trim() || "-";
+        if (time || act) {
+          changes.push({
+            time: time ? (time.endsWith("H") ? time : `${time}H`) : "1600H",
+            activity: act,
+            uniform: uni,
+            formation: form
+          });
+        }
+      } else if (inCallsSection) {
+        const time = row[0]?.trim() || "";
+        const act = row[1]?.trim() || "";
+        const uni = row[2]?.trim() || "-";
+        const form = row[3]?.trim() || "-";
+        if (time || act) {
+          calls.push({
+            time: time,
+            activity: act,
+            uniform: uni,
+            formation: form
+          });
+        }
+      }
+    }
+
+    return {
+      date: date || "07 October 2026",
+      officers: { oc, aoc, uniform },
+      guardRoster: guardRoster.length > 0 ? guardRoster : (CCAFP_CONFIG.s1Data?.scheduleOfCalls?.guardRoster || []),
+      calls: calls.length > 0 ? calls : (CCAFP_CONFIG.s1Data?.scheduleOfCalls?.calls || []),
+      changes: changes.length > 0 ? changes : (CCAFP_CONFIG.s1Data?.scheduleOfCalls?.changes || [])
+    };
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.CCAFP_CONFIG = CCAFP_CONFIG;
+  window.COUNCIL_SHEET_URLS = COUNCIL_SHEET_URLS;
+  window.SheetSyncManager = SheetSyncManager;
 }

@@ -237,3 +237,87 @@ body {
   border-radius: 0.5rem;
   letter-spacing: 0.04em;
 }
+
+/* =========================================================================
+   Continuous Horizontal Live Marquee Ticker
+   ========================================================================= */
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent 0%, black 1.5%, black 98.5%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 1.5%, black 98.5%, transparent 100%);
+}
+
+.marquee-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: marqueeTicker 50s linear infinite;
+  will-change: transform;
+}
+
+.marquee-container:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeTicker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+/* SOC Timeline Uniform Badges */
+.uniform-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.uniform-badge-da {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.uniform-badge-bdu {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+.uniform-badge-sdpu {
+  background-color: #faf5ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+}
+.uniform-badge-au {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+.uniform-badge-ru {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.uniform-badge-gau {
+  background-color: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+

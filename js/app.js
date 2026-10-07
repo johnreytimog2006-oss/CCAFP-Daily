@@ -4,7 +4,9 @@
   'use strict';
 
   // Live Sheet Sync Manager (Reading from COUNCIL_SHEET_URLS in data.js)
-  const syncManager = new SheetSyncManager();
+  const SyncClass = typeof SheetSyncManager !== 'undefined' ? SheetSyncManager : (typeof window !== 'undefined' ? window.SheetSyncManager : null);
+  const syncManager = SyncClass ? new SyncClass() : { getLink: () => '', fetchLiveCSV: async () => null, parseScheduleOfCalls: () => null };
+  const CCAFP_CONFIG = (typeof window !== 'undefined' && window.CCAFP_CONFIG) ? window.CCAFP_CONFIG : (typeof window !== 'undefined' ? window.CCAFP_CONFIG : {});
 
   // Application State
   const state = {
@@ -14,6 +16,8 @@
     s1AttachmentQuery: '',
     s1StaffCat: 'all',
     s1StaffQuery: '',
+    socGuardQuery: '',
+    socCallsQuery: '',
     activeCouncilId: 's1',
     liveCache: {},
     staffLevel: 'regiment',
@@ -32,9 +36,11 @@
     activeBreadcrumb: document.getElementById('activeBreadcrumb'),
     lastUpdatedClock: document.getElementById('lastUpdatedClock'),
     manualSyncBtn: document.getElementById('manualSyncBtn'),
+    // Moving Announcement Marquee
+    dynamicTickerContent: document.getElementById('dynamicTickerContent'),
     // Home View
     priorityBulletinsGrid: document.getElementById('priorityBulletinsGrid'),
-    // S1 View & 5 Dedicated Subtabs
+    // S1 View & Dedicated Subtabs
     s1SubTabs: document.querySelectorAll('.s1-subtab'),
     s1SubPanes: document.querySelectorAll('.s1-subpane'),
     s1DispositionTableBody: document.getElementById('s1DispositionTableBody'),
@@ -42,15 +48,25 @@
     s1ArmoryTableBody: document.getElementById('s1ArmoryTableBody'),
     s1AttachmentSearch: document.getElementById('s1AttachmentSearch'),
     s1AttachmentTableBody: document.getElementById('s1AttachmentTableBody'),
-    s1GuardRosterTableBody: document.getElementById('s1GuardRosterTableBody'),
-    s1CallsTableBody: document.getElementById('s1CallsTableBody'),
     s1StaffSearch: document.getElementById('s1StaffSearch'),
     s1StaffGridContainer: document.getElementById('s1StaffGridContainer'),
+    // Schedule of Calls (SOC) View
+    socDateBadge: document.getElementById('socDateBadge'),
+    socSyncStatusBadge: document.getElementById('socSyncStatusBadge'),
+    socSyncBtn: document.getElementById('socSyncBtn'),
+    socOC: document.getElementById('socOC'),
+    socAOC: document.getElementById('socAOC'),
+    socUniform: document.getElementById('socUniform'),
+    socOD: document.getElementById('socOD'),
+    socChangesCountBadge: document.getElementById('socChangesCountBadge'),
+    socChangesContainer: document.getElementById('socChangesContainer'),
+    dutyGuardRosterTableBody: document.getElementById('dutyGuardRosterTableBody'),
+    socGuardSearch: document.getElementById('socGuardSearch'),
+    dutyCallsTableBody: document.getElementById('dutyCallsTableBody'),
+    socCallsSearch: document.getElementById('socCallsSearch'),
     // Staff View
     staffDisplayContainer: document.getElementById('staffDisplayContainer'),
     staffTabs: document.querySelectorAll('.staff-tab'),
-    // Duty View
-    dutyRoutineList: document.getElementById('dutyRoutineList'),
     // Calendar View
     calendarEventsGrid: document.getElementById('calendarEventsGrid'),
     // Punishment View
@@ -123,7 +139,7 @@
       home: 'HOME',
       s1: 'S1 PERSONNEL',
       staff: 'CADET STAFF',
-      duty: 'DUTY OFFICERS',
+      duty: 'SCHEDULE OF CALLS (SOC)',
       calendar: 'EVENT CALENDAR',
       honor: 'HONOR COMMITTEE',
       punishments: 'PUNISHMENT LIST',
@@ -167,7 +183,6 @@
     renderS1Disposition();
     renderS1Armory();
     renderS1Attachment();
-    renderS1Schedule();
     renderS1RegimentStaff();
     if (window.lucide) window.lucide.createIcons();
   }
@@ -345,30 +360,6 @@
     `).join('');
   }
 
-  // 4. SCHEDULE OF CALLS RENDERER
-  function renderS1Schedule() {
-    if (!dom.s1GuardRosterTableBody || !dom.s1CallsTableBody) return;
-    const sched = CCAFP_CONFIG.s1Data.scheduleOfCalls;
-
-    // Guard details
-    dom.s1GuardRosterTableBody.innerHTML = sched.guardRoster.map(g => `
-      <tr class="hover:bg-slate-50/70 transition-colors">
-        <td class="py-2 px-3 font-bold text-slate-800">${g.post}</td>
-        <td class="py-2 px-3 text-blue-950 font-bold bg-blue-50/30 rounded">${g.posted}</td>
-        <td class="py-2 px-3 text-emerald-800 font-bold bg-emerald-50/30 rounded">${g.incoming}</td>
-      </tr>
-    `).join('');
-
-    // Calls timeline
-    dom.s1CallsTableBody.innerHTML = sched.calls.map(c => `
-      <tr class="hover:bg-slate-50/70 transition-colors">
-        <td class="py-2.5 px-3 font-mono-clean font-bold text-blue-900">${c.time}H</td>
-        <td class="py-2.5 px-3 font-sans font-medium text-slate-900">${c.activity}</td>
-        <td class="py-2.5 px-2 font-mono-clean text-slate-600">${c.uniform || '-'}</td>
-        <td class="py-2.5 px-2 font-mono-clean text-slate-600">${c.formation || '-'}</td>
-      </tr>
-    `).join('');
-  }
 
   // 5. REGIMENT STAFF 2027 RENDERER
   function renderS1RegimentStaff() {
@@ -614,19 +605,277 @@
     lucide.createIcons();
   }
 
-  // --- Routine Schedule ---
-  function renderDutyRoutine() {
-    if (!dom.dutyRoutineList) return;
-    dom.dutyRoutineList.innerHTML = CCAFP_CONFIG.dailySchedule.map(item => `
-      <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-xs">
-        <div class="flex items-center gap-2.5">
-          <span class="font-bold font-mono-clean text-blue-900 bg-blue-100 px-2 py-0.5 rounded">${item.time}</span>
-          <span class="font-semibold text-slate-800">${item.event}</span>
-          <span class="text-slate-400">(${item.venue})</span>
+  // =========================================================================
+  // 🕒 SCHEDULE OF CALLS (SOC) VIEW RENDERER & LIVE SYNC ENGINE
+  // =========================================================================
+
+  function renderScheduleOfCallsView() {
+    const sched = CCAFP_CONFIG.s1Data?.scheduleOfCalls;
+    if (!sched) return;
+
+    // 1. Date & Header Uniform Badges
+    if (dom.socDateBadge) {
+      dom.socDateBadge.textContent = (sched.date || "07 OCTOBER 2026").toUpperCase();
+    }
+    const uniformHeaderBadge = document.getElementById('socUniformHeaderBadge');
+    if (uniformHeaderBadge) {
+      uniformHeaderBadge.textContent = `UNIFORM: ${sched.officers?.uniform || 'DA w/ CJ'}`;
+    }
+
+    // 2. Command Tactical Officers Cards (OC, AOC, Uniform, OD)
+    if (dom.socOC) {
+      dom.socOC.textContent = sched.officers?.oc || 'MAJ JAMES A MARTINEZ PA';
+    }
+    if (dom.socAOC) {
+      dom.socAOC.textContent = sched.officers?.aoc || 'MAJ PHILIP JOHN U BUGAYONG PA';
+    }
+    if (dom.socUniform) {
+      dom.socUniform.textContent = sched.officers?.uniform || 'DA w/ CJ';
+    }
+    if (dom.socOD) {
+      const odEntry = (sched.guardRoster || []).find(g => g.postCode === 'OD' || (g.post && g.post.startsWith('OD')));
+      if (odEntry && odEntry.posted && odEntry.incoming) {
+        dom.socOD.textContent = `${odEntry.posted} ➔ ${odEntry.incoming}`;
+      } else {
+        dom.socOD.textContent = "1CL MANGAGOM 'D' ➔ 1CL PLANTAR 'H'";
+      }
+    }
+
+    // 3. Official Changes Alert Banner
+    if (dom.socChangesContainer) {
+      const changes = sched.changes || [];
+      if (dom.socChangesCountBadge) {
+        dom.socChangesCountBadge.textContent = `${changes.length} ${changes.length === 1 ? 'CHANGE' : 'CHANGES'}`;
+      }
+
+      if (changes.length === 0) {
+        dom.socChangesContainer.innerHTML = `
+          <div class="col-span-full py-4 text-center text-xs font-mono-clean text-amber-900/80">
+            No official call changes recorded for today.
+          </div>
+        `;
+      } else {
+        dom.socChangesContainer.innerHTML = changes.map(ch => `
+          <div class="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-xs space-y-2 hover:border-amber-400 transition-colors">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-bold font-mono-clean text-[10px] tracking-wide">${ch.time}</span>
+              <span class="text-[10px] font-mono-clean text-slate-500 uppercase tracking-wider">${ch.formation && ch.formation !== '-' ? 'VENUE: ' + ch.formation : 'CORPS CALL'}</span>
+            </div>
+            <h5 class="font-bold text-xs text-slate-900 font-mono-clean leading-snug">${ch.activity}</h5>
+            <div class="flex items-center gap-2 pt-1 border-t border-slate-100 text-[10px] font-mono-clean text-slate-600 flex-wrap">
+              <span>UNIFORM: <strong class="text-blue-900 font-bold">${ch.uniform || '-'}</strong></span>
+              ${ch.formation && ch.formation !== '-' ? `<span>&bull;</span><span>FORMATION: <strong class="text-slate-800 font-bold">${ch.formation}</strong></span>` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // 4. Tactical Guard Detail (Posted & Incoming)
+    if (dom.dutyGuardRosterTableBody) {
+      let guards = sched.guardRoster || [];
+      const q = (state.socGuardQuery || '').toLowerCase();
+      if (q) {
+        guards = guards.filter(g =>
+          (g.post && g.post.toLowerCase().includes(q)) ||
+          (g.posted && g.posted.toLowerCase().includes(q)) ||
+          (g.incoming && g.incoming.toLowerCase().includes(q))
+        );
+      }
+
+      if (guards.length === 0) {
+        dom.dutyGuardRosterTableBody.innerHTML = `
+          <tr><td colspan="4" class="py-6 text-center text-xs font-mono-clean text-slate-400">No matching guard post found.</td></tr>
+        `;
+      } else {
+        dom.dutyGuardRosterTableBody.innerHTML = guards.map(g => `
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="py-3 px-4 font-bold text-slate-900 font-mono-clean">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                <span>${g.post}</span>
+              </div>
+            </td>
+            <td class="py-3 px-4 font-mono-clean font-semibold text-blue-950">
+              <span class="px-2 py-0.5 rounded bg-blue-50 border border-blue-100 text-blue-900">${g.posted}</span>
+            </td>
+            <td class="py-3 px-4 font-mono-clean font-semibold text-emerald-800">
+              <span class="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-900">${g.incoming}</span>
+            </td>
+            <td class="py-3 px-4 text-center font-mono-clean">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${g.incoming && g.incoming !== '-' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-600'}">
+                ${g.incoming && g.incoming !== '-' ? 'RELIEF DUE' : 'ON DUTY'}
+              </span>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // 5. Daily Military Routine Timeline (0400H – 2230H)
+    if (dom.dutyCallsTableBody) {
+      let calls = sched.calls || [];
+      const q = (state.socCallsQuery || '').toLowerCase();
+      if (q) {
+        calls = calls.filter(c =>
+          (c.time && c.time.toLowerCase().includes(q)) ||
+          (c.activity && c.activity.toLowerCase().includes(q)) ||
+          (c.uniform && c.uniform.toLowerCase().includes(q)) ||
+          (c.formation && c.formation.toLowerCase().includes(q))
+        );
+      }
+
+      if (calls.length === 0) {
+        dom.dutyCallsTableBody.innerHTML = `
+          <tr><td colspan="4" class="py-6 text-center text-xs font-mono-clean text-slate-400">No matching military calls found.</td></tr>
+        `;
+      } else {
+        dom.dutyCallsTableBody.innerHTML = calls.map(c => {
+          const timeDisplay = c.time ? (c.time.endsWith('H') ? c.time : `${c.time}H`) : '-';
+
+          let uBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+          const uUpper = (c.uniform || '').toUpperCase();
+          if (uUpper.includes('DA')) uBadgeClass = 'bg-blue-50 text-blue-900 border-blue-200 font-bold';
+          else if (uUpper.includes('BDU')) uBadgeClass = 'bg-emerald-50 text-emerald-900 border-emerald-200 font-bold';
+          else if (uUpper.includes('SDPU') || uUpper.includes('SDU')) uBadgeClass = 'bg-purple-50 text-purple-900 border-purple-200 font-bold';
+          else if (uUpper.includes('AU')) uBadgeClass = 'bg-amber-50 text-amber-900 border-amber-200 font-bold';
+          else if (uUpper.includes('RU')) uBadgeClass = 'bg-rose-50 text-rose-900 border-rose-200 font-bold';
+          else if (uUpper.includes('GAU')) uBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 font-bold';
+
+          return `
+            <tr class="hover:bg-slate-50/70 transition-colors border-b border-slate-100 last:border-0">
+              <td class="py-3 px-4 font-mono-clean font-bold text-blue-950 text-xs">${timeDisplay}</td>
+              <td class="py-3 px-4 font-medium text-slate-900 text-xs">${c.activity}</td>
+              <td class="py-3 px-3 font-mono-clean text-xs">
+                ${c.uniform && c.uniform !== '-' ? `
+                  <span class="px-2 py-0.5 rounded text-[11px] border ${uBadgeClass}">
+                    ${c.uniform}
+                  </span>
+                ` : '<span class="text-slate-400">-</span>'}
+              </td>
+              <td class="py-3 px-3 font-mono-clean text-xs">
+                ${c.formation && c.formation !== '-' ? `
+                  <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-semibold">
+                    ${c.formation}
+                  </span>
+                ` : '<span class="text-slate-400">-</span>'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // --- Dynamic Moving Marquee Announcement Ticker ---
+  function updateMarqueeTicker() {
+    if (!dom.dynamicTickerContent) return;
+    const sched = CCAFP_CONFIG.s1Data?.scheduleOfCalls;
+    const disp = CCAFP_CONFIG.s1Data?.disposition;
+    const armory = CCAFP_CONFIG.s1Data?.armory;
+
+    const items = [];
+
+    // 1. All Schedule Changes from SCHEDULE OF CALLS spreadsheet
+    if (sched && sched.changes && sched.changes.length > 0) {
+      sched.changes.forEach(ch => {
+        items.push(`
+          <div class="ticker-item font-mono-clean">
+            <span class="px-1.5 py-0.5 rounded bg-amber-500 text-white font-bold text-[10px]">SCHEDULE CHANGE</span>
+            <span class="font-bold text-amber-950">${ch.time}:</span>
+            <span class="font-bold text-slate-900">${ch.activity}</span>
+            <span class="text-slate-600">(Uniform: <strong class="text-blue-900">${ch.uniform}</strong>${ch.formation && ch.formation !== '-' ? `, Venue: <strong class="text-slate-800">${ch.formation}</strong>` : ''})</span>
+          </div>
+        `);
+      });
+    }
+
+    // 2. Tactical Officers on Post
+    if (sched && sched.officers) {
+      items.push(`
+        <div class="ticker-item font-mono-clean">
+          <span class="px-1.5 py-0.5 rounded bg-blue-900 text-white font-bold text-[10px]">DUTY COMMAND</span>
+          <span class="text-slate-700">OC: <strong class="text-slate-900">${sched.officers.oc}</strong> &bull; AOC: <strong class="text-slate-900">${sched.officers.aoc}</strong> &bull; Uniform: <strong class="text-blue-700">${sched.officers.uniform}</strong></span>
         </div>
-        <span class="text-[11px] font-mono-clean text-slate-500">${item.uniform}</span>
+      `);
+    }
+
+    // 3. S1 Council - Cadet Information Sheets 2026-2027 Highlights
+    if (disp) {
+      items.push(`
+        <div class="ticker-item font-mono-clean">
+          <span class="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px]">S1 DISPOSITION</span>
+          <span class="text-slate-700">Total Strength: <strong class="text-slate-900">1,267</strong> &bull; On-Post: <strong class="text-slate-900">1,213</strong> &bull; Effective: <strong class="text-emerald-700">1,171</strong> &bull; Ineffective: <strong class="text-amber-700">42</strong> (Holding Ctr: 30, Hospital: 8, SIQ: 4)</span>
+        </div>
+      `);
+    }
+
+    if (armory) {
+      items.push(`
+        <div class="ticker-item font-mono-clean">
+          <span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold text-[10px]">S1 ARMORY</span>
+          <span class="text-slate-700">Rifles: M14 (831), M16 (342), R4 (130) &bull; 1x 9mm Added for MAJ Martinez PA &bull; 51 Bayonets & 14 Swords at RSO Stockroom</span>
+        </div>
+      `);
+    }
+
+    items.push(`
+      <div class="ticker-item font-mono-clean">
+        <span class="px-1.5 py-0.5 rounded bg-slate-800 text-white font-bold text-[10px]">S1 ATTACHMENT</span>
+        <span class="text-slate-700">42 Cadets on FAD Status &bull; 30 Cadets at Holding Center &bull; 9 Cadets Clearing-In &bull; Master Roll Live Synced</span>
       </div>
-    `).join('');
+    `);
+
+    // Duplicate array items once for seamless continuous loop in CSS translateX(-50%)
+    const duplicatedHtml = [...items, ...items].join(`
+      <span class="text-amber-400 font-bold select-none">&bull;</span>
+    `);
+
+    dom.dynamicTickerContent.innerHTML = duplicatedHtml;
+  }
+
+  // --- Live Sync for Schedule of Calls (SOC) ---
+  async function syncScheduleOfCallsLive(showFeedback = false) {
+    const socUrl = syncManager.getLink('s1_schedule') || "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=SCHEDULE%20OF%20CALLS";
+    if (dom.socSyncBtn) {
+      dom.socSyncBtn.querySelector('i')?.classList.add('animate-spin');
+    }
+
+    try {
+      const rows = await syncManager.fetchLiveCSV(socUrl);
+      if (rows && rows.length > 0) {
+        const parsed = syncManager.parseScheduleOfCalls(rows);
+        if (parsed) {
+          CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed;
+          renderScheduleOfCallsView();
+          updateMarqueeTicker();
+
+          if (dom.socSyncStatusBadge) {
+            dom.socSyncStatusBadge.innerHTML = `
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
+              <span>LIVE SHEET SYNCED (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</span>
+            `;
+          }
+
+          if (showFeedback) {
+            showToast('Schedule of Calls synced live with Google Sheets!', 'success');
+          }
+          return true;
+        }
+      }
+    } catch (err) {
+      console.warn('Error syncing Schedule of Calls live:', err);
+      if (showFeedback) {
+        showToast('Using cached Schedule of Calls data.', 'info');
+      }
+    } finally {
+      if (dom.socSyncBtn) {
+        dom.socSyncBtn.querySelector('i')?.classList.remove('animate-spin');
+      }
+    }
+    return false;
   }
 
   // --- Calendar ---
@@ -754,6 +1003,10 @@
     }
     showToast('Fetching latest updates from Google Sheets...', 'info');
 
+    // 1. Synchronize Schedule of Calls (SOC) directly from Google Sheet
+    await syncScheduleOfCallsLive(false);
+
+    // 2. Synchronize Councils
     let synced = 0;
     for (const council of CCAFP_CONFIG.councils) {
       const link = syncManager.getLink(council.id);
@@ -768,6 +1021,8 @@
 
     if (state.currentTab === 's1') {
       renderS1Data();
+    } else if (state.currentTab === 'duty') {
+      renderScheduleOfCallsView();
     } else if (state.currentTab === 'council') {
       const council = CCAFP_CONFIG.councils.find(c => c.id === state.activeCouncilId);
       renderActiveCouncilView(council);
@@ -779,11 +1034,7 @@
     }
 
     updateTime();
-    if (synced > 0) {
-      showToast(`Synchronized S1 & councils live from Google Sheets!`, 'success');
-    } else {
-      showToast('Cadet Corps bulletin records are current.', 'success');
-    }
+    showToast('Synchronized Schedule of Calls & S1 Councils live!', 'success');
   }
 
   // --- Toast ---
@@ -868,6 +1119,27 @@
       });
     }
 
+    // Schedule of Calls (SOC) Listeners
+    if (dom.socGuardSearch) {
+      dom.socGuardSearch.addEventListener('input', (e) => {
+        state.socGuardQuery = e.target.value;
+        renderScheduleOfCallsView();
+      });
+    }
+
+    if (dom.socCallsSearch) {
+      dom.socCallsSearch.addEventListener('input', (e) => {
+        state.socCallsQuery = e.target.value;
+        renderScheduleOfCallsView();
+      });
+    }
+
+    if (dom.socSyncBtn) {
+      dom.socSyncBtn.addEventListener('click', () => {
+        syncScheduleOfCallsLive(true);
+      });
+    }
+
     // General Council Click Handler
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-council-select]');
@@ -926,14 +1198,18 @@
     renderSidebarCouncils();
     renderPriorityBulletins();
     renderS1Data();
-    renderDutyRoutine();
+    renderScheduleOfCallsView();
+    updateMarqueeTicker();
     renderCalendar();
     renderPunishments();
     renderStaffDirectory();
     setupEventListeners();
 
-    // Auto-polling live sheets every 45s
-    setInterval(performLiveSync, 45000);
+    // Fetch live Google Sheets schedule immediately upon launch
+    syncScheduleOfCallsLive(false);
+
+    // Auto-polling live sheets every 30s
+    setInterval(performLiveSync, 30000);
 
     lucide.createIcons();
   }
