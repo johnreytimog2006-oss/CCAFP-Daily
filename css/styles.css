@@ -509,14 +509,17 @@ html.dark .attachment-cat-pill:not(.active-pill),
 html.dark .staff-category-pill:not(.active-pill),
 html.dark .punish-coy-pill:not(.active-pill),
 html.dark .s1-subtab:not(.active-pill),
+html.dark .council-directory-pill:not(.active-pill),
 html.dark .staff-tab:not(.active-pill) {
   background-color: #131e30 !important;
   color: #94a3b8 !important;
+  border-color: #1f304c !important;
 }
 html.dark .attachment-cat-pill:not(.active-pill):hover,
 html.dark .staff-category-pill:not(.active-pill):hover,
 html.dark .punish-coy-pill:not(.active-pill):hover,
 html.dark .s1-subtab:not(.active-pill):hover,
+html.dark .council-directory-pill:not(.active-pill):hover,
 html.dark .staff-tab:not(.active-pill):hover {
   background-color: #1a2940 !important;
   color: #f8fafc !important;

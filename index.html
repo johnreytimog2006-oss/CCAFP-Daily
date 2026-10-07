@@ -83,7 +83,7 @@
         </button>
 
         <!-- S1 Personnel (Featured with Live Sheet Link) -->
-        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-council-select="s1">
+        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="s1" data-council-select="s1">
           <div class="flex items-center gap-2.5">
             <i data-lucide="users" class="w-4 h-4 text-blue-400"></i>
             <span>S1 Personnel</span>
@@ -92,7 +92,7 @@
         </button>
 
         <!-- RSO Council (HTG Armory) -->
-        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="rso">
+        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="rso" data-council-select="rso">
           <div class="flex items-center gap-2.5">
             <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
             <span>RSO Council</span>
@@ -119,19 +119,19 @@
         </button>
 
         <!-- Honor Committee -->
-        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="honor">
+        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="honor" data-council-select="honor">
           <i data-lucide="scale" class="w-4 h-4 text-amber-400"></i>
           <span>Honor Committee</span>
         </button>
 
         <!-- EXO Punishment List -->
-        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="punishments">
+        <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="punishments" data-council-select="ccpb">
           <i data-lucide="file-text" class="w-4 h-4 text-slate-400"></i>
           <span>EXO Punishment List</span>
         </button>
 
         <!-- Spiritual Development Council -->
-        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-council-select="spiritual">
+        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="council" data-council-select="spiritual">
           <div class="flex items-center gap-2.5">
             <i data-lucide="heart-handshake" class="w-4 h-4 text-purple-400"></i>
             <span>Spiritual Development</span>
@@ -252,22 +252,22 @@
 
             <!-- Stats Counters Row -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-blue-400/20">
-              <div>
-                <span id="homeStatsAnnouncements" class="block text-2xl font-bold font-mono-clean text-white">6</span>
-                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider">ANNOUNCEMENTS</span>
-              </div>
-              <div>
-                <span id="homeStatsEvents" class="block text-2xl font-bold font-mono-clean text-white">3</span>
-                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider">UPCOMING EVENTS</span>
-              </div>
-              <div>
-                <span id="homeStatsCouncils" class="block text-2xl font-bold font-mono-clean text-white">18</span>
-                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider">COUNCILS</span>
-              </div>
-              <div>
-                <span id="homeStatsToday" class="block text-2xl font-bold font-mono-clean text-white">Oct 7</span>
-                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider">TODAY</span>
-              </div>
+              <button onclick="document.getElementById('priorityBulletinsGrid')?.scrollIntoView({behavior:'smooth'})" class="text-left group cursor-pointer hover:opacity-90 transition-all">
+                <span id="homeStatsAnnouncements" class="block text-2xl font-bold font-mono-clean text-white group-hover:text-amber-300 transition-colors">6</span>
+                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider group-hover:text-white transition-colors">ANNOUNCEMENTS</span>
+              </button>
+              <button data-tab="calendar" class="text-left group cursor-pointer hover:opacity-90 transition-all">
+                <span id="homeStatsEvents" class="block text-2xl font-bold font-mono-clean text-white group-hover:text-amber-300 transition-colors">3</span>
+                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider group-hover:text-white transition-colors">UPCOMING EVENTS</span>
+              </button>
+              <button data-tab="council" class="text-left group cursor-pointer hover:opacity-90 transition-all">
+                <span id="homeStatsCouncils" class="block text-2xl font-bold font-mono-clean text-white group-hover:text-amber-300 transition-colors">20</span>
+                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider group-hover:text-white transition-colors">COUNCILS</span>
+              </button>
+              <button data-tab="duty" class="text-left group cursor-pointer hover:opacity-90 transition-all">
+                <span id="homeStatsToday" class="block text-2xl font-bold font-mono-clean text-white group-hover:text-amber-300 transition-colors">Oct 7</span>
+                <span class="block text-[10px] text-blue-300 font-mono-clean uppercase tracking-wider group-hover:text-white transition-colors">TODAY (SOC)</span>
+              </button>
             </div>
           </div>
 
@@ -1385,6 +1385,24 @@
 
       <!-- ================= VIEW 8: GENERAL COUNCIL WORKSPACE ================= -->
       <section id="view-council" class="tab-pane hidden space-y-6">
+
+        <!-- All Councils Quick Directory Bar -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <span class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-100">DIRECTORY</span>
+              <h4 class="font-bold text-base text-slate-900 mt-0.5">Cadet Corps Councils Directory (20)</h4>
+              <p class="text-xs text-slate-500">Select any council below or from the sidebar to open its dedicated workspace.</p>
+            </div>
+            <span class="text-xs font-mono-clean text-slate-400">All 20 Staff & Specialist Councils</span>
+          </div>
+
+          <div id="councilsDirectoryPills" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            <!-- Dynamically populated council pills -->
+          </div>
+        </div>
+
+        <!-- Active Council Workspace Card -->
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>

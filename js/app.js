@@ -328,36 +328,51 @@
   }
 
   // --- Navigation & Tab Switching ---
-  window.navigateToTab = function (tabId, breadcrumbName = null) {
+  function navigateToTab(tabId, breadcrumbName = null) {
     state.currentTab = tabId;
 
-    // Update Sidebar active state
-    dom.sidebarLinks.forEach(link => {
+    // 1. Update Sidebar Active Pills across ALL sidebar links (both static & dynamic)
+    const allSidebarLinks = document.querySelectorAll('.sidebar-link');
+    allSidebarLinks.forEach(link => {
+      link.classList.remove('active-pill');
       const target = link.getAttribute('data-tab');
       const councilTarget = link.getAttribute('data-council-select');
-      if (
-        (target === tabId && tabId !== 'council') ||
-        (tabId === 's1' && councilTarget === 's1') ||
-        (tabId === 'rso' && (target === 'rso' || councilTarget === 'rso'))
-      ) {
-        link.classList.add('active-pill');
+
+      let isActive = false;
+      if (tabId === 'council') {
+        isActive = (councilTarget === state.activeCouncilId);
+      } else if (tabId === 's1') {
+        isActive = (target === 's1' || councilTarget === 's1');
+      } else if (tabId === 'rso') {
+        isActive = (target === 'rso' || councilTarget === 'rso');
+      } else if (tabId === 'honor') {
+        isActive = (target === 'honor' || councilTarget === 'honor');
+      } else if (tabId === 'punishments') {
+        isActive = (target === 'punishments' || councilTarget === 'ccpb');
       } else {
-        link.classList.remove('active-pill');
+        isActive = (target === tabId);
+      }
+
+      if (isActive) {
+        link.classList.add('active-pill');
       }
     });
 
+    // 2. If navigating to council view without an active council or coming from s1/rso/honor/ccpb, pick a valid council
     if (tabId === 'council') {
-      document.querySelectorAll('[data-council-select]').forEach(btn => {
-        if (btn.getAttribute('data-council-select') === state.activeCouncilId) {
-          btn.classList.add('active-pill');
-        } else {
-          btn.classList.remove('active-pill');
-        }
-      });
+      if (!state.activeCouncilId || state.activeCouncilId === 's1' || state.activeCouncilId === 'rso' || state.activeCouncilId === 'honor' || state.activeCouncilId === 'ccpb') {
+        state.activeCouncilId = 's2';
+      }
+      const c = (CCAFP_CONFIG.councils || []).find(x => x.id === state.activeCouncilId) || (CCAFP_CONFIG.councils && CCAFP_CONFIG.councils[1]);
+      if (c) {
+        renderActiveCouncilView(c);
+        if (!breadcrumbName) breadcrumbName = c.name.toUpperCase();
+      }
     }
 
-    // Toggle Panes
-    dom.tabPanes.forEach(pane => {
+    // 3. Toggle Panes dynamically querying all .tab-pane elements
+    const allPanes = document.querySelectorAll('.tab-pane');
+    allPanes.forEach(pane => {
       if (pane.id === `view-${tabId}`) {
         pane.classList.remove('hidden');
       } else {
@@ -365,7 +380,7 @@
       }
     });
 
-    // Update Breadcrumb
+    // 4. Update Breadcrumb
     const labels = {
       home: 'HOME',
       s1: 'S1 PERSONNEL',
@@ -375,10 +390,10 @@
       calendar: 'EVENT CALENDAR',
       honor: 'HONOR COMMITTEE',
       punishments: 'PUNISHMENT REGISTER (CCPB)',
-      council: breadcrumbName || 'COUNCIL'
+      council: breadcrumbName || 'COUNCILS DIRECTORY'
     };
     if (dom.activeBreadcrumb) {
-      dom.activeBreadcrumb.textContent = labels[tabId] || 'BULLETIN';
+      dom.activeBreadcrumb.textContent = labels[tabId] || (breadcrumbName ? breadcrumbName.toUpperCase() : 'BULLETIN');
     }
 
     if (tabId === 'rso') {
@@ -389,7 +404,8 @@
 
     closeMobileSidebar();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }
+  window.navigateToTab = navigateToTab;
 
   // --- S1 Council Sub-Pages Switching ---
   function switchS1SubTab(tabName) {
@@ -1074,7 +1090,7 @@
   function renderSpiritualCouncilView(council) {
     if (!dom.councilDynamicContainer) return;
     const list = CCAFP_CONFIG.spiritualData || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.spiritual) || [];
-    const sheetRaw = council?.sheetRaw || COUNCIL_SHEET_URLS.spiritual_raw;
+    const sheetRaw = council?.sheetRaw || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.spiritual_raw : (window.COUNCIL_SHEET_URLS && window.COUNCIL_SHEET_URLS.spiritual_raw) || '');
 
     const total = list.length;
     const countCatholic = list.filter(c => (c.religion || '').toUpperCase().includes('CATHOLIC')).length;
@@ -1319,7 +1335,9 @@
   }
 
   function selectCouncil(councilId) {
+    if (!councilId) return;
     state.activeCouncilId = councilId;
+
     if (councilId === 's1') {
       navigateToTab('s1', 'S1 PERSONNEL');
       return;
@@ -1329,15 +1347,72 @@
       renderRsoArmory();
       return;
     }
-    const council = CCAFP_CONFIG.councils.find(c => c.id === councilId);
+    if (councilId === 'honor') {
+      navigateToTab('honor', 'HONOR COMMITTEE');
+      return;
+    }
+    if (councilId === 'ccpb') {
+      navigateToTab('punishments', 'PUNISHMENT REGISTER (CCPB)');
+      return;
+    }
+
+    const council = (CCAFP_CONFIG.councils || []).find(c => c.id === councilId);
     renderActiveCouncilView(council);
     navigateToTab('council', council ? council.name.toUpperCase() : 'COUNCIL');
+  }
+  window.selectCouncil = selectCouncil;
+
+  // --- Render Councils Directory Switcher Pills ---
+  function renderCouncilsDirectoryPills() {
+    const container = document.getElementById('councilsDirectoryPills');
+    if (!container) return;
+    const councils = CCAFP_CONFIG.councils || [];
+    container.innerHTML = councils.map(c => {
+      const isActive = c.id === state.activeCouncilId;
+      return `
+        <button data-council-select="${c.id}" class="council-directory-pill flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+          isActive
+            ? 'active-pill bg-blue-900 text-white border-blue-950 shadow-xs'
+            : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+        }">
+          <i data-lucide="${c.icon || 'shield'}" class="w-3.5 h-3.5 ${isActive ? 'text-blue-200' : 'text-slate-400'}"></i>
+          <span class="whitespace-nowrap">${c.name}</span>
+        </button>
+      `;
+    }).join('');
+    if (window.lucide) window.lucide.createIcons();
   }
 
   // --- Render Priority Bulletins (Exact Alfacoy Cards) ---
   function renderPriorityBulletins() {
     if (!dom.priorityBulletinsGrid) return;
-    dom.priorityBulletinsGrid.innerHTML = CCAFP_CONFIG.priorityBulletins.map(item => `
+    const authorMap = {
+      'ALL COUNCIL': 'council',
+      'S1 PERSONNEL': 's1',
+      'S2 INTELLIGENCE': 's2',
+      'S3 OPERATIONS': 's3',
+      'S4 LOGISTICS': 's4',
+      'RSO COUNCIL': 'rso',
+      'S5 PLANS & PROGRAMS': 's5',
+      'S6 CEIS / SIGNAL': 's6',
+      'S7 CIVIL-MILITARY': 's7',
+      'S8 EDUCATION AND TRAINING': 's8',
+      'S10 FINANCE': 's10',
+      'ATHLETIC COUNCIL': 'athletic',
+      'ACADEMIC COUNCIL': 'academic',
+      'MTO COUNCIL': 'mto',
+      'EXO COUNCIL': 'exo',
+      'MESS COUNCIL': 'mess',
+      'SPIRITUAL DEVELOPMENT': 'spiritual',
+      'SAFETY COUNCIL': 'safety',
+      'GAD COUNCIL': 'gad',
+      'CCPB BOARD': 'ccpb',
+      'HONOR COMMITTEE': 'honor'
+    };
+
+    dom.priorityBulletinsGrid.innerHTML = CCAFP_CONFIG.priorityBulletins.map(item => {
+      const targetCouncil = authorMap[item.author?.toUpperCase()] || 'council';
+      return `
       <div class="bulletin-card ${item.stripe} p-5 flex flex-col justify-between space-y-4">
         <div>
           <!-- Tags & Date Header -->
@@ -1368,7 +1443,10 @@
         <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
           <div class="flex items-center gap-1.5 text-slate-400 font-mono-clean text-[11px]">
             <i class="fa-solid fa-folder-closed text-slate-400"></i>
-            <span class="font-semibold text-slate-500 uppercase">${item.author}</span>
+            <button data-council-select="${targetCouncil}" class="font-semibold text-slate-600 hover:text-blue-900 hover:underline uppercase transition-colors text-left flex items-center gap-1" title="Click to open ${item.author} page">
+              <span>${item.author}</span>
+              <i data-lucide="arrow-up-right" class="w-3 h-3 text-slate-400"></i>
+            </button>
           </div>
 
           <!-- Interactive Reactions -->
@@ -1384,12 +1462,15 @@
           </div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
+    if (window.lucide) window.lucide.createIcons();
   }
 
   // --- Active General Council View Rendering ---
   async function renderActiveCouncilView(council) {
     if (!council) return;
+    renderCouncilsDirectoryPills();
 
     if (council.id === 'spiritual') {
       if (dom.activeCouncilTag) dom.activeCouncilTag.textContent = "SPECIALIST COUNCIL";
@@ -1400,16 +1481,19 @@
       return;
     }
 
-    if (dom.activeCouncilTag) dom.activeCouncilTag.textContent = council.category.toUpperCase();
-    if (dom.activeCouncilTitle) dom.activeCouncilTitle.textContent = council.title;
-    if (dom.activeCouncilDesc) dom.activeCouncilDesc.textContent = council.description;
+    if (dom.activeCouncilTag) dom.activeCouncilTag.textContent = (council.category || 'COUNCIL').toUpperCase();
+    if (dom.activeCouncilTitle) dom.activeCouncilTitle.textContent = council.title || council.name;
+    if (dom.activeCouncilDesc) dom.activeCouncilDesc.textContent = council.description || '';
 
     if (council.sensitive) {
       const reminders = council.reminders || [];
       dom.councilDynamicContainer.innerHTML = `
         <div class="space-y-4">
-          <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 leading-relaxed">
-            <strong>Restricted Policy Council:</strong> In compliance with Cadet Regulations, work of this council is restricted to ethical guidelines, security orders, and standing reminders only.
+          <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 leading-relaxed flex items-center gap-3">
+            <i data-lucide="shield-alert" class="w-5 h-5 text-red-600 flex-shrink-0"></i>
+            <div>
+              <strong>Restricted Policy Council:</strong> In compliance with Cadet Regulations, work of this council is restricted to ethical guidelines, security orders, and standing reminders only.
+            </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             ${reminders.map(r => `
@@ -1426,7 +1510,7 @@
         </div>
       `;
     } else {
-      const sheetLink = syncManager.getLink(council.id);
+      const sheetLink = (syncManager && syncManager.getLink) ? syncManager.getLink(council.id) : '';
       let headers = council.defaultHeaders || ["Item", "Detail", "Status"];
       let rows = council.defaultRows || [["Record 1", "Information", "Operational"]];
       let isLive = false;
@@ -1437,12 +1521,16 @@
           rows = state.liveCache[council.id].slice(1);
           isLive = true;
         } else {
-          const fetched = await syncManager.fetchLiveCSV(sheetLink);
-          if (fetched && fetched.length > 1) {
-            state.liveCache[council.id] = fetched;
-            headers = fetched[0];
-            rows = fetched.slice(1);
-            isLive = true;
+          try {
+            const fetched = await syncManager.fetchLiveCSV(sheetLink);
+            if (fetched && fetched.length > 1) {
+              state.liveCache[council.id] = fetched;
+              headers = fetched[0];
+              rows = fetched.slice(1);
+              isLive = true;
+            }
+          } catch(e) {
+            console.warn('Could not fetch live sheet for', council.id, e);
           }
         }
       }
@@ -1450,7 +1538,10 @@
       dom.councilDynamicContainer.innerHTML = `
         <div class="space-y-4">
           <div class="flex items-center justify-between text-xs text-slate-500 font-mono-clean">
-            <span>${isLive ? '🟢 Synchronized Live from Google Sheets' : 'Official Baseline Records'}</span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full ${isLive ? 'bg-emerald-500 live-beacon' : 'bg-blue-500'}"></span>
+              <span>${isLive ? 'Synchronized Live from Google Sheets' : 'Official Baseline Records'}</span>
+            </span>
             <span>${rows.length} Records</span>
           </div>
           <div class="overflow-x-auto">
@@ -2280,16 +2371,27 @@
     if (dom.openSidebarBtn) dom.openSidebarBtn.addEventListener('click', openMobileSidebar);
     if (dom.sidebarOverlay) dom.sidebarOverlay.addEventListener('click', closeMobileSidebar);
 
-    dom.sidebarLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        const tab = link.getAttribute('data-tab');
-        const council = link.getAttribute('data-council-select');
-        if (council) {
-          selectCouncil(council);
-        } else if (tab) {
+    // Unified Global Navigation Click Handler (Tabs, Councils, Directory Pills, Bulletin Authors)
+    document.addEventListener('click', (e) => {
+      const councilBtn = e.target.closest('[data-council-select]');
+      if (councilBtn) {
+        e.preventDefault();
+        const id = councilBtn.getAttribute('data-council-select');
+        if (id) {
+          selectCouncil(id);
+        }
+        return;
+      }
+
+      const tabBtn = e.target.closest('[data-tab]');
+      if (tabBtn) {
+        e.preventDefault();
+        const tab = tabBtn.getAttribute('data-tab');
+        if (tab) {
           navigateToTab(tab);
         }
-      });
+        return;
+      }
     });
 
     // S1 Subtabs
@@ -2476,14 +2578,7 @@
       });
     }
 
-    // General Council Click Handler
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-council-select]');
-      if (btn) {
-        const id = btn.getAttribute('data-council-select');
-        selectCouncil(id);
-      }
-    });
+
 
     // Reactions Click Handler (Hearts & Zaps)
     document.addEventListener('click', (e) => {
@@ -2539,6 +2634,7 @@
 
     // 2. Render all initial views with loaded/cached data
     renderSidebarCouncils();
+    renderCouncilsDirectoryPills();
     renderPriorityBulletins();
     renderS1Data();
     renderRsoArmory();
