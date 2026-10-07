@@ -360,7 +360,7 @@
 
     // 2. If navigating to council view without an active council or coming from s1/rso/honor/ccpb, pick a valid council
     if (tabId === 'council') {
-      if (!state.activeCouncilId || state.activeCouncilId === 's1' || state.activeCouncilId === 'rso' || state.activeCouncilId === 'honor' || state.activeCouncilId === 'ccpb') {
+      if (!state.activeCouncilId || state.activeCouncilId === 's1' || state.activeCouncilId === 'rso' || state.activeCouncilId === 'honor' || state.activeCouncilId === 'ccpb' || state.activeCouncilId === 'council') {
         state.activeCouncilId = 's2';
       }
       const c = (CCAFP_CONFIG.councils || []).find(x => x.id === state.activeCouncilId) || (CCAFP_CONFIG.councils && CCAFP_CONFIG.councils[1]);
@@ -1336,6 +1336,7 @@
 
   function selectCouncil(councilId) {
     if (!councilId) return;
+    if (councilId === 'council') councilId = 's2';
     state.activeCouncilId = councilId;
 
     if (councilId === 's1') {
@@ -1356,7 +1357,7 @@
       return;
     }
 
-    const council = (CCAFP_CONFIG.councils || []).find(c => c.id === councilId);
+    const council = (CCAFP_CONFIG.councils || []).find(c => c.id === councilId) || (CCAFP_CONFIG.councils && CCAFP_CONFIG.councils[1]);
     renderActiveCouncilView(council);
     navigateToTab('council', council ? council.name.toUpperCase() : 'COUNCIL');
   }
@@ -2370,6 +2371,14 @@
   function setupEventListeners() {
     if (dom.openSidebarBtn) dom.openSidebarBtn.addEventListener('click', openMobileSidebar);
     if (dom.sidebarOverlay) dom.sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+    const homeAnnouncementsBtn = document.getElementById('homeStatsAnnouncementsBtn');
+    if (homeAnnouncementsBtn) {
+      homeAnnouncementsBtn.addEventListener('click', () => {
+        const grid = document.getElementById('priorityBulletinsGrid');
+        if (grid) grid.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
 
     // Unified Global Navigation Click Handler (Tabs, Councils, Directory Pills, Bulletin Authors)
     document.addEventListener('click', (e) => {
