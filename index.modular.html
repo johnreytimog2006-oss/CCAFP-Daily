@@ -124,10 +124,10 @@
           <span>Honor Committee</span>
         </button>
 
-        <!-- EXO Punishment List -->
+        <!-- CCAFP Punishment List -->
         <button class="sidebar-link w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="punishments" data-council-select="ccpb">
           <i data-lucide="file-text" class="w-4 h-4 text-slate-400"></i>
-          <span>EXO Punishment List</span>
+          <span>CCAFP Punishment List</span>
         </button>
 
         <!-- Spiritual Development Council -->
@@ -135,6 +135,15 @@
           <div class="flex items-center gap-2.5">
             <i data-lucide="heart-handshake" class="w-4 h-4 text-purple-400"></i>
             <span>Spiritual Development</span>
+          </div>
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        </button>
+
+        <!-- Cadet Mess Council -->
+        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="council" data-council-select="mess">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="utensils" class="w-4 h-4 text-emerald-400"></i>
+            <span>Mess Council</span>
           </div>
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
         </button>
@@ -1251,7 +1260,7 @@
         </div>
       </section>
 
-      <!-- ================= VIEW 7: EXO PUNISHMENT LIST ================= -->
+      <!-- ================= VIEW 7: CCAFP PUNISHMENT LIST ================= -->
       <section id="view-punishments" class="tab-pane hidden space-y-6">
         
         <!-- CCPB Header & Live Sync Status Card -->
@@ -1270,8 +1279,8 @@
                     <span>LIVE CCPB REGISTER CONNECTED</span>
                   </span>
                 </div>
-                <h2 class="font-bold text-2xl text-slate-900 mt-1">Cadet Conduct & Disciplinary Register (CCPB)</h2>
-                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Demerits, Tours of Duty, Confinements, and CCPB Special Orders Synchronized from Google Sheets.</p>
+                <h2 class="font-bold text-2xl text-slate-900 mt-1">CCAFP Punishment List (CCPB Register)</h2>
+                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Demerits, Tours of Duty, Confinements, and Disciplinary Board Special Orders Synchronized from Google Sheets.</p>
               </div>
             </div>
 
@@ -1432,6 +1441,7 @@
   <!-- Scripts -->
   <script src="js/data.js?v=2.2"></script>
   <script src="js/s1_spiritual_data.js?v=2.2"></script>
+  <script src="js/mess_data.js?v=2.2"></script>
   <script src="js/app.js?v=2.2"></script>
 </body>
 </html>
