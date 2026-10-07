@@ -26,12 +26,23 @@ from datetime import datetime
 
 # Google Sheets Live GVIZ CSV Endpoints
 BASE_DOC_ID = "1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI"
+PUNISH_DOC_ID = "1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw"
 ENDPOINTS = {
     "schedule": f"https://docs.google.com/spreadsheets/d/{BASE_DOC_ID}/gviz/tq?tqx=out:csv&sheet=SCHEDULE%20OF%20CALLS",
     "disposition": f"https://docs.google.com/spreadsheets/d/{BASE_DOC_ID}/gviz/tq?tqx=out:csv&sheet=DISPOSITION",
     "armory": f"https://docs.google.com/spreadsheets/d/{BASE_DOC_ID}/gviz/tq?tqx=out:csv&sheet=ARMORY",
     "attachment": f"https://docs.google.com/spreadsheets/d/{BASE_DOC_ID}/gviz/tq?tqx=out:csv&sheet=ATTACHMENT",
-    "regiment_staff": f"https://docs.google.com/spreadsheets/d/{BASE_DOC_ID}/gviz/tq?tqx=out:csv&sheet=REGIMENTAL%20STAFF%202027"
+    "regiment_staff": f"https://docs.google.com/spreadsheets/d/{BASE_DOC_ID}/gviz/tq?tqx=out:csv&sheet=REGIMENTAL%20STAFF%202027",
+    "punishments_conduct": f"https://docs.google.com/spreadsheets/d/{PUNISH_DOC_ID}/gviz/tq?tqx=out:csv&gid=1784962041",
+    "punishments_totals": f"https://docs.google.com/spreadsheets/d/{PUNISH_DOC_ID}/gviz/tq?tqx=out:csv&gid=149382018",
+    "s1_expanded": "https://docs.google.com/spreadsheets/d/1sO3tlfX1l4S1ZBTCz2q2kVtgs9OicRztlzdS_OfNJiQ/gviz/tq?tqx=out:csv&gid=2074677523",
+    "s1_roster": "https://docs.google.com/spreadsheets/d/1RgBG_8zpjtFt2CCCEft-ryWa7PMKY49wM0yiAqsOeQA/gviz/tq?tqx=out:csv&gid=1849395053",
+    "s1_squads": "https://docs.google.com/spreadsheets/d/1WgSOcIMQVFFBTAOLnxgPtPn6uNJNjBkarlei5ebvCpQ/gviz/tq?tqx=out:csv&gid=1122746587",
+    "s1_ape_1cl": "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/gviz/tq?tqx=out:csv&gid=592993350",
+    "s1_ape_2cl": "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/gviz/tq?tqx=out:csv&gid=1111921142",
+    "s1_clubs": "https://docs.google.com/spreadsheets/d/1luG6EKlAa1fPK_SoMzpI8r25HbQ0wu0_Uefaz9RI4DY/gviz/tq?tqx=out:csv&gid=0",
+    "s1_tin": "https://docs.google.com/spreadsheets/d/1xcTrlevaAf-y07Vwp8G-ZkD25gCMCacuJDLMexiMqZc/gviz/tq?tqx=out:csv&gid=837476447",
+    "spiritual": "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=194404420"
 }
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

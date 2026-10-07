@@ -16,12 +16,25 @@
     s1AttachmentQuery: '',
     s1StaffCat: 'all',
     s1StaffQuery: '',
+    s1ExpandedQuery: '',
+    s1ExpandedCoy: 'all',
+    s1RosterQuery: '',
+    s1RosterClass: 'all',
+    s1SquadActive: '1ST SQUAD',
+    s1ApeQuery: '',
+    s1ApeClass: 'all',
+    s1ClubsQuery: '',
+    s1TinQuery: '',
+    spiritualQuery: '',
+    spiritualReligion: 'all',
+    spiritualCoy: 'all',
     socGuardQuery: '',
     socCallsQuery: '',
     activeCouncilId: 's1',
     liveCache: {},
     staffLevel: 'regiment',
     punishmentQuery: '',
+    punishCoy: 'all',
     isSyncing: false,
     hasCompletedInitialSync: false
   };
@@ -58,6 +71,28 @@
     s1AttachmentTableBody: document.getElementById('s1AttachmentTableBody'),
     s1StaffSearch: document.getElementById('s1StaffSearch'),
     s1StaffGridContainer: document.getElementById('s1StaffGridContainer'),
+    // S1 New Extended Sub-Panes
+    s1ExpandedSearchInput: document.getElementById('s1ExpandedSearchInput'),
+    s1ExpandedTableBody: document.getElementById('s1ExpandedTableBody'),
+    s1RosterSearchInput: document.getElementById('s1RosterSearchInput'),
+    s1RosterTableBody: document.getElementById('s1RosterTableBody'),
+    s1SquadGridContainer: document.getElementById('s1SquadGridContainer'),
+    s1ApeSearchInput: document.getElementById('s1ApeSearchInput'),
+    s1ApeTableBody: document.getElementById('s1ApeTableBody'),
+    s1ClubsSearchInput: document.getElementById('s1ClubsSearchInput'),
+    s1ClubsTableBody: document.getElementById('s1ClubsTableBody'),
+    s1TinSearchInput: document.getElementById('s1TinSearchInput'),
+    s1TinTableBody: document.getElementById('s1TinTableBody'),
+    s1SheetSelector: document.getElementById('s1SheetSelector'),
+    s1SheetIframe: document.getElementById('s1SheetIframe'),
+    s1SheetExternalLink: document.getElementById('s1SheetExternalLink'),
+    // RSO View (HTG Armory)
+    rsoSyncBadge: document.getElementById('rsoSyncBadge'),
+    rsoSyncBtn: document.getElementById('rsoSyncBtn'),
+    rsoReportDateBadge: document.getElementById('rsoReportDateBadge'),
+    armoryPreparedBy: document.getElementById('armoryPreparedBy'),
+    armoryCheckedBy: document.getElementById('armoryCheckedBy'),
+    armoryNotedBy: document.getElementById('armoryNotedBy'),
     // Schedule of Calls (SOC) View
     socDateBadge: document.getElementById('socDateBadge'),
     socSyncStatusBadge: document.getElementById('socSyncStatusBadge'),
@@ -77,7 +112,15 @@
     staffTabs: document.querySelectorAll('.staff-tab'),
     // Calendar View
     calendarEventsGrid: document.getElementById('calendarEventsGrid'),
-    // Punishment View
+    // Punishment View (CCPB)
+    punishDateBadge: document.getElementById('punishDateBadge'),
+    punishSyncBadge: document.getElementById('punishSyncBadge'),
+    punishSyncBtn: document.getElementById('punishSyncBtn'),
+    punishTouringCount: document.getElementById('punishTouringCount'),
+    punishConfinedCount: document.getElementById('punishConfinedCount'),
+    punishActiveCount: document.getElementById('punishActiveCount'),
+    punishChairman: document.getElementById('punishChairman'),
+    punishNotedBy: document.getElementById('punishNotedBy'),
     punishmentTableBody: document.getElementById('punishmentTableBody'),
     punishmentSearchInput: document.getElementById('punishmentSearchInput'),
     // Council View
@@ -85,6 +128,9 @@
     activeCouncilTitle: document.getElementById('activeCouncilTitle'),
     activeCouncilDesc: document.getElementById('activeCouncilDesc'),
     councilDynamicContainer: document.getElementById('councilDynamicContainer'),
+    // Theme Switcher
+    toggleDarkBtn: document.getElementById('toggleDarkBtn'),
+    darkBtnText: document.getElementById('darkBtnText'),
     toastContainer: document.getElementById('toastContainer')
   };
 
@@ -109,7 +155,11 @@
       const payload = {
         savedAt: new Date().toISOString(),
         version: CCAFP_CONFIG.version,
-        s1Data: CCAFP_CONFIG.s1Data
+        s1Data: CCAFP_CONFIG.s1Data,
+        spiritualData: CCAFP_CONFIG.spiritualData,
+        punishmentList: CCAFP_CONFIG.punishmentList,
+        punishmentTotals: CCAFP_CONFIG.punishmentTotals,
+        punishmentMeta: CCAFP_CONFIG.punishmentMeta
       };
       localStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify(payload));
     } catch (err) {
@@ -122,13 +172,25 @@
       const raw = localStorage.getItem(CACHE_STORAGE_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.s1Data) {
+      if (parsed) {
         if (!CCAFP_CONFIG.s1Data) CCAFP_CONFIG.s1Data = {};
-        if (parsed.s1Data.scheduleOfCalls) CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed.s1Data.scheduleOfCalls;
-        if (parsed.s1Data.disposition) CCAFP_CONFIG.s1Data.disposition = parsed.s1Data.disposition;
-        if (parsed.s1Data.armory) CCAFP_CONFIG.s1Data.armory = parsed.s1Data.armory;
-        if (parsed.s1Data.attachment) CCAFP_CONFIG.s1Data.attachment = parsed.s1Data.attachment;
-        if (parsed.s1Data.regimentStaff) CCAFP_CONFIG.s1Data.regimentStaff = parsed.s1Data.regimentStaff;
+        if (parsed.s1Data) {
+          if (parsed.s1Data.scheduleOfCalls) CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed.s1Data.scheduleOfCalls;
+          if (parsed.s1Data.disposition) CCAFP_CONFIG.s1Data.disposition = parsed.s1Data.disposition;
+          if (parsed.s1Data.armory) CCAFP_CONFIG.s1Data.armory = parsed.s1Data.armory;
+          if (parsed.s1Data.attachment) CCAFP_CONFIG.s1Data.attachment = parsed.s1Data.attachment;
+          if (parsed.s1Data.regimentStaff) CCAFP_CONFIG.s1Data.regimentStaff = parsed.s1Data.regimentStaff;
+          if (parsed.s1Data.expanded) CCAFP_CONFIG.s1Data.expanded = parsed.s1Data.expanded;
+          if (parsed.s1Data.roster) CCAFP_CONFIG.s1Data.roster = parsed.s1Data.roster;
+          if (parsed.s1Data.squads) CCAFP_CONFIG.s1Data.squads = parsed.s1Data.squads;
+          if (parsed.s1Data.clubs) CCAFP_CONFIG.s1Data.clubs = parsed.s1Data.clubs;
+          if (parsed.s1Data.tin) CCAFP_CONFIG.s1Data.tin = parsed.s1Data.tin;
+          if (parsed.s1Data.ape) CCAFP_CONFIG.s1Data.ape = parsed.s1Data.ape;
+        }
+        if (parsed.spiritualData) CCAFP_CONFIG.spiritualData = parsed.spiritualData;
+        if (parsed.punishmentList) CCAFP_CONFIG.punishmentList = parsed.punishmentList;
+        if (parsed.punishmentTotals) CCAFP_CONFIG.punishmentTotals = parsed.punishmentTotals;
+        if (parsed.punishmentMeta) CCAFP_CONFIG.punishmentMeta = parsed.punishmentMeta;
         return true;
       }
     } catch (err) {
@@ -164,7 +226,43 @@
       const oldAtt = JSON.stringify(oldData.attachment || {});
       const newAtt = JSON.stringify(newData.attachment || {});
       if (oldAtt !== newAtt) {
-        changed.push('Cadet Attachments (FAD/SIQ)');
+        changed.push('Cadet Attachments');
+      }
+
+      const oldExp = JSON.stringify(oldData.expanded || []);
+      const newExp = JSON.stringify(newData.expanded || []);
+      if (oldExp !== newExp) {
+        changed.push('Expanded Roll');
+      }
+
+      const oldRost = JSON.stringify(oldData.roster || []);
+      const newRost = JSON.stringify(newData.roster || []);
+      if (oldRost !== newRost) {
+        changed.push('Class Roster');
+      }
+
+      const oldClubs = JSON.stringify(oldData.clubs || []);
+      const newClubs = JSON.stringify(newData.clubs || []);
+      if (oldClubs !== newClubs) {
+        changed.push('Clubs & Orgs');
+      }
+
+      const oldTin = JSON.stringify(oldData.tin || []);
+      const newTin = JSON.stringify(newData.tin || []);
+      if (oldTin !== newTin) {
+        changed.push('TIN & PhilHealth');
+      }
+
+      const oldApe = JSON.stringify(oldData.ape || []);
+      const newApe = JSON.stringify(newData.ape || []);
+      if (oldApe !== newApe) {
+        changed.push('APE Medical');
+      }
+
+      const oldPun = JSON.stringify(oldData.punishmentList || []);
+      const newPun = JSON.stringify(CCAFP_CONFIG.punishmentList || []);
+      if (oldPun !== newPun) {
+        changed.push('Punishments');
       }
     } catch (e) {
       console.warn('Error comparing data signatures:', e);
@@ -237,7 +335,11 @@
     dom.sidebarLinks.forEach(link => {
       const target = link.getAttribute('data-tab');
       const councilTarget = link.getAttribute('data-council-select');
-      if ((target === tabId && tabId !== 'council') || (tabId === 's1' && councilTarget === 's1')) {
+      if (
+        (target === tabId && tabId !== 'council') ||
+        (tabId === 's1' && councilTarget === 's1') ||
+        (tabId === 'rso' && (target === 'rso' || councilTarget === 'rso'))
+      ) {
         link.classList.add('active-pill');
       } else {
         link.classList.remove('active-pill');
@@ -267,15 +369,22 @@
     const labels = {
       home: 'HOME',
       s1: 'S1 PERSONNEL',
+      rso: 'RSO COUNCIL',
       staff: 'CADET STAFF',
       duty: 'SCHEDULE OF CALLS (SOC)',
       calendar: 'EVENT CALENDAR',
       honor: 'HONOR COMMITTEE',
-      punishments: 'PUNISHMENT LIST',
+      punishments: 'PUNISHMENT REGISTER (CCPB)',
       council: breadcrumbName || 'COUNCIL'
     };
     if (dom.activeBreadcrumb) {
       dom.activeBreadcrumb.textContent = labels[tabId] || 'BULLETIN';
+    }
+
+    if (tabId === 'rso') {
+      renderRsoArmory();
+    } else if (tabId === 'punishments') {
+      renderPunishments();
     }
 
     closeMobileSidebar();
@@ -304,15 +413,31 @@
       }
     });
 
+    if (tabName === 'expanded') renderS1Expanded();
+    else if (tabName === 'roster') renderS1Roster();
+    else if (tabName === 'squads') renderS1Squads();
+    else if (tabName === 'ape') renderS1Ape();
+    else if (tabName === 'clubs') renderS1Clubs();
+    else if (tabName === 'tin') renderS1Tin();
+    else if (tabName === 'attachment') renderS1Attachment();
+    else if (tabName === 'regiment-staff') renderS1RegimentStaff();
+    else if (tabName === 'sheetview') initS1SheetViewer();
+
     if (window.lucide) window.lucide.createIcons();
   }
 
   // --- Render S1 Sub-Sections Data ---
   function renderS1Data() {
     renderS1Disposition();
-    renderS1Armory();
+    renderS1Expanded();
+    renderS1Roster();
+    renderS1Squads();
+    renderS1Ape();
+    renderS1Clubs();
+    renderS1Tin();
     renderS1Attachment();
     renderS1RegimentStaff();
+    initS1SheetViewer();
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -377,10 +502,11 @@
     }
   }
 
-  // 2. ARMORY RENDERER
+  // 2. ARMORY & RSO RENDERER
   function renderS1Armory() {
     if (!dom.s1ArmoryTableBody) return;
-    const arm = CCAFP_CONFIG.s1Data.armory;
+    const arm = CCAFP_CONFIG.s1Data?.armory;
+    if (!arm || !arm.rows) return;
     const rows = arm.rows;
 
     dom.s1ArmoryTableBody.innerHTML = rows.map(r => `
@@ -398,16 +524,62 @@
     `).join('') + `
       <tr class="bg-slate-50 font-bold border-t-2 border-slate-300 text-slate-900">
         <td class="py-2.5 px-3 font-mono-clean uppercase text-[11px]">TOTAL INVENTORY</td>
-        <td class="py-2.5 px-2 text-center text-blue-900 font-bold">${arm.totals.m14In} <span class="text-blue-700 font-normal">(${arm.totals.m14Mag})</span></td>
-        <td class="py-2.5 px-2 text-center">${arm.totals.m16In}</td>
-        <td class="py-2.5 px-2 text-center">${arm.totals.r4In}</td>
-        <td class="py-2.5 px-2 text-center text-amber-700">${arm.totals.m1GarandIn}</td>
-        <td class="py-2.5 px-2 text-center text-emerald-700">${arm.totals.pistol9mmIn}</td>
-        <td class="py-2.5 px-2 text-center text-amber-800">${arm.totals.swordsIn}</td>
-        <td class="py-2.5 px-2 text-center text-amber-800">${arm.totals.bayonetsIn}</td>
+        <td class="py-2.5 px-2 text-center text-blue-900 font-bold">${arm.totals?.m14In || 831} <span class="text-blue-700 font-normal">(${arm.totals?.m14Mag || 818})</span></td>
+        <td class="py-2.5 px-2 text-center">${arm.totals?.m16In || 342}</td>
+        <td class="py-2.5 px-2 text-center">${arm.totals?.r4In || 130}</td>
+        <td class="py-2.5 px-2 text-center text-amber-700">${arm.totals?.m1GarandIn || 21}</td>
+        <td class="py-2.5 px-2 text-center text-emerald-700">${arm.totals?.pistol9mmIn || 13}</td>
+        <td class="py-2.5 px-2 text-center text-amber-800">${arm.totals?.swordsIn || 38}</td>
+        <td class="py-2.5 px-2 text-center text-amber-800">${arm.totals?.bayonetsIn || 51}</td>
         <td class="py-2.5 px-3 text-slate-600 text-[11px]">Full Inspection Verified by RSO</td>
       </tr>
     `;
+
+    renderRsoArmoryCardsAndSignatures(arm);
+  }
+
+  function renderRsoArmoryCardsAndSignatures(arm) {
+    if (!arm) return;
+
+    // Update Totals Badges
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    if (arm.totals) {
+      setVal('armoryM14Tot', arm.totals.m14In || 831);
+      setVal('armoryM14MagTot', `${arm.totals.m14Mag || 818} MAG`);
+      setVal('armoryM16Tot', arm.totals.m16In || 342);
+      setVal('armoryR4Tot', arm.totals.r4In || 130);
+      setVal('armoryPistolTot', arm.totals.pistol9mmIn || 13);
+      setVal('armoryGarandTot', arm.totals.m1GarandIn || 21);
+      setVal('armoryK3Tot', arm.totals.k3In || 2);
+      setVal('armorySwordsTot', arm.totals.swordsIn || 38);
+      setVal('armoryBayonetsTot', arm.totals.bayonetsIn || 51);
+    }
+
+    if (arm.reportDate) {
+      setVal('rsoReportDateBadge', arm.reportDate);
+    }
+
+    // Dynamic Verification Signatures (Always Real-Time)
+    const prep = arm.signatures?.preparedBy || (typeof arm.signOff?.preparedBy === 'string' ? arm.signOff.preparedBy : "CDT LT 1CL JHOPRILYN S MANGAGOM C-27151 (Officer-of-the-Day)");
+    const chk = arm.signatures?.checkedBy || (typeof arm.signOff?.checkedBy === 'string' ? arm.signOff.checkedBy : "CARL BENEDICT B ACOSTA C-26007 (AC of RS for Supply / RSO)");
+    let noted = arm.signatures?.notedBy;
+    if (!noted && arm.signOff?.notedBy) {
+      noted = Array.isArray(arm.signOff.notedBy) ? arm.signOff.notedBy.join(' • ') : arm.signOff.notedBy;
+    }
+    if (!noted || noted.includes("GIRON")) {
+      noted = "MAJ JAMES A MARTINEZ PA (Officer-in-Charge)";
+    }
+
+    const prepEl = document.getElementById('armoryPreparedBy');
+    if (prepEl) prepEl.textContent = prep;
+    const chkEl = document.getElementById('armoryCheckedBy');
+    if (chkEl) chkEl.textContent = chk;
+    const notedEl = document.getElementById('armoryNotedBy');
+    if (notedEl) notedEl.textContent = noted;
+  }
+
+  function renderRsoArmory() {
+    renderS1Armory();
   }
 
   // 3. ATTACHMENT RENDERER
@@ -569,6 +741,564 @@
     }).join('');
   }
 
+  // 6. EXPANDED ROLL RENDERER (326 CADETS)
+  function renderS1Expanded() {
+    if (!dom.s1ExpandedTableBody) return;
+    const list = CCAFP_CONFIG.s1Data?.expanded || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.expanded) || [];
+    const q = (state.s1ExpandedQuery || '').toLowerCase().trim();
+    const coyFilter = state.s1ExpandedCoy || 'all';
+
+    const filtered = list.filter(item => {
+      if (coyFilter !== 'all' && (item.coy || '').toUpperCase() !== coyFilter.toUpperCase()) {
+        return false;
+      }
+      if (!q) return true;
+      return (item.name || '').toLowerCase().includes(q) ||
+             (item.sn || '').toLowerCase().includes(q) ||
+             (item.designation || '').toLowerCase().includes(q) ||
+             (item.religion || '').toLowerCase().includes(q) ||
+             (item.region || '').toLowerCase().includes(q) ||
+             (item.bos || '').toLowerCase().includes(q) ||
+             (item.contact || '').toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      dom.s1ExpandedTableBody.innerHTML = `
+        <tr>
+          <td colspan="12" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
+            No matching cadets found in Master Expanded Roll.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const bosBadge = (bos) => {
+      const b = (bos || '').toUpperCase();
+      if (b.includes('PA') && !b.includes('PAF')) return '<span class="px-2 py-0.5 rounded font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">PA</span>';
+      if (b.includes('PAF')) return '<span class="px-2 py-0.5 rounded font-bold bg-blue-50 text-blue-800 border border-blue-200">PAF</span>';
+      if (b.includes('PN')) return '<span class="px-2 py-0.5 rounded font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">PN</span>';
+      return `<span class="px-2 py-0.5 rounded font-bold bg-slate-100 text-slate-700">${b || '-'}</span>`;
+    };
+
+    dom.s1ExpandedTableBody.innerHTML = filtered.map((c, idx) => `
+      <tr class="hover:bg-slate-50/80 transition-colors">
+        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
+        <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
+        <td class="py-2.5 px-2 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
+        <td class="py-2.5 px-2 font-bold text-slate-800">${c.coy || '-'}</td>
+        <td class="py-2.5 px-2 text-slate-600 text-[11px]">${c.platoon || '-'} / ${c.squad || '-'}</td>
+        <td class="py-2.5 px-3 text-slate-700 font-medium text-[11px]">${c.designation || '-'}</td>
+        <td class="py-2.5 px-2">${bosBadge(c.bos)}</td>
+        <td class="py-2.5 px-2 font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
+        <td class="py-2.5 px-2"><span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 text-[10px] font-bold border border-rose-100">${c.blood || '-'}</span></td>
+        <td class="py-2.5 px-3 text-slate-600 text-[11px] truncate max-w-[150px]" title="${c.religion || ''}">${c.religion || '-'}</td>
+        <td class="py-2.5 px-2 text-slate-600 text-[11px]">${c.region || '-'}</td>
+        <td class="py-2.5 px-3 text-slate-600 text-[11px]">${c.contact || '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // 7. CLASS ROSTER RENDERER (374 CADETS)
+  function renderS1Roster() {
+    if (!dom.s1RosterTableBody) return;
+    const list = CCAFP_CONFIG.s1Data?.roster || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.roster) || [];
+    const q = (state.s1RosterQuery || '').toLowerCase().trim();
+    const classFilter = state.s1RosterClass || 'all';
+
+    const filtered = list.filter(item => {
+      if (classFilter !== 'all' && (item.class || '').toUpperCase() !== classFilter.toUpperCase()) {
+        return false;
+      }
+      if (!q) return true;
+      return (item.name || '').toLowerCase().includes(q) ||
+             (item.sn || '').toLowerCase().includes(q) ||
+             (item.coy || '').toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      dom.s1RosterTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
+            No cadets found in Class Roster matching criteria.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const classBadge = (cls) => {
+      const c = (cls || '').toUpperCase();
+      if (c === '1CL') return '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-bold">1CL (2027)</span>';
+      if (c === '2CL') return '<span class="px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-bold">2CL (2028)</span>';
+      if (c === '3CL') return '<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">3CL (2029)</span>';
+      if (c === '4CL') return '<span class="px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200 font-bold">4CL (2030)</span>';
+      return `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700">${c}</span>`;
+    };
+
+    dom.s1RosterTableBody.innerHTML = filtered.map((c, idx) => `
+      <tr class="hover:bg-slate-50/80 transition-colors">
+        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
+        <td class="py-2.5 px-2">${classBadge(c.class)}</td>
+        <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
+        <td class="py-2.5 px-3 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
+        <td class="py-2.5 px-2 font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
+        <td class="py-2.5 px-2 font-bold text-slate-800">${c.coy ? `${c.coy} CO` : '-'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // 8. SQUAD ORGANIZATION MATRIX RENDERER
+  function renderS1Squads() {
+    if (!dom.s1SquadGridContainer) return;
+    const squads = CCAFP_CONFIG.s1Data?.squads || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.squads) || {};
+    const activeSquadKey = state.s1SquadActive || '1ST SQUAD';
+    const activeSquad = squads[activeSquadKey] || { p1: [], p2: [], p3: [], p4: [] };
+
+    const platoons = [
+      { id: 'p1', name: '1ST PLATOON', members: activeSquad.p1 || [], border: 'stripe-blue', dot: 'bg-blue-600' },
+      { id: 'p2', name: '2ND PLATOON', members: activeSquad.p2 || [], border: 'stripe-red', dot: 'bg-red-600' },
+      { id: 'p3', name: '3RD PLATOON', members: activeSquad.p3 || [], border: 'stripe-emerald', dot: 'bg-emerald-600' },
+      { id: 'p4', name: '4TH PLATOON', members: activeSquad.p4 || [], border: 'stripe-amber', dot: 'bg-amber-600' }
+    ];
+
+    dom.s1SquadGridContainer.innerHTML = platoons.map(p => `
+      <div class="bulletin-card ${p.border} p-4 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full ${p.dot}"></span>
+            <h4 class="font-bold text-xs text-slate-900 uppercase font-mono-clean">${p.name}</h4>
+          </div>
+          <span class="text-[10px] font-bold font-mono-clean px-2 py-0.5 rounded bg-slate-100 text-slate-600">${p.members.length} Cadets</span>
+        </div>
+        <div class="space-y-1.5 max-h-[480px] overflow-y-auto pr-1">
+          ${p.members.map((m, idx) => {
+            const is1CL = m.startsWith('1CL');
+            const is2CL = m.startsWith('2CL');
+            const badge = is1CL 
+              ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">1CL</span>'
+              : (is2CL ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">2CL</span>' : '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">CDT</span>');
+            return `
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 hover:bg-slate-100 text-xs font-mono-clean transition-colors">
+                <span class="text-slate-400 text-[10px] w-5">${idx + 1}.</span>
+                <span class="font-semibold text-slate-800 flex-1 truncate ml-1">${m}</span>
+                ${badge}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 9. APE MEDICAL MONITORING RENDERER (108 CADETS)
+  function renderS1Ape() {
+    if (!dom.s1ApeTableBody) return;
+    const list = CCAFP_CONFIG.s1Data?.ape || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.ape) || [];
+    const q = (state.s1ApeQuery || '').toLowerCase().trim();
+    const classFilter = state.s1ApeClass || 'all';
+
+    const filtered = list.filter(item => {
+      if (classFilter !== 'all' && (item.class || '').toUpperCase() !== classFilter.toUpperCase()) {
+        return false;
+      }
+      if (!q) return true;
+      return (item.name || '').toLowerCase().includes(q) ||
+             (item.sn || '').toLowerCase().includes(q) ||
+             (item.remarks || '').toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      dom.s1ApeTableBody.innerHTML = `
+        <tr>
+          <td colspan="10" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
+            No APE medical records matching criteria.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const checkIcon = (val) => {
+      const isDone = String(val).toUpperCase() === 'TRUE';
+      return isDone
+        ? '<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">✓</span>'
+        : '<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-xs">✕</span>';
+    };
+
+    dom.s1ApeTableBody.innerHTML = filtered.map((c, idx) => `
+      <tr class="hover:bg-slate-50/80 transition-colors">
+        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
+        <td class="py-2.5 px-2 font-bold ${c.class === '1CL' ? 'text-amber-700' : 'text-blue-700'}">${c.class}</td>
+        <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
+        <td class="py-2.5 px-3 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
+        <td class="py-2.5 px-2 text-center">${checkIcon(c.urinalysis)}</td>
+        <td class="py-2.5 px-2 text-center">${checkIcon(c.blood)}</td>
+        <td class="py-2.5 px-2 text-center">${checkIcon(c.vitals)}</td>
+        <td class="py-2.5 px-2 text-center">${checkIcon(c.dental)}</td>
+        <td class="py-2.5 px-2 text-center">${checkIcon(c.physical)}</td>
+        <td class="py-2.5 px-3">
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold ${c.remarks?.includes('Pending') ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'}">
+            ${c.remarks || 'In Progress'}
+          </span>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // 10. CLUBS & ORGANIZATIONS RENDERER (74 CLUBS)
+  function renderS1Clubs() {
+    if (!dom.s1ClubsTableBody) return;
+    const list = CCAFP_CONFIG.s1Data?.clubs || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.clubs) || [];
+    const q = (state.s1ClubsQuery || '').toLowerCase().trim();
+
+    const filtered = list.filter(item => {
+      if (!q) return true;
+      return (item.name || '').toLowerCase().includes(q) ||
+             (item.cic || '').toLowerCase().includes(q) ||
+             (item.acic || '').toLowerCase().includes(q) ||
+             (item.oic || '').toLowerCase().includes(q) ||
+             (item.venue || '').toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      dom.s1ClubsTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
+            No clubs found matching search query.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    dom.s1ClubsTableBody.innerHTML = filtered.map((c, idx) => `
+      <tr class="hover:bg-slate-50/80 transition-colors">
+        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
+        <td class="py-2.5 px-3 font-bold text-slate-900">${c.name || '-'}</td>
+        <td class="py-2.5 px-3 text-slate-800 text-[11px]">${c.cic || '—'}</td>
+        <td class="py-2.5 px-3 text-slate-600 text-[11px]">${c.acic || '—'}</td>
+        <td class="py-2.5 px-3 text-slate-700 text-[11px] font-medium">${c.oic || '—'}</td>
+        <td class="py-2.5 px-3 text-slate-600 text-[11px]">${c.venue || '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // 11. TIN & PHILHEALTH RENDERER (320 CADETS)
+  function renderS1Tin() {
+    if (!dom.s1TinTableBody) return;
+    const list = CCAFP_CONFIG.s1Data?.tin || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.tin) || [];
+    const q = (state.s1TinQuery || '').toLowerCase().trim();
+
+    const filtered = list.filter(item => {
+      if (!q) return true;
+      return (item.name || '').toLowerCase().includes(q) ||
+             (item.sn || '').toLowerCase().includes(q) ||
+             (item.tin || '').toLowerCase().includes(q) ||
+             (item.philhealth || '').toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      dom.s1TinTableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
+            No TIN records found matching search query.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    dom.s1TinTableBody.innerHTML = filtered.map((c, idx) => `
+      <tr class="hover:bg-slate-50/80 transition-colors">
+        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
+        <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
+        <td class="py-2.5 px-3 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
+        <td class="py-2.5 px-2 font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
+        <td class="py-2.5 px-3 text-slate-600 text-[11px]">${c.bdate || '-'}</td>
+        <td class="py-2.5 px-3 font-mono text-emerald-800 font-semibold bg-emerald-50/30 text-[11px]">${c.tin || '—'}</td>
+        <td class="py-2.5 px-3 font-mono text-slate-800 text-[11px]">${c.philhealth || '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // 12. S1 MULTI-SHEET VIEWER ENGINE
+  const S1_SHEET_MAP = {
+    base: {
+      embed: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/htmlembed?gid=1901671722&widget=true&chrome=false",
+      external: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/edit?gid=1901671722#gid=1901671722"
+    },
+    expanded: {
+      embed: "https://docs.google.com/spreadsheets/d/1sO3tlfX1l4S1ZBTCz2q2kVtgs9OicRztlzdS_OfNJiQ/htmlembed?gid=2074677523&widget=true&chrome=false",
+      external: "https://docs.google.com/spreadsheets/d/1sO3tlfX1l4S1ZBTCz2q2kVtgs9OicRztlzdS_OfNJiQ/edit?gid=2074677523#gid=2074677523"
+    },
+    roster: {
+      embed: "https://docs.google.com/spreadsheets/d/1RgBG_8zpjtFt2CCCEft-ryWa7PMKY49wM0yiAqsOeQA/htmlembed?gid=1849395053&widget=true&chrome=false",
+      external: "https://docs.google.com/spreadsheets/d/1RgBG_8zpjtFt2CCCEft-ryWa7PMKY49wM0yiAqsOeQA/edit?gid=1849395053#gid=1849395053"
+    },
+    squads: {
+      embed: "https://docs.google.com/spreadsheets/d/1WgSOcIMQVFFBTAOLnxgPtPn6uNJNjBkarlei5ebvCpQ/htmlembed?gid=1122746587&widget=true&chrome=false",
+      external: "https://docs.google.com/spreadsheets/d/1WgSOcIMQVFFBTAOLnxgPtPn6uNJNjBkarlei5ebvCpQ/edit?gid=1122746587#gid=1122746587"
+    },
+    ape_1cl: {
+      embed: "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/htmlembed?gid=592993350&widget=true&chrome=false",
+      external: "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/edit?gid=592993350#gid=592993350"
+    },
+    ape_2cl: {
+      embed: "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/htmlembed?gid=1111921142&widget=true&chrome=false",
+      external: "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/edit?gid=1111921142#gid=1111921142"
+    },
+    clubs: {
+      embed: "https://docs.google.com/spreadsheets/d/1luG6EKlAa1fPK_SoMzpI8r25HbQ0wu0_Uefaz9RI4DY/htmlembed?gid=0&widget=true&chrome=false",
+      external: "https://docs.google.com/spreadsheets/d/1luG6EKlAa1fPK_SoMzpI8r25HbQ0wu0_Uefaz9RI4DY/edit?gid=0#gid=0"
+    },
+    tin: {
+      embed: "https://docs.google.com/spreadsheets/d/1xcTrlevaAf-y07Vwp8G-ZkD25gCMCacuJDLMexiMqZc/htmlembed?gid=837476447&widget=true&chrome=false",
+      external: "https://docs.google.com/spreadsheets/d/1xcTrlevaAf-y07Vwp8G-ZkD25gCMCacuJDLMexiMqZc/edit?pli=1&gid=837476447#gid=837476447"
+    }
+  };
+
+  function initS1SheetViewer() {
+    if (!dom.s1SheetSelector || !dom.s1SheetIframe) return;
+    const key = dom.s1SheetSelector.value || 'base';
+    const config = S1_SHEET_MAP[key] || S1_SHEET_MAP.base;
+    if (dom.s1SheetIframe.getAttribute('src') !== config.embed) {
+      dom.s1SheetIframe.setAttribute('src', config.embed);
+    }
+    if (dom.s1SheetExternalLink) {
+      dom.s1SheetExternalLink.setAttribute('href', config.external);
+    }
+  }
+
+  // 13. SPIRITUAL DEVELOPMENT COUNCIL SPECIALIZED PORTAL RENDERER
+  function renderSpiritualCouncilView(council) {
+    if (!dom.councilDynamicContainer) return;
+    const list = CCAFP_CONFIG.spiritualData || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.spiritual) || [];
+    const sheetRaw = council?.sheetRaw || COUNCIL_SHEET_URLS.spiritual_raw;
+
+    const total = list.length;
+    const countCatholic = list.filter(c => (c.religion || '').toUpperCase().includes('CATHOLIC')).length;
+    const countBaptist = list.filter(c => (c.religion || '').toUpperCase().includes('BAPTIST') || (c.religion || '').toUpperCase().includes('PMACF') || (c.religion || '').toUpperCase().includes('CCCC')).length;
+    const countSDA = list.filter(c => (c.religion || '').toUpperCase().includes('ADVENTIST') || (c.religion || '').toUpperCase().includes('SDA')).length;
+    const countLDS = list.filter(c => (c.religion || '').toUpperCase().includes('LATTER DAY SAINTS') || (c.religion || '').toUpperCase().includes('LDS')).length;
+    const countINC = list.filter(c => (c.religion || '').toUpperCase().includes('CRISTO') || (c.religion || '').toUpperCase().includes('INC')).length;
+    const countMuslim = list.filter(c => (c.religion || '').toUpperCase().includes('ISLAMIC') || (c.religion || '').toUpperCase().includes('MUSLIM')).length;
+
+    dom.councilDynamicContainer.innerHTML = `
+      <div class="space-y-6">
+        <!-- Live Cloud Sheet Connection Banner -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-purple-50/70 border border-purple-200">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+              <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold font-mono-clean text-purple-800 uppercase bg-purple-100/80 px-2 py-0.5 rounded border border-purple-200">CLASS 2027 MANDARAIG</span>
+                <span class="text-[10px] font-bold font-mono-clean text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
+                  <span>GOOGLE SHEET CONNECTED</span>
+                </span>
+              </div>
+              <h4 class="font-bold text-sm text-slate-900 mt-0.5">Cadet Religious Services & Faith Denominations Roster</h4>
+            </div>
+          </div>
+          <a href="${sheetRaw}" target="_blank" rel="noopener noreferrer" class="self-start sm:self-auto flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-900 hover:bg-purple-800 text-white text-xs font-semibold shadow-xs transition-colors font-mono-clean">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            <span>Open Google Sheet</span>
+          </a>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono-clean">
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+            <span class="text-[10px] text-slate-500 font-bold uppercase block">TOTAL ROSTER</span>
+            <span class="text-xl font-bold text-slate-900">${total}</span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">Mandaraig '27</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-blue-50 border border-blue-200">
+            <span class="text-[10px] text-blue-700 font-bold uppercase block">ROMAN CATHOLIC</span>
+            <span class="text-xl font-bold text-blue-950">${countCatholic}</span>
+            <span class="text-[10px] text-blue-600 block mt-0.5">${total ? ((countCatholic/total)*100).toFixed(0) : 0}% of Class</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-purple-50 border border-purple-200">
+            <span class="text-[10px] text-purple-700 font-bold uppercase block">PROTESTANT / EVANGELICAL</span>
+            <span class="text-xl font-bold text-purple-950">${countBaptist}</span>
+            <span class="text-[10px] text-purple-600 block mt-0.5">PMACF, Grace, CCCC</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+            <span class="text-[10px] text-emerald-700 font-bold uppercase block">SEVENTH-DAY ADVENTIST</span>
+            <span class="text-xl font-bold text-emerald-950">${countSDA}</span>
+            <span class="text-[10px] text-emerald-600 block mt-0.5">Sabbath Worship</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
+            <span class="text-[10px] text-amber-700 font-bold uppercase block">LATTER-DAY SAINTS</span>
+            <span class="text-xl font-bold text-amber-950">${countLDS}</span>
+            <span class="text-[10px] text-amber-600 block mt-0.5">LDS / Mormon</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-cyan-50 border border-cyan-200">
+            <span class="text-[10px] text-cyan-700 font-bold uppercase block">ISLAMIC FAITH</span>
+            <span class="text-xl font-bold text-cyan-950">${countMuslim}</span>
+            <span class="text-[10px] text-cyan-600 block mt-0.5">Jum'ah Prayers</span>
+          </div>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="space-y-3 p-4 rounded-2xl bg-slate-50/70 border border-slate-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+              <input id="spiritualSearchInput" type="text" value="${state.spiritualQuery}" placeholder="Search cadet, serial number, religion, company..." class="px-3.5 py-1.5 text-xs rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-64 sm:w-80 font-mono-clean">
+            </div>
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
+              <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">COY:</span>
+              <button class="spiritual-coy-pill ${state.spiritualCoy === 'all' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold" data-coy="all">All</button>
+              ${['A','B','C','D','E','F','G','H'].map(c => `
+                <button class="spiritual-coy-pill ${state.spiritualCoy === c ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium" data-coy="${c}">${c}</button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Religion Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 text-xs font-mono-clean border-t border-slate-200/60">
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">FAITH:</span>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'all' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold flex-shrink-0" data-religion="all">All Denominations (${total})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'CATHOLIC' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="CATHOLIC">Catholic (97)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'GRACE BAPTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="GRACE BAPTIST">Grace Baptist (31)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'PMACF' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="PMACF">PMACF (25)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'SEVENTH-DAY ADVENTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="SEVENTH-DAY ADVENTIST">SDA (18)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'CCCC' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="CCCC">CCCC (15)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'LATTER DAY SAINTS' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="LATTER DAY SAINTS">LDS (15)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'IGLESIA NI CRISTO' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="IGLESIA NI CRISTO">INC (11)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'PMA BAPTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="PMA BAPTIST">PMA Baptist (9)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'ANGLICAN/AGLIPAYAN' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="ANGLICAN/AGLIPAYAN">Anglican (9)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'ISLAMIC CREDENCE SOCIETY' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="ISLAMIC CREDENCE SOCIETY">Islamic (7)</button>
+          </div>
+        </div>
+
+        <!-- Cadets Table -->
+        <div id="spiritualTableContainer" class="overflow-x-auto">
+          <!-- Dynamically filtered rows -->
+        </div>
+      </div>
+    `;
+
+    renderSpiritualTableRows(list);
+    wireSpiritualEvents(list);
+  }
+
+  function renderSpiritualTableRows(list) {
+    const container = document.getElementById('spiritualTableContainer');
+    if (!container) return;
+
+    const q = (state.spiritualQuery || '').toLowerCase().trim();
+    const relFilter = state.spiritualReligion || 'all';
+    const coyFilter = state.spiritualCoy || 'all';
+
+    const filtered = list.filter(item => {
+      if (coyFilter !== 'all' && (item.coy || '').toUpperCase() !== coyFilter.toUpperCase()) {
+        return false;
+      }
+      if (relFilter !== 'all' && !(item.religion || '').toUpperCase().includes(relFilter)) {
+        return false;
+      }
+      if (!q) return true;
+      return (item.name || '').toLowerCase().includes(q) ||
+             (item.sn || '').toLowerCase().includes(q) ||
+             (item.coy || '').toLowerCase().includes(q) ||
+             (item.religion || '').toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="py-12 text-center text-slate-400 font-mono-clean text-xs">
+          No cadets found matching religious affiliation criteria.
+        </div>
+      `;
+      return;
+    }
+
+    const badgeForReligion = (rel) => {
+      const r = (rel || '').toUpperCase();
+      if (r.includes('CATHOLIC')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Roman Catholic</span>';
+      if (r.includes('GRACE BAPTIST')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-800 border border-purple-200">Grace Baptist</span>';
+      if (r.includes('PMACF')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">PMACF Fellowship</span>';
+      if (r.includes('SEVENTH-DAY ADVENTIST') || r.includes('SDA')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Seventh-Day Adventist</span>';
+      if (r.includes('CCCC')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200">CCCC Fellowship</span>';
+      if (r.includes('LATTER DAY SAINTS')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Latter-day Saints</span>';
+      if (r.includes('IGLESIA NI CRISTO')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">Iglesia Ni Cristo</span>';
+      if (r.includes('PMA BAPTIST')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">PMA Baptist</span>';
+      if (r.includes('ANGLICAN')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 text-orange-800 border border-orange-200">Anglican / Aglipayan</span>';
+      if (r.includes('ISLAMIC') || r.includes('MUSLIM')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-50 text-green-800 border border-green-200">Islamic Credence Society</span>';
+      return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-800">${r}</span>`;
+    };
+
+    container.innerHTML = `
+      <div class="flex items-center justify-between text-xs text-slate-500 font-mono-clean pb-2">
+        <span>Showing <strong>${filtered.length}</strong> of ${list.length} Mandaraig Cadets</span>
+        <span>Class of 2027 Roster</span>
+      </div>
+      <table class="w-full text-left text-xs font-mono-clean">
+        <thead>
+          <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px]">
+            <th class="py-3 px-2">#</th>
+            <th class="py-3 px-2">Class</th>
+            <th class="py-3 px-3 font-semibold text-slate-900">Cadet Full Name</th>
+            <th class="py-3 px-3">Serial No.</th>
+            <th class="py-3 px-2">Gender</th>
+            <th class="py-3 px-2">Company</th>
+            <th class="py-3 px-3">Faith / Religion Affiliation</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          ${filtered.map((c, idx) => `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
+              <td class="py-2.5 px-2 font-bold text-purple-900">${c.class || '1CL'}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
+              <td class="py-2.5 px-3 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
+              <td class="py-2.5 px-2 font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
+              <td class="py-2.5 px-2 font-bold text-slate-800">${c.coy ? `${c.coy} CO` : '-'}</td>
+              <td class="py-2.5 px-3">${badgeForReligion(c.religion)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function wireSpiritualEvents(list) {
+    const search = document.getElementById('spiritualSearchInput');
+    if (search) {
+      search.addEventListener('input', (e) => {
+        state.spiritualQuery = e.target.value;
+        renderSpiritualTableRows(list);
+      });
+    }
+
+    document.querySelectorAll('.spiritual-coy-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.spiritual-coy-pill').forEach(p => {
+          p.className = 'spiritual-coy-pill bg-white text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium';
+        });
+        pill.className = 'spiritual-coy-pill active-pill bg-purple-900 text-white px-2.5 py-1 rounded-lg border border-purple-900 text-xs font-semibold';
+        state.spiritualCoy = pill.getAttribute('data-coy') || 'all';
+        renderSpiritualTableRows(list);
+      });
+    });
+
+    document.querySelectorAll('.spiritual-religion-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.spiritual-religion-pill').forEach(p => {
+          p.className = 'spiritual-religion-pill bg-white text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0';
+        });
+        pill.className = 'spiritual-religion-pill active-pill bg-purple-900 text-white px-2.5 py-1 rounded-lg border border-purple-900 text-xs font-semibold flex-shrink-0';
+        state.spiritualReligion = pill.getAttribute('data-religion') || 'all';
+        renderSpiritualTableRows(list);
+      });
+    });
+  }
+
   // --- Render Sidebar Councils ---
   function renderSidebarCouncils() {
     if (!dom.sidebarCouncilsList) return;
@@ -592,6 +1322,11 @@
     state.activeCouncilId = councilId;
     if (councilId === 's1') {
       navigateToTab('s1', 'S1 PERSONNEL');
+      return;
+    }
+    if (councilId === 'rso') {
+      navigateToTab('rso', 'RSO COUNCIL');
+      renderRsoArmory();
       return;
     }
     const council = CCAFP_CONFIG.councils.find(c => c.id === councilId);
@@ -655,6 +1390,15 @@
   // --- Active General Council View Rendering ---
   async function renderActiveCouncilView(council) {
     if (!council) return;
+
+    if (council.id === 'spiritual') {
+      if (dom.activeCouncilTag) dom.activeCouncilTag.textContent = "SPECIALIST COUNCIL";
+      if (dom.activeCouncilTitle) dom.activeCouncilTitle.textContent = "Spiritual Development Council";
+      if (dom.activeCouncilDesc) dom.activeCouncilDesc.textContent = "Faith, Pastoral Care, Religious Services Roster & Chapel Fellowship";
+      renderSpiritualCouncilView(council);
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
 
     if (dom.activeCouncilTag) dom.activeCouncilTag.textContent = council.category.toUpperCase();
     if (dom.activeCouncilTitle) dom.activeCouncilTitle.textContent = council.title;
@@ -1008,27 +1752,85 @@
   // --- Punishments ---
   function renderPunishments() {
     if (!dom.punishmentTableBody) return;
-    const q = state.punishmentQuery.toLowerCase();
-    const filtered = CCAFP_CONFIG.punishmentList.filter(item => {
-      return item.cadetName.toLowerCase().includes(q) ||
-             item.serialNo.toLowerCase().includes(q) ||
-             item.offense.toLowerCase().includes(q);
-    });
+
+    const list = CCAFP_CONFIG.punishmentList || [];
+    const totals = CCAFP_CONFIG.punishmentTotals || { touring: 239, confined: 74, totalActive: list.length };
+    const meta = CCAFP_CONFIG.punishmentMeta || {
+      chairman: "CDT CPT 1CL APRIL JOY C GEROLA C-27112 'A' Co CCAFP",
+      notedBy: "CDT SGT MAJ 2CL RASHEED SHANE C ABBAS 'A' Co CCAFP",
+      updatedDate: "25 AUGUST 2026"
+    };
+
+    // Update Totals & Header Badges
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setVal('punishTouringCount', totals.touring || 239);
+    setVal('punishConfinedCount', totals.confined || 74);
+    setVal('punishActiveCount', totals.totalActive || list.length);
+    setVal('punishChairman', meta.chairman || "CDT CPT 1CL APRIL JOY C GEROLA");
+    setVal('punishNotedBy', meta.notedBy || "CDT SGT MAJ 2CL RASHEED SHANE C ABBAS");
+    if (meta.updatedDate && dom.punishDateBadge) dom.punishDateBadge.textContent = meta.updatedDate;
+
+    // Filter by Company
+    let filtered = list;
+    if (state.punishCoy && state.punishCoy !== 'all') {
+      filtered = filtered.filter(item => (item.company || '').toUpperCase() === state.punishCoy.toUpperCase());
+    }
+
+    // Filter by Query
+    const q = (state.punishmentQuery || '').toLowerCase().trim();
+    if (q) {
+      filtered = filtered.filter(item => {
+        return (item.cadetName || '').toLowerCase().includes(q) ||
+               (item.rank || '').toLowerCase().includes(q) ||
+               (item.serialNo || '').toLowerCase().includes(q) ||
+               (item.offense || '').toLowerCase().includes(q) ||
+               (item.nature || '').toLowerCase().includes(q) ||
+               (item.company || '').toLowerCase().includes(q) ||
+               (item.status || '').toLowerCase().includes(q);
+      });
+    }
+
+    if (filtered.length === 0) {
+      dom.punishmentTableBody.innerHTML = `
+        <tr>
+          <td colspan="10" class="py-8 text-center text-slate-400 font-mono-clean">
+            No active cadet delinquency records found matching your filter criteria.
+          </td>
+        </tr>
+      `;
+      return;
+    }
 
     dom.punishmentTableBody.innerHTML = filtered.map(item => `
       <tr class="hover:bg-slate-50/70 transition-colors">
         <td class="py-3 px-3 font-sans font-semibold text-slate-900">${item.cadetName}</td>
-        <td class="py-3 px-2 text-slate-500">${item.serialNo}</td>
-        <td class="py-3 px-2 text-slate-600">${item.class}</td>
-        <td class="py-3 px-2 text-blue-700 font-semibold">${item.company} Coy</td>
-        <td class="py-3 px-3 text-slate-700 font-sans">${item.offense}</td>
-        <td class="py-3 px-2 text-center text-red-600 font-bold">${item.demerits}</td>
-        <td class="py-3 px-2 text-center text-amber-600 font-bold">${item.tours}</td>
-        <td class="py-3 px-3">
+        <td class="py-3 px-2 text-slate-500 font-mono-clean text-[11px]">${item.serialNo}</td>
+        <td class="py-3 px-2 text-center text-slate-600 font-bold">${item.class || '1CL'}</td>
+        <td class="py-3 px-2 text-center font-bold text-blue-900 bg-blue-50/40 rounded">${item.company} Coy</td>
+        <td class="py-3 px-3 text-slate-800 font-sans">
+          <div class="font-medium">${item.offense}</div>
+          <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+            (item.offenseClass || '').includes('Class I') ? 'bg-red-50 text-red-700 border border-red-200' :
+            (item.offenseClass || '').includes('Class II') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+            'bg-slate-100 text-slate-700 border border-slate-200'
+          }">${item.offenseClass || 'Class III'} &bull; ${item.nature || 'Negligence of Duty'}</span>
+        </td>
+        <td class="py-3 px-2 text-center text-red-600 font-bold font-mono-clean text-xs">${item.demerits || 0}</td>
+        <td class="py-3 px-2 text-center text-amber-600 font-bold font-mono-clean text-xs">${item.tours || 0}</td>
+        <td class="py-3 px-2 text-center">
           <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+            item.confined === 'YES' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-slate-100 text-slate-600'
+          }">${item.confined || 'NO'}</span>
+        </td>
+        <td class="py-3 px-2 text-center text-slate-500 text-[11px] font-mono-clean whitespace-nowrap">
+          ${item.startDate && item.startDate !== '-' ? `${item.startDate} &rarr; ${item.endDate || '-'}` : '-'}
+        </td>
+        <td class="py-3 px-3 text-center">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
             item.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+            item.status === 'Confined' ? 'bg-red-50 text-red-700 border border-red-200' :
             'bg-amber-50 text-amber-800 border border-amber-200'
-          }">${item.status}</span>
+          }">${item.status || 'Ongoing'}</span>
         </td>
       </tr>
     `).join('');
@@ -1130,13 +1932,36 @@
       const dispUrl = syncManager.getLink('s1_disposition') || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_disposition : '');
       const armoryUrl = syncManager.getLink('s1_armory') || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_armory : '');
       const attachUrl = syncManager.getLink('s1_attachment') || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_attachment : '');
+      const punishConductUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.punishments_conduct : '');
+      const punishTotalsUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.punishments_totals : '');
+      const expandedUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_expanded : '');
+      const rosterUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_roster : '');
+      const squadsUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_squads : '');
+      const ape1Url = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_ape_1cl : '');
+      const ape2Url = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_ape_2cl : '');
+      const clubsUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_clubs : '');
+      const tinUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_tin : '');
+      const spiritualUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.spiritual : '');
 
-      // Concurrently fetch all 4 S1 sheets with cache busting
-      const [schedRes, dispRes, armoryRes, attachRes] = await Promise.allSettled([
+      // Concurrently fetch all sheets with cache busting
+      const [
+        schedRes, dispRes, armoryRes, attachRes, punishConductRes, punishTotalsRes,
+        expandedRes, rosterRes, squadsRes, ape1Res, ape2Res, clubsRes, tinRes, spiritualRes
+      ] = await Promise.allSettled([
         syncManager.fetchLiveCSV(schedUrl),
         syncManager.fetchLiveCSV(dispUrl),
         syncManager.fetchLiveCSV(armoryUrl),
-        syncManager.fetchLiveCSV(attachUrl)
+        syncManager.fetchLiveCSV(attachUrl),
+        syncManager.fetchLiveCSV(punishConductUrl),
+        syncManager.fetchLiveCSV(punishTotalsUrl),
+        syncManager.fetchLiveCSV(expandedUrl),
+        syncManager.fetchLiveCSV(rosterUrl),
+        syncManager.fetchLiveCSV(squadsUrl),
+        syncManager.fetchLiveCSV(ape1Url),
+        syncManager.fetchLiveCSV(ape2Url),
+        syncManager.fetchLiveCSV(clubsUrl),
+        syncManager.fetchLiveCSV(tinUrl),
+        syncManager.fetchLiveCSV(spiritualUrl)
       ]);
 
       const oldDataSnapshot = JSON.parse(JSON.stringify(CCAFP_CONFIG.s1Data || {}));
@@ -1160,7 +1985,7 @@
         }
       }
 
-      // 3. ARMORY
+      // 3. ARMORY / RSO
       if (armoryRes.status === 'fulfilled' && armoryRes.value && armoryRes.value.length > 0) {
         const parsed = syncManager.parseArmory(armoryRes.value);
         if (parsed) {
@@ -1174,6 +1999,114 @@
         const parsed = syncManager.parseAttachment(attachRes.value);
         if (parsed) {
           CCAFP_CONFIG.s1Data.attachment = parsed;
+          hasNewData = true;
+        }
+      }
+
+      // 5. PUNISHMENTS (EXO CONDUCT & TOTALS)
+      if (punishConductRes.status === 'fulfilled' && punishConductRes.value && punishConductRes.value.length > 0) {
+        const totalRows = (punishTotalsRes.status === 'fulfilled' && punishTotalsRes.value) ? punishTotalsRes.value : null;
+        const parsedPunish = syncManager.parsePunishments(punishConductRes.value, totalRows);
+        if (parsedPunish) {
+          CCAFP_CONFIG.punishmentList = parsedPunish.list;
+          CCAFP_CONFIG.punishmentTotals = parsedPunish.totals;
+          CCAFP_CONFIG.punishmentMeta = {
+            chairman: parsedPunish.chairman,
+            notedBy: parsedPunish.notedBy,
+            updatedDate: parsedPunish.updatedDate
+          };
+          hasNewData = true;
+        }
+      }
+
+      // 6. S1 EXPANDED ROLL
+      if (expandedRes.status === 'fulfilled' && expandedRes.value && expandedRes.value.length > 0) {
+        const parsed = syncManager.parseExpanded ? syncManager.parseExpanded(expandedRes.value) : null;
+        if (parsed && parsed.length > 0) {
+          CCAFP_CONFIG.s1Data.expanded = parsed;
+          hasNewData = true;
+        }
+      }
+
+      // 7. S1 CLASS ROSTER
+      if (rosterRes.status === 'fulfilled' && rosterRes.value && rosterRes.value.length > 0) {
+        const parsed = syncManager.parseRoster ? syncManager.parseRoster(rosterRes.value) : null;
+        if (parsed && parsed.length > 0) {
+          CCAFP_CONFIG.s1Data.roster = parsed;
+          hasNewData = true;
+        }
+      }
+
+      // 8. S1 SQUADS ORGANIZATION
+      if (squadsRes.status === 'fulfilled' && squadsRes.value && squadsRes.value.length > 0) {
+        const rows = squadsRes.value;
+        const squadsData = {};
+        let currentSquad = null;
+        for (const r of rows) {
+          const line = r.join(' ');
+          if (line.includes('1ST SQUAD')) {
+            currentSquad = '1ST SQUAD';
+            squadsData[currentSquad] = { p1: [], p2: [], p3: [], p4: [] };
+            continue;
+          } else if (line.includes('2ND SQUAD')) {
+            currentSquad = '2ND SQUAD';
+            squadsData[currentSquad] = { p1: [], p2: [], p3: [], p4: [] };
+            continue;
+          } else if (line.includes('3RD SQUAD')) {
+            currentSquad = '3RD SQUAD';
+            squadsData[currentSquad] = { p1: [], p2: [], p3: [], p4: [] };
+            continue;
+          }
+          if (currentSquad && r.length >= 5) {
+            const p1 = r[1]?.trim();
+            const p2 = r[2]?.trim();
+            const p3 = r[3]?.trim();
+            const p4 = r[4]?.trim();
+            if (p1) squadsData[currentSquad].p1.push(p1);
+            if (p2) squadsData[currentSquad].p2.push(p2);
+            if (p3) squadsData[currentSquad].p3.push(p3);
+            if (p4) squadsData[currentSquad].p4.push(p4);
+          }
+        }
+        if (Object.keys(squadsData).length > 0) {
+          CCAFP_CONFIG.s1Data.squads = squadsData;
+          hasNewData = true;
+        }
+      }
+
+      // 9. S1 APE MEDICAL
+      if (ape1Res.status === 'fulfilled' && ape1Res.value && ape1Res.value.length > 0) {
+        const r2 = (ape2Res.status === 'fulfilled' && ape2Res.value) ? ape2Res.value : [];
+        const parsed = syncManager.parseApe ? syncManager.parseApe(ape1Res.value, r2) : null;
+        if (parsed && parsed.length > 0) {
+          CCAFP_CONFIG.s1Data.ape = parsed;
+          hasNewData = true;
+        }
+      }
+
+      // 10. S1 CLUBS & ORGANIZATIONS
+      if (clubsRes.status === 'fulfilled' && clubsRes.value && clubsRes.value.length > 0) {
+        const parsed = syncManager.parseClubs ? syncManager.parseClubs(clubsRes.value) : null;
+        if (parsed && parsed.length > 0) {
+          CCAFP_CONFIG.s1Data.clubs = parsed;
+          hasNewData = true;
+        }
+      }
+
+      // 11. S1 TIN & PHILHEALTH
+      if (tinRes.status === 'fulfilled' && tinRes.value && tinRes.value.length > 0) {
+        const parsed = syncManager.parseTin ? syncManager.parseTin(tinRes.value) : null;
+        if (parsed && parsed.length > 0) {
+          CCAFP_CONFIG.s1Data.tin = parsed;
+          hasNewData = true;
+        }
+      }
+
+      // 12. SPIRITUAL DEVELOPMENT COUNCIL
+      if (spiritualRes.status === 'fulfilled' && spiritualRes.value && spiritualRes.value.length > 0) {
+        const parsed = syncManager.parseSpiritual ? syncManager.parseSpiritual(spiritualRes.value) : null;
+        if (parsed && parsed.length > 0) {
+          CCAFP_CONFIG.spiritualData = parsed;
           hasNewData = true;
         }
       }
@@ -1201,6 +2134,8 @@
         // Re-render all views
         renderScheduleOfCallsView();
         renderS1Data();
+        renderRsoArmory();
+        renderPunishments();
         updateMarqueeTicker();
         updateHeroStats();
 
@@ -1215,6 +2150,20 @@
           dom.socSyncStatusBadge.innerHTML = `
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
             <span>LIVE SHEET SYNCED (${timeStr})</span>
+          `;
+        }
+
+        if (dom.rsoSyncBadge) {
+          dom.rsoSyncBadge.innerHTML = `
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
+            <span>LIVE ARMORY SYNCED (${timeStr})</span>
+          `;
+        }
+
+        if (dom.punishSyncBadge) {
+          dom.punishSyncBadge.innerHTML = `
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
+            <span>LIVE CCPB SYNCED (${timeStr})</span>
           `;
         }
 
@@ -1252,17 +2201,68 @@
       if (dom.socSyncBtn) {
         dom.socSyncBtn.querySelector('i')?.classList.remove('animate-spin');
       }
+      if (dom.rsoSyncBtn) {
+        dom.rsoSyncBtn.querySelector('i')?.classList.remove('animate-spin');
+      }
+      if (dom.punishSyncBtn) {
+        dom.punishSyncBtn.querySelector('i')?.classList.remove('animate-spin');
+      }
       updateTime();
     }
   }
 
   const performLiveSync = performAutomated15MinSync;
 
+  // --- Dark Mode Theme Manager ---
+  function initTheme() {
+    const saved = localStorage.getItem('ccafp_theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = saved === 'dark' || (!saved && prefersDark);
+    applyTheme(isDark);
+
+    const btn = document.getElementById('toggleDarkBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const currentlyDark = document.documentElement.classList.contains('dark');
+        applyTheme(!currentlyDark);
+      });
+    }
+  }
+
+  function applyTheme(isDark) {
+    const html = document.documentElement;
+    const btnText = document.getElementById('darkBtnText');
+    const btn = document.getElementById('toggleDarkBtn');
+
+    if (isDark) {
+      html.classList.add('dark');
+      localStorage.setItem('ccafp_theme', 'dark');
+      if (btnText) btnText.textContent = 'LIGHT';
+      if (btn) {
+        btn.innerHTML = `
+          <i data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+          <span id="darkBtnText" class="font-mono-clean">LIGHT</span>
+        `;
+      }
+    } else {
+      html.classList.remove('dark');
+      localStorage.setItem('ccafp_theme', 'light');
+      if (btnText) btnText.textContent = 'DARK';
+      if (btn) {
+        btn.innerHTML = `
+          <i data-lucide="moon" class="w-4 h-4 text-slate-600"></i>
+          <span id="darkBtnText" class="font-mono-clean">DARK</span>
+        `;
+      }
+    }
+    if (window.lucide) window.lucide.createIcons();
+  }
+
   // --- Toast ---
   function showToast(message, type = 'info') {
     if (!dom.toastContainer) return;
     const toast = document.createElement('div');
-    toast.className = 'flex items-center gap-2.5 px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-xl text-xs font-semibold text-slate-800 pointer-events-auto transition-all transform duration-200';
+    toast.className = 'flex items-center gap-2.5 px-4 py-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700 shadow-xl text-xs font-semibold text-slate-800 dark:text-slate-100 pointer-events-auto transition-all transform duration-200';
     toast.innerHTML = `
       <span class="text-blue-600 font-bold">•</span>
       <span>${message}</span>
@@ -1340,6 +2340,95 @@
       });
     }
 
+    // S1 Expanded Search & Company Pills
+    if (dom.s1ExpandedSearchInput) {
+      dom.s1ExpandedSearchInput.addEventListener('input', (e) => {
+        state.s1ExpandedQuery = e.target.value;
+        renderS1Expanded();
+      });
+    }
+    document.querySelectorAll('.s1-expanded-coy-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.s1-expanded-coy-pill').forEach(p => {
+          p.className = 's1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200';
+        });
+        pill.className = 's1-expanded-coy-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold';
+        state.s1ExpandedCoy = pill.getAttribute('data-expanded-coy') || 'all';
+        renderS1Expanded();
+      });
+    });
+
+    // S1 Roster Search & Class Pills
+    if (dom.s1RosterSearchInput) {
+      dom.s1RosterSearchInput.addEventListener('input', (e) => {
+        state.s1RosterQuery = e.target.value;
+        renderS1Roster();
+      });
+    }
+    document.querySelectorAll('.s1-roster-class-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.s1-roster-class-pill').forEach(p => {
+          p.className = 's1-roster-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200';
+        });
+        pill.className = 's1-roster-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold';
+        state.s1RosterClass = pill.getAttribute('data-roster-class') || 'all';
+        renderS1Roster();
+      });
+    });
+
+    // S1 Squad Tabs
+    document.querySelectorAll('.s1-squad-tab-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.s1-squad-tab-pill').forEach(p => {
+          p.className = 's1-squad-tab-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium';
+        });
+        pill.className = 's1-squad-tab-pill active-pill px-3 py-1.5 rounded-xl bg-blue-900 text-white font-semibold';
+        state.s1SquadActive = pill.getAttribute('data-squad') || '1ST SQUAD';
+        renderS1Squads();
+      });
+    });
+
+    // S1 APE Search & Cohort Pills
+    if (dom.s1ApeSearchInput) {
+      dom.s1ApeSearchInput.addEventListener('input', (e) => {
+        state.s1ApeQuery = e.target.value;
+        renderS1Ape();
+      });
+    }
+    document.querySelectorAll('.s1-ape-class-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.s1-ape-class-pill').forEach(p => {
+          p.className = 's1-ape-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200';
+        });
+        pill.className = 's1-ape-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold';
+        state.s1ApeClass = pill.getAttribute('data-ape-class') || 'all';
+        renderS1Ape();
+      });
+    });
+
+    // S1 Clubs Search
+    if (dom.s1ClubsSearchInput) {
+      dom.s1ClubsSearchInput.addEventListener('input', (e) => {
+        state.s1ClubsQuery = e.target.value;
+        renderS1Clubs();
+      });
+    }
+
+    // S1 TIN Search
+    if (dom.s1TinSearchInput) {
+      dom.s1TinSearchInput.addEventListener('input', (e) => {
+        state.s1TinQuery = e.target.value;
+        renderS1Tin();
+      });
+    }
+
+    // S1 Sheet Selector Dropdown
+    if (dom.s1SheetSelector) {
+      dom.s1SheetSelector.addEventListener('change', () => {
+        initS1SheetViewer();
+      });
+    }
+
     // Schedule of Calls (SOC) Listeners
     if (dom.socGuardSearch) {
       dom.socGuardSearch.addEventListener('input', (e) => {
@@ -1357,6 +2446,32 @@
 
     if (dom.socSyncBtn) {
       dom.socSyncBtn.addEventListener('click', () => {
+        performAutomated15MinSync(true);
+      });
+    }
+
+    // RSO Armory Sync Button
+    if (dom.rsoSyncBtn) {
+      dom.rsoSyncBtn.addEventListener('click', () => {
+        performAutomated15MinSync(true);
+      });
+    }
+
+    // Punishment Company Filter Pills
+    document.querySelectorAll('.punish-coy-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.punish-coy-pill').forEach(p => {
+          p.className = 'punish-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200';
+        });
+        pill.className = 'punish-coy-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold';
+        state.punishCoy = pill.getAttribute('data-punish-coy') || 'all';
+        renderPunishments();
+      });
+    });
+
+    // Punishment Sync Button
+    if (dom.punishSyncBtn) {
+      dom.punishSyncBtn.addEventListener('click', () => {
         performAutomated15MinSync(true);
       });
     }
@@ -1415,6 +2530,7 @@
 
   // --- Bootstrap Initialization ---
   function init() {
+    initTheme();
     updateTime();
     setInterval(updateTime, 1000);
 
@@ -1425,6 +2541,7 @@
     renderSidebarCouncils();
     renderPriorityBulletins();
     renderS1Data();
+    renderRsoArmory();
     renderScheduleOfCallsView();
     updateMarqueeTicker();
     updateHeroStats();

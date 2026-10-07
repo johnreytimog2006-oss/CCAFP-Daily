@@ -15,6 +15,42 @@ const COUNCIL_SHEET_URLS = {
   s1_regiment_staff: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=REGIMENTAL%20STAFF%202027",
   s1_raw: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/edit?gid=1901671722#gid=1901671722",
 
+  // RSO Council - Regimental Supply Officer & HTG Armory
+  rso: "https://docs.google.com/spreadsheets/d/1D2Mawvphp9UsY9NC8boG46FlksDkjXzLEf5c8afm-xI/gviz/tq?tqx=out:csv&sheet=ARMORY",
+
+  // S1 Extended Feeds
+  s1_expanded: "https://docs.google.com/spreadsheets/d/1sO3tlfX1l4S1ZBTCz2q2kVtgs9OicRztlzdS_OfNJiQ/gviz/tq?tqx=out:csv&gid=2074677523",
+  s1_expanded_raw: "https://docs.google.com/spreadsheets/d/1sO3tlfX1l4S1ZBTCz2q2kVtgs9OicRztlzdS_OfNJiQ/edit?gid=2074677523#gid=2074677523",
+
+  s1_roster: "https://docs.google.com/spreadsheets/d/1RgBG_8zpjtFt2CCCEft-ryWa7PMKY49wM0yiAqsOeQA/gviz/tq?tqx=out:csv&gid=1849395053",
+  s1_roster_raw: "https://docs.google.com/spreadsheets/d/1RgBG_8zpjtFt2CCCEft-ryWa7PMKY49wM0yiAqsOeQA/edit?gid=1849395053#gid=1849395053",
+
+  s1_squads: "https://docs.google.com/spreadsheets/d/1WgSOcIMQVFFBTAOLnxgPtPn6uNJNjBkarlei5ebvCpQ/gviz/tq?tqx=out:csv&gid=1122746587",
+  s1_squads_raw: "https://docs.google.com/spreadsheets/d/1WgSOcIMQVFFBTAOLnxgPtPn6uNJNjBkarlei5ebvCpQ/edit?gid=1122746587#gid=1122746587",
+
+  s1_ape_1cl: "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/gviz/tq?tqx=out:csv&gid=592993350",
+  s1_ape_1cl_raw: "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/edit?gid=592993350#gid=592993350",
+
+  s1_ape_2cl: "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/gviz/tq?tqx=out:csv&gid=1111921142",
+  s1_ape_2cl_raw: "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/edit?gid=1111921142#gid=1111921142",
+
+  s1_clubs: "https://docs.google.com/spreadsheets/d/1luG6EKlAa1fPK_SoMzpI8r25HbQ0wu0_Uefaz9RI4DY/gviz/tq?tqx=out:csv&gid=0",
+  s1_clubs_raw: "https://docs.google.com/spreadsheets/d/1luG6EKlAa1fPK_SoMzpI8r25HbQ0wu0_Uefaz9RI4DY/edit?gid=0#gid=0",
+
+  s1_tin: "https://docs.google.com/spreadsheets/d/1xcTrlevaAf-y07Vwp8G-ZkD25gCMCacuJDLMexiMqZc/gviz/tq?tqx=out:csv&gid=837476447",
+  s1_tin_raw: "https://docs.google.com/spreadsheets/d/1xcTrlevaAf-y07Vwp8G-ZkD25gCMCacuJDLMexiMqZc/edit?pli=1&gid=837476447#gid=837476447",
+
+  // Spiritual Development Council
+  spiritual: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=194404420",
+  spiritual_raw: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=194404420#gid=194404420",
+
+  // EXO Punishment Register & Conduct Sheet (Live GVIZ Endpoints)
+  punishments: "https://docs.google.com/spreadsheets/d/1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw/gviz/tq?tqx=out:csv&gid=1784962041",
+  punishments_conduct: "https://docs.google.com/spreadsheets/d/1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw/gviz/tq?tqx=out:csv&gid=1784962041",
+  punishments_totals: "https://docs.google.com/spreadsheets/d/1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw/gviz/tq?tqx=out:csv&gid=149382018",
+  punishments_summary: "https://docs.google.com/spreadsheets/d/1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw/gviz/tq?tqx=out:csv&gid=1815075399",
+  punishments_raw: "https://docs.google.com/spreadsheets/d/1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw/edit?gid=149382018#gid=149382018",
+
   s2: "",          // Sensitive - Security Reminders Only
   s3: "",
   s4: "",
@@ -28,12 +64,10 @@ const COUNCIL_SHEET_URLS = {
   mto: "",
   exo: "",
   mess: "",
-  spiritual: "",
   safety: "",
   gad: "",         // Sensitive - Gender Guidelines Only
   ccpb: "",        // Sensitive - Conduct Policies Only
   honor: "",       // Sensitive - Sacred Honor Code Tenets Only
-  punishments: "",
   calendar: ""
 };
 
@@ -179,7 +213,8 @@ const CCAFP_CONFIG = {
       notes: "NOTE: ONLY THE REGIMENT RSO IS AUTHORIZED TO EDIT ARMORY RECORDS. 51 Bayonets & 14 Swords housed in RSO Stockroom.",
       signOff: {
         preparedBy: "JHOPRILYN S MANGAGOM C-27151, CDT LT 1CL 'D' CO CCAFP, Officer-of-the-Day",
-        notedBy: ["JULIUS D GIRON LCDR PN (OIC)", "DARYL G VILLA LCDR PN (OIC)", "ROMAN B PALIMA LCDR PN (OIC)"]
+        checkedBy: "CARL BENEDICT B ACOSTA C-26007, CDT CPT 1CL 'F' CO CCAFP, AC of RS for Supply / RSO",
+        notedBy: ["MAJ JAMES A MARTINEZ PA (Officer-in-Charge)", "LCDR DARYL G VILLA PN (Officer-in-Charge)", "LCDR ROMAN B PALIMA PN (Officer-in-Charge)"]
       }
     },
 
@@ -487,8 +522,8 @@ const CCAFP_CONFIG = {
     },
     {
       id: "s2",
-      name: "S2 Security",
-      title: "S2 - Security & Intelligence",
+      name: "S2 Intelligence",
+      title: "S2 - Intelligence",
       icon: "shield-alert",
       category: "Sensitive Councils",
       sensitive: true,
@@ -543,6 +578,16 @@ const CCAFP_CONFIG = {
       ]
     },
     {
+      id: "rso",
+      name: "RSO Council",
+      title: "RSO Council - Regimental Supply Officer & HTG Armory",
+      icon: "shield",
+      category: "Specialist Councils",
+      sensitive: false,
+      sheetUrl: COUNCIL_SHEET_URLS.rso,
+      description: "Responsible Supply Officer (RSO) oversight, HTG Armory live weapons accountability, M14/M16/R4 stock, and security stockrooms."
+    },
+    {
       id: "s5",
       name: "S5 Plans & Programs",
       title: "S5 - Plans & Programs",
@@ -558,8 +603,8 @@ const CCAFP_CONFIG = {
     },
     {
       id: "s6",
-      name: "S6 Signal",
-      title: "S6 - CEIS / Signal",
+      name: "S6 Communications, Electronics, and Information Systems",
+      title: "S6 - Communications, Electronics, and Information Systems",
       icon: "radio",
       category: "Staff Councils",
       sensitive: false,
@@ -588,8 +633,8 @@ const CCAFP_CONFIG = {
     },
     {
       id: "s8",
-      name: "S8 Training",
-      title: "S8 - Education & Tactics Training",
+      name: "S8 Education and Training",
+      title: "S8 - Education and Training",
       icon: "book-open",
       category: "Staff Councils",
       sensitive: false,
@@ -687,17 +732,20 @@ const CCAFP_CONFIG = {
     },
     {
       id: "spiritual",
-      name: "Spiritual Council",
-      title: "Spiritual Development Council",
-      icon: "heart",
+      name: "Spiritual Development Council",
+      title: "Spiritual Development Council - Faith, Pastoral Care & Religious Services",
+      icon: "heart-handshake",
       category: "Specialist Councils",
       sensitive: false,
-      description: "Moral and spiritual nourishment, chapel services, inter-faith programs, and retreats.",
+      sheetUrl: COUNCIL_SHEET_URLS.spiritual,
+      sheetRaw: COUNCIL_SHEET_URLS.spiritual_raw,
+      description: "Moral and spiritual nourishment, chapel services, religious services roster, inter-faith programs, and pastoral care.",
       defaultHeaders: ["Faith / Denomination", "Service / Gathering", "Time & Day", "Venue", "Officiating Leader"],
       defaultRows: [
         ["Roman Catholic", "Sunday Holy Eucharist Mass", "Sunday 0700H & 1800H", "St. Ignatius Chapel", "Military Chaplain"],
         ["Evangelical Christian", "Cadet Fellowship & Worship", "Sunday 0900H", "Cadet Protestant Chapel", "Chaplain Pastor"],
-        ["Islamic Faith", "Jum'ah Congregational Prayer", "Friday 1230H", "CCAFP Musalla / Prayer Room", "Cadet Imam"]
+        ["Islamic Faith", "Jum'ah Congregational Prayer", "Friday 1230H", "CCAFP Musalla / Prayer Room", "Cadet Imam"],
+        ["Seventh-Day Adventist", "Sabbath Worship Service", "Saturday 0900H", "Cadet Fellowship Hall", "Cadet Elder"]
       ]
     },
     {
@@ -781,12 +829,30 @@ const CCAFP_CONFIG = {
     { time: "2200H", event: "Taps & Lights Out", venue: "All Barracks", uniform: "Sleeping Garments" }
   ],
 
-  // Punishments List
+  // Real-Time Cadet Delinquency & Punishment Data (Synchronized from Google Sheets)
+  punishmentSummary: {
+    chairman: "CDT CPT 1CL APRIL JOY C GEROLA C-27112 'A' Co CCAFP",
+    updatedDate: "25 AUGUST 2026",
+    notedBy: "CDT SGT MAJ 2CL RASHEED SHANE C ABBAS 'A' Co CCAFP",
+    totals: { touring: 239, confined: 74, totalActive: 93 }
+  },
+
   punishmentList: [
-    { id: 1, cadetName: "Cdt 4CL Santos, A. M.", serialNo: "2030-0142", class: "2030 (4CL)", company: "Alpha", offense: "Late for 0730H Colors Formation", demerits: 6, tours: 4, status: "Serving Tours" },
-    { id: 2, cadetName: "Cdt 3CL Ramirez, J. P.", serialNo: "2029-0089", class: "2029 (3CL)", company: "Bravo", offense: "Unpolished Saber Scabbard during Inspection", demerits: 4, tours: 2, status: "Serving Tours" },
-    { id: 3, cadetName: "Cdt 2CL Mendoza, L. K.", serialNo: "2028-0054", class: "2028 (2CL)", company: "Charlie", offense: "Unscheduled Smartphone Possession after 2200H", demerits: 10, tours: 8, status: "Appealed / Review" },
-    { id: 4, cadetName: "Cdt 4CL Aquino, R. S.", serialNo: "2030-0211", class: "2030 (4CL)", company: "Delta", offense: "Improper Gig Line Alignment during Parade", demerits: 3, tours: 2, status: "Completed" }
+    { id: 1, cadetName: "Cdt 1CL LOBETE", serialNo: "CCPB SO Nr 02", class: "1CL", company: "D", offense: "AS A RESPONSIBLE CADET, UNAUTHORIZED LOGGING OUT OF SMARTPHONE DURING EVENING CALL TO QUARTERS WITHOUT PERMISSION FROM THE COMPANY ELECTRONICS AND COMMUNICATIONS OFFICER", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class III", confined: "NO", demerits: 0, tours: 25, status: "Ongoing" },
+    { id: 2, cadetName: "Cdt 1CL LOBETE", serialNo: "CCPB SO Nr 02", class: "1CL", company: "D", offense: "AS A RESPONSIBLE CIC OF SEPAK TAKRAW NOT SUBMITTING THEIR ACTION PLAN DESPITE NUMEROUS REMINDERS O/A 7 1900 JULY 2027", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class III", confined: "NO", demerits: 0, tours: 8, status: "Ongoing" },
+    { id: 3, cadetName: "Cdt 1CL CABANAYAN", serialNo: "CCPB SO Nr 03", class: "1CL", company: "D", offense: "POSSESSING ELECTRONIC CIGARETTE O/A 09 2245H AUGUST 2026", nature: "POSSESSING/USING UNAUTHORIZED ITEM", offenseClass: "Class II", confined: "YES", demerits: 0, tours: 65, status: "Confined" },
+    { id: 4, cadetName: "Cdt 1CL CABANAYAN", serialNo: "CCPB SO Nr 03", class: "1CL", company: "D", offense: "NOT LOGGING-IN OF TABLET DURING UNAUTHORIZED PERIOD O/A 09 2245H AUGUST 2026", nature: "DOING UNAUTHORIZED THINGS", offenseClass: "Class II", confined: "YES", demerits: 0, tours: 40, status: "Confined" },
+    { id: 5, cadetName: "Cdt 1CL DE JESUS", serialNo: "CCPB SO Nr 02", class: "1CL", company: "D", offense: "AS A RESPONSIBLE CIC OF IGLESIA NI CRISTO NOT SUBMITTING THEIR ACTION PLAN DESPITE NUMEROUS REMINDERS O/A 7 1900 JULY 2027", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class III", confined: "NO", demerits: 0, tours: 8, status: "Ongoing" },
+    { id: 6, cadetName: "Cdt 2CL LLENAS", serialNo: "CCPB SO Nr 02", class: "2CL", company: "H", offense: "AS A RESPONSIBLE OUTGOING CADET ASSISTANT TO THE MESS OFFICER 2, SUBMITTING DIRTY AND INCOMPLETE CHECKIST O/A 11 1830H JULY 2026", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class III", confined: "NO", demerits: 0, tours: 10, status: "Ongoing" },
+    { id: 7, cadetName: "Cdt 2CL BINWAG", serialNo: "CCPB SO Nr 02", class: "2CL", company: "B", offense: "UNEVEN COLORED FLOOR DURING BI O/A 0800H AUGUST 2026", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class IV", confined: "NO", demerits: 0, tours: 3, status: "Ongoing" },
+    { id: 8, cadetName: "Cdt 2CL UMOSO", serialNo: "CCPB SO Nr 02", class: "2CL", company: "B", offense: "UNEVEN COLORED FLOOR DURING BI O/A 0800H AUGUST 2026", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class IV", confined: "NO", demerits: 0, tours: 3, status: "Ongoing" },
+    { id: 9, cadetName: "Cdt 2CL QUEMADO", serialNo: "CCPB SO Nr 02", class: "2CL", company: "B", offense: "UNEVEN COLORED FLOOR DURING BI O/A 0800H AUGUST 2026", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class IV", confined: "NO", demerits: 0, tours: 3, status: "Ongoing" },
+    { id: 10, cadetName: "Cdt 2CL ABAD", serialNo: "CCPB SO Nr 02", class: "2CL", company: "B", offense: "UNEVEN COLORED FLOOR DURING BI O/A 0800H AUGUST 2026", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class IV", confined: "NO", demerits: 0, tours: 3, status: "Ongoing" },
+    { id: 11, cadetName: "Cdt 1CL MANCE", serialNo: "ALFA-01", class: "1CL", company: "A", offense: "ABSENT FROM SEVENTH-DAY ADVENTIST RELIGIOUS SERVICE O/A 08 1500 AUGUST 2026", nature: "ABSENT FROM DUTY", offenseClass: "Class III", confined: "NO", demerits: 5, tours: 10, status: "Ongoing" },
+    { id: 12, cadetName: "Cdt 2CL CALANGI", serialNo: "ALFA-02", class: "2CL", company: "A", offense: "DOING UNAUTHORIZED THINGS AFTER TAPS: ACCESSING CHAT CALL DURING OC INSPECTION", nature: "DOING UNAUTHORIZED THINGS", offenseClass: "Class III", confined: "NO", demerits: 6, tours: 13, status: "Ongoing" },
+    { id: 13, cadetName: "Cdt 2CL LADIONG", serialNo: "ALFA-03", class: "2CL", company: "A", offense: "POSSESSING SMARTPHONE O/A 15 0030 MAY 2026", nature: "POSSESSING/USING UNAUTHORIZED ITEM", offenseClass: "Class III", confined: "NO", demerits: 8, tours: 19, status: "Ongoing" },
+    { id: 14, cadetName: "Cdt 2CL SANGGO", serialNo: "ALFA-06", class: "2CL", company: "A", offense: "ACCESSING SOCIAL MEDIA AFTER TAPS O/A 28 2300 JUNE 2026", nature: "DOING UNAUTHORIZED THINGS", offenseClass: "Class II", confined: "NO", demerits: 10, tours: 8, status: "Ongoing" },
+    { id: 15, cadetName: "Cdt 2CL TITO", serialNo: "ALFA-07", class: "2CL", company: "A", offense: "LEAVING ROOM RAMBAGIZED WHILE ON DUTY DURING MORNING MESS INSPECTION", nature: "NEGLIGENCE OF DUTY", offenseClass: "Class IV", confined: "NO", demerits: 3, tours: 5, status: "Ongoing" }
   ],
 
   // Staff Directory
@@ -1116,6 +1182,21 @@ class SheetSyncManager {
       });
     }
 
+    let preparedBy = "CDT LT 1CL JHOPRILYN S MANGAGOM C-27151 'D' CO CCAFP (Officer-of-the-Day)";
+    let notedBy = "MAJ JAMES A MARTINEZ PA (Officer-in-Charge)";
+    let checkedBy = "CARL BENEDICT B ACOSTA C-26007 (AC of RS for Supply / RSO)";
+
+    for (let i = 13; i < rows.length; i++) {
+      const r = rows[i] || [];
+      const line = r.join(" ").toUpperCase();
+      if (line.includes("MANGAGOM")) {
+        preparedBy = "CDT LT 1CL JHOPRILYN S MANGAGOM C-27151 'D' CO CCAFP (Officer-of-the-Day)";
+      }
+      if (line.includes("MARTINEZ")) {
+        notedBy = "MAJ JAMES A MARTINEZ PA • LCDR DARYL G VILLA PN • LCDR ROMAN B PALIMA PN (Officers-in-Charge)";
+      }
+    }
+
     return {
       reportDate,
       totals: {
@@ -1129,7 +1210,12 @@ class SheetSyncManager {
         bayonetsIn: 51
       },
       rows: armoryRows.length > 0 ? armoryRows : (CCAFP_CONFIG.s1Data?.armory?.rows || []),
-      notes: "NOTE: ONLY THE REGIMENT RSO IS AUTHORIZED TO EDIT ARMORY RECORDS. 51 Bayonets & 14 Swords housed in RSO Stockroom."
+      notes: "NOTE: ONLY THE REGIMENT RSO IS AUTHORIZED TO EDIT ARMORY RECORDS. 51 Bayonets & 14 Swords housed in RSO Stockroom.",
+      signatures: {
+        preparedBy,
+        checkedBy,
+        notedBy
+      }
     };
   }
 
@@ -1229,6 +1315,234 @@ class SheetSyncManager {
       ghqList: ghqList.length > 0 ? ghqList : (CCAFP_CONFIG.s1Data?.attachment?.ghqList || []),
       stockadeList: stockadeList.length > 0 ? stockadeList : (CCAFP_CONFIG.s1Data?.attachment?.stockadeList || [])
     };
+  }
+
+  parsePunishments(conductRows, totalRows) {
+    if (!conductRows || conductRows.length < 5) return null;
+
+    let chairman = "CDT CPT 1CL APRIL JOY C GEROLA C-27112 'A' Co CCAFP";
+    let updatedDate = "25 AUGUST 2026";
+    let notedBy = "CDT SGT MAJ 2CL RASHEED SHANE C ABBAS 'A' Co CCAFP";
+
+    // Extract header metadata from rows 0-3
+    for (let i = 0; i < Math.min(6, conductRows.length); i++) {
+      const line = (conductRows[i] || []).join(" ").trim();
+      if (/CCPB CHAIRMAN\s*:\s*/i.test(line)) {
+        const m = line.match(/CCPB CHAIRMAN\s*:\s*([^,"]+)/i);
+        if (m) chairman = m[1].trim();
+      }
+      if (/UPDATED AS OF\s*:\s*/i.test(line)) {
+        const m = line.match(/UPDATED AS OF\s*:\s*([^\n,"]+)/i);
+        if (m) updatedDate = m[1].trim();
+      }
+      if (/NOTED BY\s*:\s*/i.test(line)) {
+        const m = line.match(/NOTED BY\s*:\s*([^,"]+)/i);
+        if (m) notedBy = m[1].trim();
+      }
+    }
+
+    let touringCount = 239;
+    let confinedCount = 74;
+
+    if (totalRows && totalRows.length > 1) {
+      const r1 = totalRows[1] || [];
+      if (r1[1] && /^\d+$/.test(r1[1].trim())) touringCount = parseInt(r1[1].trim(), 10);
+      if (r1[9] && /^\d+$/.test(r1[9].trim())) confinedCount = parseInt(r1[9].trim(), 10);
+    }
+
+    const list = [];
+    for (let i = 6; i < conductRows.length; i++) {
+      const r = conductRows[i];
+      if (!r || r.length < 5) continue;
+      const rank = r[1]?.trim() || '';
+      const lastName = r[2]?.trim() || '';
+      if (!lastName) continue;
+
+      const coy = r[3]?.trim() || '-';
+      const offense = r[4]?.trim() || '-';
+      const offClass = r[5]?.trim() ? `Class ${r[5].trim()}` : 'Class III';
+      const nature = r[6]?.trim() || 'NEGLIGENCE OF DUTY';
+      const confined = (r[7]?.trim() || 'NO').toUpperCase();
+      const start = r[8]?.trim() || '-';
+      const end = r[9]?.trim() || '-';
+      const demerits = (r[10]?.trim() && /^\d+$/.test(r[10].trim())) ? parseInt(r[10].trim(), 10) : 0;
+      const tours = (r[11]?.trim() && /^\d+$/.test(r[11].trim())) ? parseInt(r[11].trim(), 10) : 0;
+      const ref = r[15]?.trim() || `CCPB SO Nr 02`;
+      const statusRaw = r[16]?.trim() || 'ONGOING';
+      const status = statusRaw.toLowerCase().includes('served') ? 'Completed' : (confined === 'YES' ? 'Confined' : 'Ongoing');
+
+      list.push({
+        id: list.length + 1,
+        cadetName: `Cdt ${rank} ${lastName}`,
+        rank,
+        lastName,
+        serialNo: ref,
+        class: rank || '1CL',
+        company: coy,
+        offense,
+        offenseClass: offClass,
+        nature,
+        confined,
+        startDate: start,
+        endDate: end,
+        demerits,
+        tours,
+        status
+      });
+    }
+
+    return {
+      chairman,
+      updatedDate,
+      notedBy,
+      totals: {
+        touring: touringCount,
+        confined: confinedCount,
+        totalActive: list.length
+      },
+      list: list.length > 0 ? list : (CCAFP_CONFIG.punishmentList || [])
+    };
+  }
+
+  parseExpanded(rows) {
+    if (!rows || rows.length < 2) return null;
+    const list = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length < 5) continue;
+      const fName = r[1]?.trim() || '';
+      const lName = r[3]?.trim() || '';
+      if (!fName && !lName) continue;
+      list.push({
+        no: r[0]?.trim() || '',
+        name: `${lName}, ${fName} ${r[2]?.trim() || ''} ${r[4]?.trim() || ''}`.trim().replace(/\s+,/g, ',').replace(/,\s*$/, ''),
+        sn: r[5]?.trim() || '',
+        coy: r[6]?.trim() || '',
+        squad: r[7]?.trim() || '',
+        platoon: r[8]?.trim() || '',
+        designation: r[9]?.trim() || '',
+        bos: r[10]?.trim() || '',
+        gender: r[11]?.trim() || '',
+        blood: r[16]?.trim() || '',
+        religion: r[17]?.trim() || '',
+        region: r[26]?.trim() || '',
+        contact: r[21]?.trim() || ''
+      });
+    }
+    return list;
+  }
+
+  parseRoster(rows) {
+    if (!rows || rows.length < 2) return null;
+    const list = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length < 5) continue;
+      const fName = r[2]?.trim() || '';
+      const lName = r[4]?.trim() || '';
+      if (!fName && !lName) continue;
+      list.push({
+        no: r[0]?.trim() || '',
+        class: r[1]?.trim() || '4CL',
+        name: `${lName}, ${fName} ${r[3]?.trim() || ''} ${r[5]?.trim() || ''}`.trim().replace(/\s+,/g, ',').replace(/,\s*$/, ''),
+        sn: r[6]?.trim() || '',
+        gender: r[7]?.trim() || '',
+        coy: r[8]?.trim() || ''
+      });
+    }
+    return list;
+  }
+
+  parseClubs(rows) {
+    if (!rows || rows.length < 2) return null;
+    const list = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length < 2) continue;
+      const name = r[1]?.trim() || '';
+      if (!name) continue;
+      list.push({
+        num: r[0]?.trim() || `${list.length + 1}`,
+        name,
+        cic: r[2]?.trim() || '—',
+        acic: r[3]?.trim() || '—',
+        oic: r[4]?.trim() || '—',
+        venue: r[5]?.trim() || '—'
+      });
+    }
+    return list;
+  }
+
+  parseTin(rows) {
+    if (!rows || rows.length < 2) return null;
+    const list = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length < 3) continue;
+      const lName = r[1]?.trim() || '';
+      const fName = r[2]?.trim() || '';
+      if (!lName && !fName) continue;
+      list.push({
+        nr: r[0]?.trim() || '',
+        name: `${lName}, ${fName} ${r[3]?.trim() || ''}`.trim(),
+        sn: r[4]?.trim() || '',
+        gender: r[5]?.trim() || '',
+        bdate: r[6]?.trim() || '',
+        tin: r[7]?.trim() || '—',
+        philhealth: r[8]?.trim() || '—'
+      });
+    }
+    return list;
+  }
+
+  parseApe(rows1CL, rows2CL) {
+    const list = [];
+    const processRows = (rows, classLabel) => {
+      if (!rows) return;
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.length < 5) continue;
+        const lName = r[4]?.trim() || '';
+        const fName = r[2]?.trim() || '';
+        if (!lName && !fName) continue;
+        list.push({
+          class: classLabel,
+          name: `${lName}, ${fName} ${r[3]?.trim() || ''}`.trim(),
+          sn: r[5]?.trim() || '',
+          bdate: r[6]?.trim() || '',
+          urinalysis: r[7]?.trim() || 'FALSE',
+          blood: r[8]?.trim() || 'FALSE',
+          vitals: r[9]?.trim() || 'FALSE',
+          dental: r[15]?.trim() || 'FALSE',
+          physical: r[16]?.trim() || 'FALSE',
+          remarks: r[17]?.trim() || 'In Progress'
+        });
+      }
+    };
+    processRows(rows1CL, '1CL');
+    processRows(rows2CL, '2CL');
+    return list;
+  }
+
+  parseSpiritual(rows) {
+    if (!rows || rows.length < 3) return null;
+    const list = [];
+    for (let i = 2; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length < 6) continue;
+      const lName = r[3]?.trim() || '';
+      const fName = r[1]?.trim() || '';
+      if (!lName && !fName) continue;
+      list.push({
+        class: r[0]?.trim() || '1CL',
+        name: `${lName}, ${fName} ${r[2]?.trim() || ''}`.trim(),
+        sn: r[4]?.trim() || '',
+        gender: r[5]?.trim() || '',
+        coy: r[6]?.trim() || '',
+        religion: (r[7]?.trim() || 'CATHOLIC').toUpperCase()
+      });
+    }
+    return list;
   }
 }
 
