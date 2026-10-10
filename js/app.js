@@ -23,11 +23,26 @@
     s1SquadActive: '1ST SQUAD',
     s1ApeQuery: '',
     s1ApeClass: 'all',
+    s1ApeCompany: 'all',
+    s1ApePage: 1,
+    s1ApePageSize: 50,
     s1ClubsQuery: '',
     s1TinQuery: '',
     spiritualQuery: '',
+    spiritualClass: 'all',
     spiritualReligion: 'all',
     spiritualCoy: 'all',
+    messActiveSubTab: 'shares-roster',
+    messQuery: '',
+    messBattalion: 'all',
+    messCoy: 'all',
+    messClass: 'all',
+    messBOS: 'all',
+    messStatus: 'all',
+    messActiveDiet: 'all',
+    messMenuDay: 'MONDAY',
+    messPage: 1,
+    messPageSize: 50,
     socGuardQuery: '',
     socCallsQuery: '',
     activeCouncilId: 's1',
@@ -79,6 +94,12 @@
     s1SquadGridContainer: document.getElementById('s1SquadGridContainer'),
     s1ApeSearchInput: document.getElementById('s1ApeSearchInput'),
     s1ApeTableBody: document.getElementById('s1ApeTableBody'),
+    s1ApeTotalCountBadge: document.getElementById('s1ApeTotalCountBadge'),
+    s1ApePaginationInfo: document.getElementById('s1ApePaginationInfo'),
+    s1ApePageSizeSelect: document.getElementById('s1ApePageSizeSelect'),
+    s1ApePrevBtn: document.getElementById('s1ApePrevBtn'),
+    s1ApeNextBtn: document.getElementById('s1ApeNextBtn'),
+    s1ApePageNumber: document.getElementById('s1ApePageNumber'),
     s1ClubsSearchInput: document.getElementById('s1ClubsSearchInput'),
     s1ClubsTableBody: document.getElementById('s1ClubsTableBody'),
     s1TinSearchInput: document.getElementById('s1TinSearchInput'),
@@ -100,6 +121,8 @@
     socOC: document.getElementById('socOC'),
     socAOC: document.getElementById('socAOC'),
     socUniform: document.getElementById('socUniform'),
+    socUniformDesc: document.getElementById('socUniformDesc'),
+    socUniformGuideGrid: document.getElementById('socUniformGuideGrid'),
     socOD: document.getElementById('socOD'),
     socChangesCountBadge: document.getElementById('socChangesCountBadge'),
     socChangesContainer: document.getElementById('socChangesContainer'),
@@ -144,7 +167,7 @@
   }
 
   // --- Automated 15-Minute Sync Manager & Local Storage Persistence ---
-  const CACHE_STORAGE_KEY = 'ccafp_daily_live_cache';
+  const CACHE_STORAGE_KEY = 'ccafp_daily_cache_v3';
   const AUTO_SYNC_INTERVAL_SECONDS = 15 * 60; // 900 seconds (15 minutes)
   let autoSyncCountdownSeconds = AUTO_SYNC_INTERVAL_SECONDS;
   let autoSyncTimerId = null;
@@ -169,29 +192,42 @@
 
   function restoreLiveSnapshotFromStorage() {
     try {
+      // Clear legacy cache that may contain incomplete schema
+      localStorage.removeItem('ccafp_daily_live_cache');
+
       const raw = localStorage.getItem(CACHE_STORAGE_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
-      if (parsed) {
+      if (parsed && parsed.version === CCAFP_CONFIG.version && parsed.s1Data && Array.isArray(parsed.s1Data.disposition?.companies)) {
         if (!CCAFP_CONFIG.s1Data) CCAFP_CONFIG.s1Data = {};
-        if (parsed.s1Data) {
-          if (parsed.s1Data.scheduleOfCalls) CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed.s1Data.scheduleOfCalls;
-          if (parsed.s1Data.disposition) CCAFP_CONFIG.s1Data.disposition = parsed.s1Data.disposition;
-          if (parsed.s1Data.armory) CCAFP_CONFIG.s1Data.armory = parsed.s1Data.armory;
-          if (parsed.s1Data.attachment) CCAFP_CONFIG.s1Data.attachment = parsed.s1Data.attachment;
-          if (parsed.s1Data.regimentStaff) CCAFP_CONFIG.s1Data.regimentStaff = parsed.s1Data.regimentStaff;
-          if (parsed.s1Data.expanded) CCAFP_CONFIG.s1Data.expanded = parsed.s1Data.expanded;
-          if (parsed.s1Data.roster) CCAFP_CONFIG.s1Data.roster = parsed.s1Data.roster;
-          if (parsed.s1Data.squads) CCAFP_CONFIG.s1Data.squads = parsed.s1Data.squads;
-          if (parsed.s1Data.clubs) CCAFP_CONFIG.s1Data.clubs = parsed.s1Data.clubs;
-          if (parsed.s1Data.tin) CCAFP_CONFIG.s1Data.tin = parsed.s1Data.tin;
-          if (parsed.s1Data.ape) CCAFP_CONFIG.s1Data.ape = parsed.s1Data.ape;
+        if (parsed.s1Data.scheduleOfCalls && Array.isArray(parsed.s1Data.scheduleOfCalls.guardRoster)) {
+          CCAFP_CONFIG.s1Data.scheduleOfCalls = parsed.s1Data.scheduleOfCalls;
         }
-        if (parsed.spiritualData) CCAFP_CONFIG.spiritualData = parsed.spiritualData;
-        if (parsed.punishmentList) CCAFP_CONFIG.punishmentList = parsed.punishmentList;
+        if (parsed.s1Data.disposition && Array.isArray(parsed.s1Data.disposition.companies)) {
+          CCAFP_CONFIG.s1Data.disposition = parsed.s1Data.disposition;
+        }
+        if (parsed.s1Data.armory && Array.isArray(parsed.s1Data.armory.rows)) {
+          CCAFP_CONFIG.s1Data.armory = parsed.s1Data.armory;
+        }
+        if (parsed.s1Data.attachment && Array.isArray(parsed.s1Data.attachment.fadList)) {
+          CCAFP_CONFIG.s1Data.attachment = parsed.s1Data.attachment;
+        }
+        if (parsed.s1Data.regimentStaff && Array.isArray(parsed.s1Data.regimentStaff.commandSection)) {
+          CCAFP_CONFIG.s1Data.regimentStaff = parsed.s1Data.regimentStaff;
+        }
+        if (Array.isArray(parsed.s1Data.expanded)) CCAFP_CONFIG.s1Data.expanded = parsed.s1Data.expanded;
+        if (Array.isArray(parsed.s1Data.roster)) CCAFP_CONFIG.s1Data.roster = parsed.s1Data.roster;
+        if (parsed.s1Data.squads) CCAFP_CONFIG.s1Data.squads = parsed.s1Data.squads;
+        if (Array.isArray(parsed.s1Data.clubs)) CCAFP_CONFIG.s1Data.clubs = parsed.s1Data.clubs;
+        if (Array.isArray(parsed.s1Data.tin)) CCAFP_CONFIG.s1Data.tin = parsed.s1Data.tin;
+        if (Array.isArray(parsed.s1Data.ape)) CCAFP_CONFIG.s1Data.ape = parsed.s1Data.ape;
+        if (Array.isArray(parsed.spiritualData)) CCAFP_CONFIG.spiritualData = parsed.spiritualData;
+        if (Array.isArray(parsed.punishmentList)) CCAFP_CONFIG.punishmentList = parsed.punishmentList;
         if (parsed.punishmentTotals) CCAFP_CONFIG.punishmentTotals = parsed.punishmentTotals;
         if (parsed.punishmentMeta) CCAFP_CONFIG.punishmentMeta = parsed.punishmentMeta;
         return true;
+      } else {
+        localStorage.removeItem(CACHE_STORAGE_KEY);
       }
     } catch (err) {
       console.warn('Error restoring from localStorage cache:', err);
@@ -385,11 +421,12 @@
       home: 'HOME',
       s1: 'S1 PERSONNEL',
       rso: 'RSO COUNCIL',
-      staff: 'CADET STAFF',
+      staff: 'TASK ORGANIZATION',
       duty: 'SCHEDULE OF CALLS (SOC)',
       calendar: 'EVENT CALENDAR',
       honor: 'HONOR COMMITTEE',
-      punishments: 'PUNISHMENT REGISTER (CCPB)',
+      punishments: 'CCAFP PUNISHMENT LIST',
+      mess: 'MESS COUNCIL',
       council: breadcrumbName || 'COUNCILS DIRECTORY'
     };
     if (dom.activeBreadcrumb) {
@@ -400,10 +437,16 @@
       renderRsoArmory();
     } else if (tabId === 'punishments') {
       renderPunishments();
+    } else if (tabId === 'mess') {
+      selectCouncil('mess');
+    } else if (tabId === 'duty') {
+      renderScheduleOfCallsView();
     }
 
     closeMobileSidebar();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
   window.navigateToTab = navigateToTab;
 
@@ -460,32 +503,32 @@
   // 1. DISPOSITION RENDERER
   function renderS1Disposition() {
     if (!dom.s1DispositionTableBody) return;
-    const disp = CCAFP_CONFIG.s1Data.disposition;
-    const rows = disp.companies;
+    const disp = CCAFP_CONFIG.s1Data?.disposition || {};
+    const rows = Array.isArray(disp.companies) ? disp.companies : [];
 
     let t1CLM = 0, t1CLF = 0, t2CLM = 0, t2CLF = 0;
     let t3CLM = 0, t3CLF = 0, t4CLM = 0, t4CLF = 0;
     let grandEff = 0, grandIneff = 0, grandTotal = 0;
 
     dom.s1DispositionTableBody.innerHTML = rows.map(r => {
-      t1CLM += r.firstCL_M; t1CLF += r.firstCL_F;
-      t2CLM += r.secondCL_M; t2CLF += r.secondCL_F;
-      t3CLM += r.thirdCL_M; t3CLF += r.thirdCL_F;
-      t4CLM += r.fourthCL_M; t4CLF += r.fourthCL_F;
-      grandEff += r.effectiveTotal;
-      grandIneff += r.ineffectiveTotal;
-      grandTotal += r.total;
+      t1CLM += (r.firstCL_M || 0); t1CLF += (r.firstCL_F || 0);
+      t2CLM += (r.secondCL_M || 0); t2CLF += (r.secondCL_F || 0);
+      t3CLM += (r.thirdCL_M || 0); t3CLF += (r.thirdCL_F || 0);
+      t4CLM += (r.fourthCL_M || 0); t4CLF += (r.fourthCL_F || 0);
+      grandEff += (r.effectiveTotal || 0);
+      grandIneff += (r.ineffectiveTotal || 0);
+      grandTotal += (r.total || 0);
 
       return `
         <tr class="hover:bg-slate-50/70 transition-colors">
-          <td class="py-3 px-3 font-sans font-bold text-slate-900">${r.name} Company ('${r.code}')</td>
-          <td class="py-3 px-2 text-center text-slate-700">${r.firstCL_M} / <span class="text-blue-600 font-semibold">${r.firstCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${r.secondCL_M} / <span class="text-blue-600 font-semibold">${r.secondCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${r.thirdCL_M} / <span class="text-blue-600 font-semibold">${r.thirdCL_F}</span></td>
-          <td class="py-3 px-2 text-center text-slate-700">${r.fourthCL_M} / <span class="text-blue-600 font-semibold">${r.fourthCL_F}</span></td>
-          <td class="py-3 px-2 text-center font-bold text-emerald-700 bg-emerald-50/40 rounded">${r.effectiveTotal}</td>
-          <td class="py-3 px-2 text-center font-bold ${r.ineffectiveTotal > 0 ? 'text-amber-700 bg-amber-50/40' : 'text-slate-400'} rounded">${r.ineffectiveTotal}</td>
-          <td class="py-3 px-3 text-right font-bold text-blue-950 font-mono-clean text-sm">${r.total}</td>
+          <td class="py-3 px-3 font-sans font-bold text-slate-900">${r.name || 'Coy'} Company ('${r.code || '-'}')</td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.firstCL_M || 0} / <span class="text-blue-600 font-semibold">${r.firstCL_F || 0}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.secondCL_M || 0} / <span class="text-blue-600 font-semibold">${r.secondCL_F || 0}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.thirdCL_M || 0} / <span class="text-blue-600 font-semibold">${r.thirdCL_F || 0}</span></td>
+          <td class="py-3 px-2 text-center text-slate-700">${r.fourthCL_M || 0} / <span class="text-blue-600 font-semibold">${r.fourthCL_F || 0}</span></td>
+          <td class="py-3 px-2 text-center font-bold text-emerald-700 bg-emerald-50/40 rounded">${r.effectiveTotal || 0}</td>
+          <td class="py-3 px-2 text-center font-bold ${(r.ineffectiveTotal || 0) > 0 ? 'text-amber-700 bg-amber-50/40' : 'text-slate-400'} rounded">${r.ineffectiveTotal || 0}</td>
+          <td class="py-3 px-3 text-right font-bold text-blue-950 font-mono-clean text-sm">${r.total || 0}</td>
         </tr>
       `;
     }).join('') + `
@@ -503,15 +546,16 @@
 
     // External Strength summary
     if (dom.s1ExternalPersonnelGrid) {
-      dom.s1ExternalPersonnelGrid.innerHTML = disp.externalPersonnel.map(ext => `
+      const extList = Array.isArray(disp.externalPersonnel) ? disp.externalPersonnel : [];
+      dom.s1ExternalPersonnelGrid.innerHTML = extList.map(ext => `
         <div class="p-3 rounded-xl bg-white border border-slate-200/80 space-y-1">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-800 text-[11px]">${ext.category}</span>
-            <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 text-[9px] font-bold uppercase">${ext.status}</span>
+            <span class="font-bold text-slate-800 text-[11px]">${ext.category || 'External'}</span>
+            <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 text-[9px] font-bold uppercase">${ext.status || 'Active'}</span>
           </div>
           <div class="flex items-baseline justify-between pt-1">
-            <span class="text-slate-500 text-[10px]">M: ${ext.male} &bull; F: ${ext.female}</span>
-            <span class="font-mono-clean font-bold text-blue-900 text-sm">${ext.total}</span>
+            <span class="text-slate-500 text-[10px]">M: ${ext.male || 0} &bull; F: ${ext.female || 0}</span>
+            <span class="font-mono-clean font-bold text-blue-900 text-sm">${ext.total || 0}</span>
           </div>
         </div>
       `).join('');
@@ -522,8 +566,8 @@
   function renderS1Armory() {
     if (!dom.s1ArmoryTableBody) return;
     const arm = CCAFP_CONFIG.s1Data?.armory;
-    if (!arm || !arm.rows) return;
-    const rows = arm.rows;
+    if (!arm) return;
+    const rows = Array.isArray(arm.rows) ? arm.rows : (Array.isArray(arm.items) ? arm.items : []);
 
     dom.s1ArmoryTableBody.innerHTML = rows.map(r => `
       <tr class="hover:bg-slate-50/70 transition-colors">
@@ -601,31 +645,41 @@
   // 3. ATTACHMENT RENDERER
   function renderS1Attachment() {
     if (!dom.s1AttachmentTableBody) return;
-    const att = CCAFP_CONFIG.s1Data.attachment;
+    const att = CCAFP_CONFIG.s1Data?.attachment || {};
+
+    const fadList = Array.isArray(att.fadList) ? att.fadList : [];
+    const siqList = Array.isArray(att.siqList) ? att.siqList : [];
+    const fdpshList = Array.isArray(att.fdpshList) ? att.fdpshList : [];
+    const vlunaList = Array.isArray(att.vlunaList) ? att.vlunaList : [];
+    const holdingCenterList = Array.isArray(att.holdingCenterList) ? att.holdingCenterList : [];
+    const clearingInList = Array.isArray(att.clearingInList) ? att.clearingInList : [];
+    const clearingOutList = Array.isArray(att.clearingOutList) ? att.clearingOutList : [];
+    const ghqList = Array.isArray(att.ghqList) ? att.ghqList : [];
+    const stockadeList = Array.isArray(att.stockadeList) ? att.stockadeList : [];
 
     const allItems = [
-      ...att.fadList.map(x => ({ ...x, category: 'FAD', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', details: x.condition, extra: x.release })),
-      ...att.siqList.map(x => ({ ...x, category: 'SIQ', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', details: x.reason, extra: x.release })),
-      ...att.fdpshList.map(x => ({ ...x, category: 'FDPSH Hospital', badgeColor: 'bg-red-50 text-red-700 border-red-200', details: x.reason, extra: x.release })),
-      ...att.vlunaList.map(x => ({ ...x, category: 'V-Luna Hospital', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', details: x.reason, extra: x.release })),
-      ...att.holdingCenterList.map(x => ({ ...x, category: 'Holding Center', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200', details: x.reason, extra: x.barracks })),
-      ...att.clearingInList.map(x => ({ ...x, category: 'Clearing-In', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', details: x.reason, extra: x.remarks })),
-      ...att.clearingOutList.map(x => ({ ...x, category: 'Clearing-Out', badgeColor: 'bg-orange-50 text-orange-700 border-orange-200', details: x.reason, extra: x.remarks })),
-      ...att.ghqList.map(x => ({ ...x, category: 'GHQ Detail', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200', details: x.reason, extra: x.remarks })),
-      ...att.stockadeList.map(x => ({ ...x, category: 'PMA Stockade', badgeColor: 'bg-slate-100 text-slate-800 border-slate-300', details: x.reason, extra: x.remarks }))
+      ...fadList.map(x => ({ ...x, category: 'FAD', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', details: x.condition, extra: x.release })),
+      ...siqList.map(x => ({ ...x, category: 'SIQ', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', details: x.reason, extra: x.release })),
+      ...fdpshList.map(x => ({ ...x, category: 'FDPSH Hospital', badgeColor: 'bg-red-50 text-red-700 border-red-200', details: x.reason, extra: x.release })),
+      ...vlunaList.map(x => ({ ...x, category: 'V-Luna Hospital', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', details: x.reason, extra: x.release })),
+      ...holdingCenterList.map(x => ({ ...x, category: 'Holding Center', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200', details: x.reason, extra: x.barracks })),
+      ...clearingInList.map(x => ({ ...x, category: 'Clearing-In', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', details: x.reason, extra: x.remarks })),
+      ...clearingOutList.map(x => ({ ...x, category: 'Clearing-Out', badgeColor: 'bg-orange-50 text-orange-700 border-orange-200', details: x.reason, extra: x.remarks })),
+      ...ghqList.map(x => ({ ...x, category: 'GHQ Detail', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200', details: x.reason, extra: x.remarks })),
+      ...stockadeList.map(x => ({ ...x, category: 'PMA Stockade', badgeColor: 'bg-slate-100 text-slate-800 border-slate-300', details: x.reason, extra: x.remarks }))
     ];
 
     // Update counts
     const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     setEl('count-all', allItems.length);
-    setEl('count-fad', att.fadList.length);
-    setEl('count-holding', att.holdingCenterList.length);
-    setEl('count-clearingin', att.clearingInList.length);
-    setEl('count-fdpsh', att.fdpshList.length);
-    setEl('count-vluna', att.vlunaList.length);
-    setEl('count-siq', att.siqList.length);
-    setEl('count-clearingout', att.clearingOutList.length);
-    setEl('count-stockade', att.ghqList.length + att.stockadeList.length);
+    setEl('count-fad', fadList.length);
+    setEl('count-holding', holdingCenterList.length);
+    setEl('count-clearingin', clearingInList.length);
+    setEl('count-fdpsh', fdpshList.length);
+    setEl('count-vluna', vlunaList.length);
+    setEl('count-siq', siqList.length);
+    setEl('count-clearingout', clearingOutList.length);
+    setEl('count-stockade', ghqList.length + stockadeList.length);
 
     let filtered = allItems;
     const cat = state.s1AttachmentCat;
@@ -681,13 +735,18 @@
   // 5. REGIMENT STAFF 2027 RENDERER
   function renderS1RegimentStaff() {
     if (!dom.s1StaffGridContainer) return;
-    const staffData = CCAFP_CONFIG.s1Data.regimentStaff2027;
+    const staffData = CCAFP_CONFIG.s1Data?.regimentStaff2027 || CCAFP_CONFIG.s1Data?.regimentStaff || {};
+
+    const cmd = Array.isArray(staffData.commandSection) ? staffData.commandSection : [];
+    const coord = Array.isArray(staffData.coordinatingStaff) ? staffData.coordinatingStaff : [];
+    const spec = Array.isArray(staffData.specialStaff) ? staffData.specialStaff : [];
+    const ncos = Array.isArray(staffData.ncos) ? staffData.ncos : [];
 
     const allEntries = [
-      ...staffData.commandSection.map(s => ({ ...s, section: 'command', sectionLabel: 'COMMAND SECTION', borderClass: 'stripe-red' })),
-      ...staffData.coordinatingStaff.map(s => ({ ...s, section: 'coordinating', sectionLabel: `COORDINATING STAFF (${s.code})`, borderClass: 'stripe-blue' })),
-      ...staffData.specialStaff.map(s => ({ ...s, section: 'special', sectionLabel: 'SPECIAL STAFF OFFICER', borderClass: 'stripe-amber' })),
-      ...staffData.ncos.map(s => ({ ...s, section: 'ncos', sectionLabel: 'REGIMENTAL NCO', borderClass: 'stripe-emerald' }))
+      ...cmd.map(s => ({ ...s, section: 'command', sectionLabel: 'COMMAND SECTION', borderClass: 'stripe-red' })),
+      ...coord.map(s => ({ ...s, section: 'coordinating', sectionLabel: `COORDINATING STAFF (${s.code || ''})`, borderClass: 'stripe-blue' })),
+      ...spec.map(s => ({ ...s, section: 'special', sectionLabel: 'SPECIAL STAFF OFFICER', borderClass: 'stripe-amber' })),
+      ...ncos.map(s => ({ ...s, section: 'ncos', sectionLabel: 'REGIMENTAL NCO', borderClass: 'stripe-emerald' }))
     ];
 
     let filtered = allEntries;
@@ -907,59 +966,158 @@
     `).join('');
   }
 
-  // 9. APE MEDICAL MONITORING RENDERER (108 CADETS)
+  // 9. APE MEDICAL MONITORING RENDERER (854 CADETS AUDITED)
   function renderS1Ape() {
     if (!dom.s1ApeTableBody) return;
     const list = CCAFP_CONFIG.s1Data?.ape || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.ape) || [];
     const q = (state.s1ApeQuery || '').toLowerCase().trim();
-    const classFilter = state.s1ApeClass || 'all';
+    const classFilter = (state.s1ApeClass || 'all').toUpperCase();
+    const coyFilter = (state.s1ApeCompany || 'all').toUpperCase();
 
     const filtered = list.filter(item => {
-      if (classFilter !== 'all' && (item.class || '').toUpperCase() !== classFilter.toUpperCase()) {
+      // Cohort Filter
+      if (classFilter !== 'ALL' && (item.class || '').toUpperCase() !== classFilter) {
         return false;
       }
+      // Company Filter
+      if (coyFilter !== 'ALL' && (item.coy || '').toUpperCase() !== coyFilter) {
+        return false;
+      }
+      // Search Query
       if (!q) return true;
       return (item.name || '').toLowerCase().includes(q) ||
              (item.sn || '').toLowerCase().includes(q) ||
+             (item.coy || '').toLowerCase().includes(q) ||
+             (item.class || '').toLowerCase().includes(q) ||
              (item.remarks || '').toLowerCase().includes(q);
     });
+
+    // Update Header Badges
+    if (dom.s1ApeTotalCountBadge) {
+      dom.s1ApeTotalCountBadge.textContent = `${filtered.length} CADETS AUDITED (${list.length} TOTAL)`;
+    }
 
     if (filtered.length === 0) {
       dom.s1ApeTableBody.innerHTML = `
         <tr>
-          <td colspan="10" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
-            No APE medical records matching criteria.
+          <td colspan="17" class="py-12 text-center text-slate-400 font-mono-clean text-xs">
+            No APE medical diagnostic records matching selected cohort, company, or search query.
           </td>
         </tr>
       `;
+      if (dom.s1ApePaginationInfo) dom.s1ApePaginationInfo.textContent = 'Showing 0 of 0 cadets';
+      if (dom.s1ApePageNumber) dom.s1ApePageNumber.textContent = '0 / 0';
+      if (dom.s1ApePrevBtn) dom.s1ApePrevBtn.disabled = true;
+      if (dom.s1ApeNextBtn) dom.s1ApeNextBtn.disabled = true;
       return;
     }
 
-    const checkIcon = (val) => {
-      const isDone = String(val).toUpperCase() === 'TRUE';
+    // Pagination
+    const pageSize = state.s1ApePageSize === 'all' ? filtered.length : (parseInt(state.s1ApePageSize, 10) || 50);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (state.s1ApePage > totalPages) state.s1ApePage = totalPages;
+    if (state.s1ApePage < 1) state.s1ApePage = 1;
+    const startIdx = (state.s1ApePage - 1) * pageSize;
+    const pageItems = state.s1ApePageSize === 'all' ? filtered : filtered.slice(startIdx, startIdx + pageSize);
+
+    if (dom.s1ApePaginationInfo) {
+      const endIdx = state.s1ApePageSize === 'all' ? filtered.length : Math.min(startIdx + pageSize, filtered.length);
+      dom.s1ApePaginationInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${filtered.length} cadets`;
+    }
+    if (dom.s1ApePageNumber) {
+      dom.s1ApePageNumber.textContent = `${state.s1ApePage} / ${totalPages}`;
+    }
+    if (dom.s1ApePrevBtn) {
+      dom.s1ApePrevBtn.disabled = state.s1ApePage <= 1;
+    }
+    if (dom.s1ApeNextBtn) {
+      dom.s1ApeNextBtn.disabled = state.s1ApePage >= totalPages;
+    }
+
+    const checkIcon = (val, title) => {
+      const isDone = String(val).trim().toUpperCase() === 'TRUE';
       return isDone
-        ? '<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">✓</span>'
-        : '<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-xs">✕</span>';
+        ? `<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold" title="${title}: Done">✓</span>`
+        : `<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-300 text-[10px]" title="${title}: Pending">✕</span>`;
     };
 
-    dom.s1ApeTableBody.innerHTML = filtered.map((c, idx) => `
-      <tr class="hover:bg-slate-50/80 transition-colors">
-        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
-        <td class="py-2.5 px-2 font-bold ${c.class === '1CL' ? 'text-amber-700' : 'text-blue-700'}">${c.class}</td>
-        <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
-        <td class="py-2.5 px-3 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
-        <td class="py-2.5 px-2 text-center">${checkIcon(c.urinalysis)}</td>
-        <td class="py-2.5 px-2 text-center">${checkIcon(c.blood)}</td>
-        <td class="py-2.5 px-2 text-center">${checkIcon(c.vitals)}</td>
-        <td class="py-2.5 px-2 text-center">${checkIcon(c.dental)}</td>
-        <td class="py-2.5 px-2 text-center">${checkIcon(c.physical)}</td>
-        <td class="py-2.5 px-3">
-          <span class="px-2 py-0.5 rounded text-[11px] font-bold ${c.remarks?.includes('Pending') ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'}">
-            ${c.remarks || 'In Progress'}
-          </span>
-        </td>
-      </tr>
-    `).join('');
+    const coyBadge = (coy) => {
+      const c = (coy || '').toUpperCase();
+      const map = {
+        ALFA: { label: 'A Co', color: 'bg-red-50 text-red-700 border-red-200' },
+        BRAVO: { label: 'B Co', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+        CHARLIE: { label: 'C Co', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+        DELTA: { label: 'D Co', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+        ECHO: { label: 'E Co', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+        FOXTROT: { label: 'F Co', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+        GOLF: { label: 'G Co', color: 'bg-teal-50 text-teal-700 border-teal-200' },
+        HAWK: { label: 'H Co', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+      };
+      const info = map[c] || { label: c || '-', color: 'bg-slate-100 text-slate-600 border-slate-200' };
+      return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold border ${info.color}">${info.label}</span>`;
+    };
+
+    const classBadge = (cl) => {
+      const c = (cl || '').toUpperCase();
+      if (c === '1CL') return '<span class="font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[10px]">1CL</span>';
+      if (c === '2CL') return '<span class="font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 text-[10px]">2CL</span>';
+      if (c === '3CL') return '<span class="font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[10px]">3CL</span>';
+      return `<span class="font-bold text-slate-700 text-[10px]">${c}</span>`;
+    };
+
+    const tests = ['urinalysis', 'blood', 'vitals', 'eye', 'ecg', 'xray', 'npExam', 'npInterview', 'dental', 'physical'];
+
+    dom.s1ApeTableBody.innerHTML = pageItems.map((c, idx) => {
+      const doneCount = c.doneCount !== undefined
+        ? c.doneCount
+        : tests.filter(t => String(c[t]).trim().toUpperCase() === 'TRUE').length;
+
+      let progressPill = '';
+      if (doneCount === 10) {
+        progressPill = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">10/10 ✓</span>';
+      } else if (doneCount >= 7) {
+        progressPill = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">${doneCount}/10</span>`;
+      } else if (doneCount > 0) {
+        progressPill = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">${doneCount}/10</span>`;
+      } else {
+        progressPill = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">0/10</span>';
+      }
+
+      const remarksText = c.remarks || (doneCount === 10 ? 'Complete' : 'In Progress');
+      const isComplete = remarksText.toUpperCase().includes('COMPLET') || doneCount === 10;
+
+      return `
+        <tr class="hover:bg-slate-50/80 transition-colors">
+          <td class="py-2.5 px-2 text-center text-slate-400 text-[11px]">${startIdx + idx + 1}</td>
+          <td class="py-2.5 px-2 text-center">${classBadge(c.class)}</td>
+          <td class="py-2.5 px-2 text-center">${coyBadge(c.coy)}</td>
+          <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
+          <td class="py-2.5 px-2.5 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.urinalysis, 'Urinalysis')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.blood, 'Blood')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.vitals, 'Vitals')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.eye, 'Eye')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.ecg, 'ECG')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.xray, 'X-Ray')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.npExam, 'NP Exam')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.npInterview, 'NP Interview')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.dental, 'Dental')}</td>
+          <td class="py-2.5 px-1.5 text-center">${checkIcon(c.physical, 'Physical GPE')}</td>
+          <td class="py-2.5 px-2 text-center">${progressPill}</td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold truncate max-w-[150px] inline-block ${
+              isComplete
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                : remarksText.includes('lacking')
+                  ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                  : 'bg-amber-50 text-amber-800 border border-amber-200'
+            }" title="${remarksText}">
+              ${remarksText}
+            </span>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   // 10. CLUBS & ORGANIZATIONS RENDERER (74 CLUBS)
@@ -1090,69 +1248,135 @@
   function renderSpiritualCouncilView(council) {
     if (!dom.councilDynamicContainer) return;
     const list = CCAFP_CONFIG.spiritualData || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.spiritual) || [];
-    const sheetRaw = council?.sheetRaw || (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.spiritual_raw : (window.COUNCIL_SHEET_URLS && window.COUNCIL_SHEET_URLS.spiritual_raw) || '');
+    
+    // Class Counts
+    const totalAll = list.length;
+    const total1CL = list.filter(c => (c.class || '').toUpperCase() === '1CL').length;
+    const total2CL = list.filter(c => (c.class || '').toUpperCase() === '2CL').length;
+    const total3CL = list.filter(c => (c.class || '').toUpperCase() === '3CL').length;
 
-    const total = list.length;
-    const countCatholic = list.filter(c => (c.religion || '').toUpperCase().includes('CATHOLIC')).length;
-    const countBaptist = list.filter(c => (c.religion || '').toUpperCase().includes('BAPTIST') || (c.religion || '').toUpperCase().includes('PMACF') || (c.religion || '').toUpperCase().includes('CCCC')).length;
-    const countSDA = list.filter(c => (c.religion || '').toUpperCase().includes('ADVENTIST') || (c.religion || '').toUpperCase().includes('SDA')).length;
-    const countLDS = list.filter(c => (c.religion || '').toUpperCase().includes('LATTER DAY SAINTS') || (c.religion || '').toUpperCase().includes('LDS')).length;
-    const countINC = list.filter(c => (c.religion || '').toUpperCase().includes('CRISTO') || (c.religion || '').toUpperCase().includes('INC')).length;
-    const countMuslim = list.filter(c => (c.religion || '').toUpperCase().includes('ISLAMIC') || (c.religion || '').toUpperCase().includes('MUSLIM')).length;
+    // Filter by Active Class for statistics
+    const currentClass = state.spiritualClass || 'all';
+    const classFiltered = currentClass === 'all' 
+      ? list 
+      : list.filter(c => (c.class || '').toUpperCase() === currentClass.toUpperCase());
+
+    const totalInView = classFiltered.length;
+    const countCatholic = classFiltered.filter(c => (c.religion || '').toUpperCase().includes('CATHOLIC')).length;
+    const countBaptist = classFiltered.filter(c => (c.religion || '').toUpperCase().includes('BAPTIST') || (c.religion || '').toUpperCase().includes('PMACF') || (c.religion || '').toUpperCase().includes('CCCC')).length;
+    const countSDA = classFiltered.filter(c => (c.religion || '').toUpperCase().includes('ADVENTIST') || (c.religion || '').toUpperCase().includes('SDA')).length;
+    const countLDS = classFiltered.filter(c => (c.religion || '').toUpperCase().includes('LATTER DAY SAINTS') || (c.religion || '').toUpperCase().includes('LDS')).length;
+    const countINC = classFiltered.filter(c => (c.religion || '').toUpperCase().includes('CRISTO') || (c.religion || '').toUpperCase().includes('INC')).length;
+    const countMuslim = classFiltered.filter(c => (c.religion || '').toUpperCase().includes('ISLAMIC') || (c.religion || '').toUpperCase().includes('MUSLIM')).length;
+
+    // Denomination specific counts for pills
+    const cntRel = (key) => classFiltered.filter(c => (c.religion || '').toUpperCase().includes(key)).length;
+    const relCounts = {
+      all: totalInView,
+      catholic: cntRel('CATHOLIC'),
+      grace: cntRel('GRACE BAPTIST'),
+      pmacf: cntRel('PMACF'),
+      sda: classFiltered.filter(c => (c.religion || '').toUpperCase().includes('ADVENTIST') || (c.religion || '').toUpperCase().includes('SDA')).length,
+      cccc: cntRel('CCCC'),
+      lds: classFiltered.filter(c => (c.religion || '').toUpperCase().includes('LATTER DAY SAINTS') || (c.religion || '').toUpperCase().includes('LDS')).length,
+      inc: classFiltered.filter(c => (c.religion || '').toUpperCase().includes('CRISTO') || (c.religion || '').toUpperCase().includes('INC')).length,
+      mcgi: cntRel('MCGI'),
+      pmabaptist: cntRel('PMA BAPTIST'),
+      anglican: classFiltered.filter(c => (c.religion || '').toUpperCase().includes('ANGLICAN') || (c.religion || '').toUpperCase().includes('AGLIPAYAN')).length,
+      islamic: classFiltered.filter(c => (c.religion || '').toUpperCase().includes('ISLAMIC') || (c.religion || '').toUpperCase().includes('MUSLIM')).length
+    };
+
+    const urls = typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS : {};
+    const link1CL = urls.spiritual_1cl_raw || "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=194404420#gid=194404420";
+    const link2CL = urls.spiritual_2cl_raw || "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=666856956#gid=666856956";
+    const link3CL = urls.spiritual_3cl_raw || "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=1748574266#gid=1748574266";
 
     dom.councilDynamicContainer.innerHTML = `
       <div class="space-y-6">
         <!-- Live Cloud Sheet Connection Banner -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-purple-50/70 border border-purple-200">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-              <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-3xl bg-purple-50/70 border border-purple-200">
+          <div class="flex items-start sm:items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold flex-shrink-0 shadow-xs border border-purple-200">
+              <i data-lucide="heart-handshake" class="w-6 h-6"></i>
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold font-mono-clean text-purple-800 uppercase bg-purple-100/80 px-2 py-0.5 rounded border border-purple-200">CLASS 2027 MANDARAIG</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] font-bold font-mono-clean text-purple-800 uppercase bg-purple-100/90 px-2 py-0.5 rounded border border-purple-200">CORPS OF CADETS • 1CL, 2CL & 3CL</span>
                 <span class="text-[10px] font-bold font-mono-clean text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
-                  <span>GOOGLE SHEET CONNECTED</span>
+                  <span>LIVE SPREADSHEETS CONNECTED</span>
                 </span>
               </div>
-              <h4 class="font-bold text-sm text-slate-900 mt-0.5">Cadet Religious Services & Faith Denominations Roster</h4>
+              <h4 class="font-bold text-base text-slate-900 mt-0.5">Cadet Religious Services & Faith Denominations Roster</h4>
+              <p class="text-xs text-slate-500 font-mono-clean">Moral and spiritual nourishment registry covering Class 2027, 2028, and 2029.</p>
             </div>
           </div>
-          <a href="${sheetRaw}" target="_blank" rel="noopener noreferrer" class="self-start sm:self-auto flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-900 hover:bg-purple-800 text-white text-xs font-semibold shadow-xs transition-colors font-mono-clean">
-            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-            <span>Open Google Sheet</span>
-          </a>
+
+          <!-- Direct Source Sheet Links -->
+          <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap font-mono-clean text-xs">
+            <a href="${link1CL}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold border border-purple-200 shadow-2xs transition-colors">
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-purple-600"></i>
+              <span>1CL Sheet</span>
+            </a>
+            <a href="${link2CL}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-900 hover:bg-purple-800 text-white font-semibold shadow-2xs transition-colors">
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-purple-200"></i>
+              <span>2CL Sheet</span>
+            </a>
+            <a href="${link3CL}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold border border-purple-200 shadow-2xs transition-colors">
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-purple-600"></i>
+              <span>3CL Sheet</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Class Filter Selector Bar -->
+        <div class="flex items-center gap-2 p-2 rounded-2xl bg-white border border-slate-200 font-mono-clean text-xs overflow-x-auto no-scrollbar shadow-xs">
+          <span class="text-slate-400 font-bold text-[11px] uppercase px-2 flex items-center gap-1">
+            <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span>SELECT CLASS:</span>
+          </span>
+          <button class="spiritual-class-pill ${currentClass === 'all' ? 'active-pill bg-purple-900 text-white shadow-2xs' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-3.5 py-1.5 rounded-xl font-semibold transition-colors flex-shrink-0" data-class="all">
+            All Classes (${totalAll})
+          </button>
+          <button class="spiritual-class-pill ${currentClass === '1CL' ? 'active-pill bg-purple-900 text-white shadow-2xs' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-3.5 py-1.5 rounded-xl font-semibold transition-colors flex-shrink-0" data-class="1CL">
+            1CL Mandaraig '27 (${total1CL})
+          </button>
+          <button class="spiritual-class-pill ${currentClass === '2CL' ? 'active-pill bg-purple-900 text-white shadow-2xs' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-3.5 py-1.5 rounded-xl font-semibold transition-colors flex-shrink-0" data-class="2CL">
+            2CL Siglab Kasilag '28 (${total2CL})
+          </button>
+          <button class="spiritual-class-pill ${currentClass === '3CL' ? 'active-pill bg-purple-900 text-white shadow-2xs' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-3.5 py-1.5 rounded-xl font-semibold transition-colors flex-shrink-0" data-class="3CL">
+            3CL Madasilak '29 (${total3CL})
+          </button>
         </div>
 
         <!-- KPI Metrics Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono-clean">
-          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+          <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
             <span class="text-[10px] text-slate-500 font-bold uppercase block">TOTAL ROSTER</span>
-            <span class="text-xl font-bold text-slate-900">${total}</span>
-            <span class="text-[10px] text-slate-400 block mt-0.5">Mandaraig '27</span>
+            <span class="text-xl font-bold text-slate-900">${totalInView}</span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">${currentClass === 'all' ? 'Corps-Wide' : currentClass}</span>
           </div>
-          <div class="p-3.5 rounded-2xl bg-blue-50 border border-blue-200">
+          <div class="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 shadow-2xs">
             <span class="text-[10px] text-blue-700 font-bold uppercase block">ROMAN CATHOLIC</span>
             <span class="text-xl font-bold text-blue-950">${countCatholic}</span>
-            <span class="text-[10px] text-blue-600 block mt-0.5">${total ? ((countCatholic/total)*100).toFixed(0) : 0}% of Class</span>
+            <span class="text-[10px] text-blue-600 block mt-0.5">${totalInView ? ((countCatholic/totalInView)*100).toFixed(0) : 0}% of Filter</span>
           </div>
-          <div class="p-3.5 rounded-2xl bg-purple-50 border border-purple-200">
+          <div class="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200/80 shadow-2xs">
             <span class="text-[10px] text-purple-700 font-bold uppercase block">PROTESTANT / EVANGELICAL</span>
             <span class="text-xl font-bold text-purple-950">${countBaptist}</span>
             <span class="text-[10px] text-purple-600 block mt-0.5">PMACF, Grace, CCCC</span>
           </div>
-          <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+          <div class="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-2xs">
             <span class="text-[10px] text-emerald-700 font-bold uppercase block">SEVENTH-DAY ADVENTIST</span>
             <span class="text-xl font-bold text-emerald-950">${countSDA}</span>
             <span class="text-[10px] text-emerald-600 block mt-0.5">Sabbath Worship</span>
           </div>
-          <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
+          <div class="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 shadow-2xs">
             <span class="text-[10px] text-amber-700 font-bold uppercase block">LATTER-DAY SAINTS</span>
             <span class="text-xl font-bold text-amber-950">${countLDS}</span>
             <span class="text-[10px] text-amber-600 block mt-0.5">LDS / Mormon</span>
           </div>
-          <div class="p-3.5 rounded-2xl bg-cyan-50 border border-cyan-200">
+          <div class="p-3.5 rounded-2xl bg-cyan-50/70 border border-cyan-200/80 shadow-2xs">
             <span class="text-[10px] text-cyan-700 font-bold uppercase block">ISLAMIC FAITH</span>
             <span class="text-xl font-bold text-cyan-950">${countMuslim}</span>
             <span class="text-[10px] text-cyan-600 block mt-0.5">Jum'ah Prayers</span>
@@ -1160,47 +1384,49 @@
         </div>
 
         <!-- Filter Controls Bar -->
-        <div class="space-y-3 p-4 rounded-2xl bg-slate-50/70 border border-slate-200">
+        <div class="space-y-3 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2">
               <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-              <input id="spiritualSearchInput" type="text" value="${state.spiritualQuery}" placeholder="Search cadet, serial number, religion, company..." class="px-3.5 py-1.5 text-xs rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-64 sm:w-80 font-mono-clean">
+              <input id="spiritualSearchInput" type="text" value="${state.spiritualQuery}" placeholder="Search cadet, serial number, religion, company, class..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 w-64 sm:w-80 font-mono-clean">
             </div>
             <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
               <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">COY:</span>
-              <button class="spiritual-coy-pill ${state.spiritualCoy === 'all' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold" data-coy="all">All</button>
+              <button class="spiritual-coy-pill ${state.spiritualCoy === 'all' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold" data-coy="all">All</button>
               ${['A','B','C','D','E','F','G','H'].map(c => `
-                <button class="spiritual-coy-pill ${state.spiritualCoy === c ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium" data-coy="${c}">${c}</button>
+                <button class="spiritual-coy-pill ${state.spiritualCoy === c ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium" data-coy="${c}">${c}</button>
               `).join('')}
             </div>
           </div>
 
           <!-- Religion Filter Pills -->
-          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1 text-xs font-mono-clean border-t border-slate-200/60">
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 text-xs font-mono-clean border-t border-slate-100">
             <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">FAITH:</span>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'all' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold flex-shrink-0" data-religion="all">All Denominations (${total})</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'CATHOLIC' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="CATHOLIC">Catholic (97)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'GRACE BAPTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="GRACE BAPTIST">Grace Baptist (31)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'PMACF' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="PMACF">PMACF (25)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'SEVENTH-DAY ADVENTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="SEVENTH-DAY ADVENTIST">SDA (18)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'CCCC' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="CCCC">CCCC (15)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'LATTER DAY SAINTS' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="LATTER DAY SAINTS">LDS (15)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'IGLESIA NI CRISTO' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="IGLESIA NI CRISTO">INC (11)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'PMA BAPTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="PMA BAPTIST">PMA Baptist (9)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'ANGLICAN/AGLIPAYAN' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="ANGLICAN/AGLIPAYAN">Anglican (9)</button>
-            <button class="spiritual-religion-pill ${state.spiritualReligion === 'ISLAMIC CREDENCE SOCIETY' ? 'active-pill bg-purple-900 text-white' : 'bg-white text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="ISLAMIC CREDENCE SOCIETY">Islamic (7)</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'all' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold flex-shrink-0" data-religion="all">All (${relCounts.all})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'CATHOLIC' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="CATHOLIC">Catholic (${relCounts.catholic})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'GRACE BAPTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="GRACE BAPTIST">Grace Baptist (${relCounts.grace})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'PMACF' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="PMACF">PMACF (${relCounts.pmacf})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'SEVENTH-DAY ADVENTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="SEVENTH-DAY ADVENTIST">SDA (${relCounts.sda})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'CCCC' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="CCCC">CCCC (${relCounts.cccc})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'LATTER DAY SAINTS' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="LATTER DAY SAINTS">LDS (${relCounts.lds})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'IGLESIA NI CRISTO' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="IGLESIA NI CRISTO">INC (${relCounts.inc})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'MCGI' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="MCGI">MCGI (${relCounts.mcgi})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'PMA BAPTIST' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="PMA BAPTIST">PMA Baptist (${relCounts.pmabaptist})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'ANGLICAN' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="ANGLICAN">Anglican (${relCounts.anglican})</button>
+            <button class="spiritual-religion-pill ${state.spiritualReligion === 'ISLAMIC' ? 'active-pill bg-purple-900 text-white' : 'bg-slate-50 text-slate-700'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-religion="ISLAMIC">Islamic (${relCounts.islamic})</button>
           </div>
         </div>
 
         <!-- Cadets Table -->
-        <div id="spiritualTableContainer" class="overflow-x-auto">
+        <div id="spiritualTableContainer" class="overflow-x-auto bg-white rounded-3xl border border-slate-200 p-4 shadow-xs">
           <!-- Dynamically filtered rows -->
         </div>
       </div>
     `;
 
     renderSpiritualTableRows(list);
-    wireSpiritualEvents(list);
+    wireSpiritualEvents(council, list);
+    if (window.lucide) window.lucide.createIcons();
   }
 
   function renderSpiritualTableRows(list) {
@@ -1208,27 +1434,40 @@
     if (!container) return;
 
     const q = (state.spiritualQuery || '').toLowerCase().trim();
+    const classFilter = state.spiritualClass || 'all';
     const relFilter = state.spiritualReligion || 'all';
     const coyFilter = state.spiritualCoy || 'all';
 
     const filtered = list.filter(item => {
+      if (classFilter !== 'all' && (item.class || '').toUpperCase() !== classFilter.toUpperCase()) {
+        return false;
+      }
       if (coyFilter !== 'all' && (item.coy || '').toUpperCase() !== coyFilter.toUpperCase()) {
         return false;
       }
-      if (relFilter !== 'all' && !(item.religion || '').toUpperCase().includes(relFilter)) {
-        return false;
+      if (relFilter !== 'all') {
+        const itemRel = (item.religion || '').toUpperCase();
+        if (relFilter === 'ANGLICAN' && !(itemRel.includes('ANGLICAN') || itemRel.includes('AGLIPAYAN'))) return false;
+        if (relFilter === 'ISLAMIC' && !(itemRel.includes('ISLAMIC') || itemRel.includes('MUSLIM'))) return false;
+        if (relFilter === 'SEVENTH-DAY ADVENTIST' && !(itemRel.includes('ADVENTIST') || itemRel.includes('SDA'))) return false;
+        if (relFilter === 'LATTER DAY SAINTS' && !(itemRel.includes('LATTER DAY SAINTS') || itemRel.includes('LDS'))) return false;
+        if (relFilter === 'IGLESIA NI CRISTO' && !(itemRel.includes('CRISTO') || itemRel.includes('INC'))) return false;
+        if (!['ANGLICAN', 'ISLAMIC', 'SEVENTH-DAY ADVENTIST', 'LATTER DAY SAINTS', 'IGLESIA NI CRISTO'].includes(relFilter)) {
+          if (!itemRel.includes(relFilter)) return false;
+        }
       }
       if (!q) return true;
       return (item.name || '').toLowerCase().includes(q) ||
              (item.sn || '').toLowerCase().includes(q) ||
              (item.coy || '').toLowerCase().includes(q) ||
+             (item.class || '').toLowerCase().includes(q) ||
              (item.religion || '').toLowerCase().includes(q);
     });
 
     if (filtered.length === 0) {
       container.innerHTML = `
         <div class="py-12 text-center text-slate-400 font-mono-clean text-xs">
-          No cadets found matching religious affiliation criteria.
+          No cadets found matching religious affiliation and class filter criteria.
         </div>
       `;
       return;
@@ -1241,18 +1480,27 @@
       if (r.includes('PMACF')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">PMACF Fellowship</span>';
       if (r.includes('SEVENTH-DAY ADVENTIST') || r.includes('SDA')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Seventh-Day Adventist</span>';
       if (r.includes('CCCC')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200">CCCC Fellowship</span>';
-      if (r.includes('LATTER DAY SAINTS')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Latter-day Saints</span>';
-      if (r.includes('IGLESIA NI CRISTO')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">Iglesia Ni Cristo</span>';
+      if (r.includes('LATTER DAY SAINTS') || r.includes('LDS')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Latter-day Saints</span>';
+      if (r.includes('IGLESIA NI CRISTO') || r.includes('INC')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">Iglesia Ni Cristo</span>';
+      if (r.includes('MCGI')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-violet-50 text-violet-800 border border-violet-200">MCGI</span>';
       if (r.includes('PMA BAPTIST')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">PMA Baptist</span>';
-      if (r.includes('ANGLICAN')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 text-orange-800 border border-orange-200">Anglican / Aglipayan</span>';
+      if (r.includes('ANGLICAN') || r.includes('AGLIPAYAN')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 text-orange-800 border border-orange-200">Anglican / Aglipayan</span>';
       if (r.includes('ISLAMIC') || r.includes('MUSLIM')) return '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-50 text-green-800 border border-green-200">Islamic Credence Society</span>';
       return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-800">${r}</span>`;
     };
 
+    const classBadge = (cls) => {
+      const c = (cls || '1CL').toUpperCase();
+      if (c === '1CL') return '<span class="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">1CL</span>';
+      if (c === '2CL') return '<span class="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-blue-100 text-blue-900 border border-blue-300">2CL</span>';
+      if (c === '3CL') return '<span class="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300">3CL</span>';
+      return `<span class="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-slate-100 text-slate-800">${c}</span>`;
+    };
+
     container.innerHTML = `
-      <div class="flex items-center justify-between text-xs text-slate-500 font-mono-clean pb-2">
-        <span>Showing <strong>${filtered.length}</strong> of ${list.length} Mandaraig Cadets</span>
-        <span>Class of 2027 Roster</span>
+      <div class="flex items-center justify-between text-xs text-slate-500 font-mono-clean pb-3">
+        <span>Showing <strong>${filtered.length}</strong> of ${list.length} Cadets</span>
+        <span>${classFilter === 'all' ? 'All Classes Roster' : `${classFilter} Registered Cadets`}</span>
       </div>
       <table class="w-full text-left text-xs font-mono-clean">
         <thead>
@@ -1270,7 +1518,7 @@
           ${filtered.map((c, idx) => `
             <tr class="hover:bg-slate-50/80 transition-colors">
               <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
-              <td class="py-2.5 px-2 font-bold text-purple-900">${c.class || '1CL'}</td>
+              <td class="py-2.5 px-2">${classBadge(c.class)}</td>
               <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
               <td class="py-2.5 px-3 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
               <td class="py-2.5 px-2 font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
@@ -1283,7 +1531,7 @@
     `;
   }
 
-  function wireSpiritualEvents(list) {
+  function wireSpiritualEvents(council, list) {
     const search = document.getElementById('spiritualSearchInput');
     if (search) {
       search.addEventListener('input', (e) => {
@@ -1292,10 +1540,17 @@
       });
     }
 
+    document.querySelectorAll('.spiritual-class-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        state.spiritualClass = pill.getAttribute('data-class') || 'all';
+        renderSpiritualCouncilView(council);
+      });
+    });
+
     document.querySelectorAll('.spiritual-coy-pill').forEach(pill => {
       pill.addEventListener('click', () => {
         document.querySelectorAll('.spiritual-coy-pill').forEach(p => {
-          p.className = 'spiritual-coy-pill bg-white text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium';
+          p.className = 'spiritual-coy-pill bg-slate-50 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium hover:bg-slate-100';
         });
         pill.className = 'spiritual-coy-pill active-pill bg-purple-900 text-white px-2.5 py-1 rounded-lg border border-purple-900 text-xs font-semibold';
         state.spiritualCoy = pill.getAttribute('data-coy') || 'all';
@@ -1306,13 +1561,1054 @@
     document.querySelectorAll('.spiritual-religion-pill').forEach(pill => {
       pill.addEventListener('click', () => {
         document.querySelectorAll('.spiritual-religion-pill').forEach(p => {
-          p.className = 'spiritual-religion-pill bg-white text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0';
+          p.className = 'spiritual-religion-pill bg-slate-50 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0';
         });
         pill.className = 'spiritual-religion-pill active-pill bg-purple-900 text-white px-2.5 py-1 rounded-lg border border-purple-900 text-xs font-semibold flex-shrink-0';
         state.spiritualReligion = pill.getAttribute('data-religion') || 'all';
         renderSpiritualTableRows(list);
       });
     });
+  }
+
+  // --- Cadet Mess Council View Rendering ---
+  function renderMessCouncilView(council) {
+    if (!dom.councilDynamicContainer) return;
+    const messData = CCAFP_CONFIG.messData || window.MESS_MASTER_DATA || { roster: [], menu: {}, disseminations: [] };
+    const roster = messData.roster || [];
+    const menu = messData.menu || {};
+    const disseminations = messData.disseminations || [];
+
+    const urls = typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS : {};
+    const linkDb = urls.mess_raw || "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/edit?gid=482780671#gid=482780671";
+    const linkViands = urls.mess_viands_raw || "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/edit?gid=143586769#gid=143586769";
+    const linkDissem = "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/edit?gid=1204067800#gid=1204067800";
+
+    const activeSubTab = state.messActiveSubTab || 'shares-roster';
+
+    dom.councilDynamicContainer.innerHTML = `
+      <div class="space-y-6">
+        <!-- Live Cloud Sheet Connection Banner -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-3xl bg-amber-500/10 border border-amber-500/20">
+          <div class="flex items-start sm:items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-600 flex items-center justify-center font-bold flex-shrink-0 shadow-xs border border-amber-500/30">
+              <i data-lucide="utensils" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] font-bold font-mono-clean text-amber-700 uppercase bg-amber-100/90 px-2 py-0.5 rounded border border-amber-200">CORPS OF CADETS • 1,199 CADETS ACTIVE</span>
+                <span class="text-[10px] font-bold font-mono-clean text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
+                  <span>LIVE SPREADSHEETS CONNECTED</span>
+                </span>
+              </div>
+              <h4 class="font-bold text-base text-slate-900 mt-0.5">Cadet Mess Council Portal</h4>
+              <p class="text-xs text-slate-500 font-mono-clean">Kitchen Cooking Shares, Medical & Religious Dietary Restrictions, Battalion Breakdown & Weekly Viands Schedule.</p>
+            </div>
+          </div>
+
+          <!-- Direct Source Sheet Links -->
+          <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap font-mono-clean text-xs">
+            <a href="${linkDb}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold border border-slate-200 shadow-2xs transition-colors">
+              <i data-lucide="database" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Cadet Database</span>
+            </a>
+            <a href="${linkViands}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-2xs transition-colors">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-100"></i>
+              <span>Weekly Menu</span>
+            </a>
+            <a href="${linkDissem}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold border border-slate-200 shadow-2xs transition-colors">
+              <i data-lucide="bell" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Disseminations</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Mess Council Subtab Switcher -->
+        <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-slate-200 font-mono-clean text-xs overflow-x-auto no-scrollbar shadow-xs">
+          <button class="mess-subtab-pill flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all flex-shrink-0 ${
+            activeSubTab === 'shares-roster'
+              ? 'active-pill bg-slate-900 text-white shadow-2xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }" data-subtab="shares-roster">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Kitchen Cooking Shares & Cadet Roster</span>
+          </button>
+          <button class="mess-subtab-pill flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all flex-shrink-0 ${
+            activeSubTab === 'weekly-menu'
+              ? 'active-pill bg-slate-900 text-white shadow-2xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }" data-subtab="weekly-menu">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            <span>Weekly Menu Schedule</span>
+          </button>
+          <button class="mess-subtab-pill flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all flex-shrink-0 ${
+            activeSubTab === 'disseminations'
+              ? 'active-pill bg-slate-900 text-white shadow-2xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }" data-subtab="disseminations">
+            <i data-lucide="bell" class="w-4 h-4"></i>
+            <span>Disseminations & Bulletins</span>
+            ${disseminations.length > 0 ? `<span class="px-1.5 py-0.2 bg-amber-500 text-white text-[10px] rounded-full font-bold">${disseminations.length}</span>` : ''}
+          </button>
+        </div>
+
+        <!-- Dynamic Subtab Container -->
+        <div id="messSubTabContainer"></div>
+      </div>
+    `;
+
+    const subContainer = document.getElementById('messSubTabContainer');
+    if (activeSubTab === 'shares-roster') {
+      renderMessSharesRosterView(subContainer, messData);
+    } else if (activeSubTab === 'weekly-menu') {
+      renderMessWeeklyMenuView(subContainer, messData);
+    } else if (activeSubTab === 'disseminations') {
+      renderMessDisseminationsView(subContainer, messData);
+    }
+
+    wireMessEvents(council, messData);
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // --- Subtab 1: Kitchen Cooking Shares & Cadet Roster ---
+  function renderMessSharesRosterView(container, messData) {
+    if (!container) return;
+    const roster = messData.roster || [];
+    const totalCadets = roster.length;
+    const total1st = roster.filter(c => c.bn === '1ST').length;
+    const total2nd = roster.filter(c => c.bn === '2ND').length;
+    const total3rd = roster.filter(c => c.bn === '3RD').length;
+    const total4th = roster.filter(c => c.bn === '4TH').length;
+    const totalHC = roster.filter(c => (c.status || '').toUpperCase() === 'HC').length;
+    const totalSpecial = roster.filter(c => (c.diets || []).length > 0).length;
+
+    // Diet counts
+    const countDiet = (name) => roster.filter(c => (c.diets || []).includes(name)).length;
+
+    const medicalDiets = [
+      { id: 'NO FISH', name: 'No Fish', count: countDiet('NO FISH') },
+      { id: 'NO SEAFOOD', name: 'No Seafood', count: countDiet('NO SEAFOOD') },
+      { id: 'NO SHRIMP', name: 'No Shrimp', count: countDiet('NO SHRIMP') },
+      { id: 'NO EGG', name: 'No Egg', count: countDiet('NO EGG') },
+      { id: 'NO CHICKEN', name: 'No Chicken', count: countDiet('NO CHICKEN') },
+      { id: 'NO BEANS', name: 'No Beans', count: countDiet('NO BEANS') },
+      { id: 'NO TOFU', name: 'No Tofu', count: countDiet('NO TOFU') },
+      { id: 'NO CITRUS', name: 'No Citrus', count: countDiet('NO CITRUS') },
+      { id: 'NO SPICY', name: 'No Spicy', count: countDiet('NO SPICY') },
+      { id: 'NO EGGPLANT', name: 'No Eggplant', count: countDiet('NO EGGPLANT') },
+      { id: 'NO COCUMBER', name: 'No Cucumber', count: countDiet('NO COCUMBER') },
+      { id: 'NO SOUR', name: 'No Sour', count: countDiet('NO SOUR') },
+      { id: 'NO TOMATOES', name: 'No Tomatoes', count: countDiet('NO TOMATOES') }
+    ];
+
+    const religiousDiets = [
+      { id: 'NO BLOOD', name: 'No Blood', count: countDiet('NO BLOOD'), desc: 'INC / SDA Doctrine' },
+      { id: 'NO PORK', name: 'No Pork', count: countDiet('NO PORK'), desc: 'Halal / SDA Dietary' },
+      { id: 'NO PROCESSED FOOD', name: 'No Processed Food', count: countDiet('NO PROCESSED FOOD'), desc: 'Health / Religious' },
+      { id: 'NO COFFEE', name: 'No Coffee', count: countDiet('NO COFFEE'), desc: 'LDS / SDA Health' },
+      { id: 'NO CHOCOLATE', name: 'No Chocolate', count: countDiet('NO CHOCOLATE'), desc: 'Medical Diet' },
+      { id: 'NO BEEF', name: 'No Beef', count: countDiet('NO BEEF'), desc: 'Personal / Religious' },
+      { id: 'NO JUICE', name: 'No Sugary Juice', count: countDiet('NO JUICE'), desc: 'Medical Diet' }
+    ];
+
+    // Battalion Breakdown calculations
+    const battalions = [
+      { name: '1st Battalion', code: '1ST', coys: 'Alfa & Bravo' },
+      { name: '2nd Battalion', code: '2ND', coys: 'Charlie & Delta' },
+      { name: '3rd Battalion', code: '3RD', coys: 'Echo & Foxtrot' },
+      { name: '4th Battalion', code: '4TH', coys: 'Golf & Hawk' }
+    ].map(bn => {
+      const bnCadets = roster.filter(c => c.bn === bn.code);
+      const bnTotal = bnCadets.length;
+      const bnSpecial = bnCadets.filter(c => (c.diets || []).length > 0).length;
+      const bnRegular = bnTotal - bnSpecial;
+      const specialPct = bnTotal > 0 ? Math.round((bnSpecial / bnTotal) * 100) : 0;
+      
+      const dietTally = {};
+      bnCadets.forEach(c => {
+        (c.diets || []).forEach(d => {
+          dietTally[d] = (dietTally[d] || 0) + 1;
+        });
+      });
+      const topDiets = Object.entries(dietTally)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+
+      return {
+        ...bn,
+        total: bnTotal,
+        special: bnSpecial,
+        regular: bnRegular,
+        specialPct,
+        topDiets
+      };
+    });
+
+    const activeDiet = state.messActiveDiet || 'all';
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        <!-- 1. KPI Top Metrics Grid (6 Cards) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono-clean">
+          <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+            <span class="text-[10px] text-slate-500 font-bold uppercase block">TOTAL ROSTER</span>
+            <span class="text-xl font-bold text-slate-900">${totalCadets.toLocaleString()}</span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">Corps-Wide Disposition</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 shadow-2xs">
+            <span class="text-[10px] text-blue-700 font-bold uppercase block">1ST BATTALION</span>
+            <span class="text-xl font-bold text-blue-950">${total1st}</span>
+            <span class="text-[10px] text-blue-600 block mt-0.5">Alfa & Bravo Coy</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 shadow-2xs">
+            <span class="text-[10px] text-indigo-700 font-bold uppercase block">2ND BATTALION</span>
+            <span class="text-xl font-bold text-indigo-950">${total2nd}</span>
+            <span class="text-[10px] text-indigo-600 block mt-0.5">Charlie & Delta Coy</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200/80 shadow-2xs">
+            <span class="text-[10px] text-purple-700 font-bold uppercase block">3RD BATTALION</span>
+            <span class="text-xl font-bold text-purple-950">${total3rd}</span>
+            <span class="text-[10px] text-purple-600 block mt-0.5">Echo & Foxtrot Coy</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-teal-50/70 border border-teal-200/80 shadow-2xs">
+            <span class="text-[10px] text-teal-700 font-bold uppercase block">4TH BATTALION</span>
+            <span class="text-xl font-bold text-teal-950">${total4th}</span>
+            <span class="text-[10px] text-teal-600 block mt-0.5">Golf & Hawk Coy</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200/80 shadow-2xs">
+            <span class="text-[10px] text-rose-700 font-bold uppercase block">HOLDING CENTER</span>
+            <span class="text-xl font-bold text-rose-950">${totalHC}</span>
+            <span class="text-[10px] text-rose-600 block mt-0.5">Medical / Quarantine</span>
+          </div>
+        </div>
+
+        <!-- 2. Kitchen Cooking Shares Summary -->
+        <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold font-mono-clean text-amber-700 uppercase bg-amber-50 px-2 py-0.5 rounded border border-amber-200">KITCHEN PREPARATION DISPOSITION</span>
+                <span class="text-xs text-slate-500 font-mono-clean"><strong>${totalSpecial}</strong> Cadets (${Math.round((totalSpecial/totalCadets)*100)}%) on Special Diets</span>
+              </div>
+              <h3 class="text-sm font-bold text-slate-900 mt-1">Kitchen Cooking Shares Summary</h3>
+              <p class="text-xs text-slate-500">Interactive restriction metrics. Click any dietary card to instantly filter the cadet roster below.</p>
+            </div>
+            ${activeDiet !== 'all' ? `
+              <button id="messClearDietFilterBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-2xs transition-all self-start sm:self-auto font-mono-clean">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                <span>Clear Diet Filter (${activeDiet})</span>
+              </button>
+            ` : ''}
+          </div>
+
+          <!-- Section A: Medical & Allergies -->
+          <div>
+            <div class="flex items-center gap-2 mb-2.5">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 font-mono-clean">Medical Conditions & Food Allergens</h4>
+              <span class="text-[11px] text-slate-400 font-mono-clean">(Strict Kitchen Separation Required)</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              ${medicalDiets.map(item => {
+                const isSelected = activeDiet === item.id;
+                return `
+                  <button class="mess-diet-card text-left p-2.5 rounded-xl border transition-all ${
+                    isSelected
+                      ? 'bg-amber-500 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/50'
+                      : item.count > 0
+                        ? 'bg-red-50/50 hover:bg-red-100/70 border-red-200/80 text-slate-800'
+                        : 'bg-slate-50 border-slate-200/60 text-slate-400 hover:bg-slate-100/60'
+                  }" data-diet="${item.id}">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="font-bold truncate">${item.name}</span>
+                      <span class="font-mono-clean font-extrabold px-1.5 py-0.2 rounded-md ${
+                        isSelected ? 'bg-white/20 text-white' : item.count > 0 ? 'bg-red-200 text-red-900' : 'bg-slate-200 text-slate-600'
+                      }">${item.count}</span>
+                    </div>
+                    <span class="text-[9px] block mt-1 opacity-75 font-mono-clean">Special Prep</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Section B: Religious & Food Restrictions -->
+          <div>
+            <div class="flex items-center gap-2 mb-2.5">
+              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 font-mono-clean">Religious & Faith Food Restrictions</h4>
+              <span class="text-[11px] text-slate-400 font-mono-clean">(Halal, Non-Blood, Christian Sabbath Provisions)</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              ${religiousDiets.map(item => {
+                const isSelected = activeDiet === item.id;
+                return `
+                  <button class="mess-diet-card text-left p-2.5 rounded-xl border transition-all ${
+                    isSelected
+                      ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs ring-2 ring-indigo-400/50'
+                      : item.count > 0
+                        ? 'bg-indigo-50/60 hover:bg-indigo-100/80 border-indigo-200/80 text-slate-800'
+                        : 'bg-slate-50 border-slate-200/60 text-slate-400 hover:bg-slate-100/60'
+                  }" data-diet="${item.id}">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="font-bold truncate">${item.name}</span>
+                      <span class="font-mono-clean font-extrabold px-1.5 py-0.2 rounded-md ${
+                        isSelected ? 'bg-white/20 text-white' : item.count > 0 ? 'bg-indigo-200 text-indigo-900' : 'bg-slate-200 text-slate-600'
+                      }">${item.count}</span>
+                    </div>
+                    <span class="text-[9px] block mt-1 opacity-75 font-mono-clean truncate">${item.desc}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Battalion Cooking Shares Breakdown (4 Cards) -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Battalion Cooking Shares Breakdown</h3>
+              <p class="text-xs text-slate-500">Distribution of regular vs special diet ratios per battalion cooking line.</p>
+            </div>
+            <span class="text-xs font-mono-clean text-slate-400">4 Cooking Lines Active</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            ${battalions.map(bn => `
+              <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="font-bold text-sm text-slate-900">${bn.name}</h4>
+                    <span class="text-[11px] text-slate-500 font-mono-clean">${bn.coys}</span>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-lg text-xs font-bold font-mono-clean bg-slate-100 text-slate-700">${bn.total} Cadets</span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div>
+                  <div class="flex items-center justify-between text-[11px] font-mono-clean mb-1">
+                    <span class="text-slate-500">Special Diet: <strong class="text-amber-700">${bn.special}</strong> (${bn.specialPct}%)</span>
+                    <span class="text-slate-400">Regular: ${bn.regular}</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden flex">
+                    <div class="h-full bg-amber-500 rounded-full" style="width: ${bn.specialPct}%"></div>
+                  </div>
+                </div>
+
+                <!-- Top Diet Tags -->
+                <div class="pt-2 border-t border-slate-100">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5 font-mono-clean">Top Dietary Shares</span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    ${bn.topDiets.length > 0 ? bn.topDiets.map(([d, cnt]) => `
+                      <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold font-mono-clean bg-slate-100 text-slate-700 border border-slate-200">
+                        ${d}: <strong>${cnt}</strong>
+                      </span>
+                    `).join('') : '<span class="text-[11px] text-slate-400 font-mono-clean">None</span>'}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- 4. Cadet Roster Filter Toolbar & Database Table -->
+        <div class="space-y-4 p-5 rounded-3xl bg-white border border-slate-200 shadow-xs">
+          <!-- Top Row: Search & Reset -->
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div class="flex items-center gap-2 flex-1 max-w-md">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+              <input id="messSearchInput" type="text" value="${state.messQuery || ''}" placeholder="Search cadet name, company, class, branch, status, diet..." class="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono-clean">
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="messResetFiltersBtn" class="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold font-mono-clean transition-colors">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>Reset Filters</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Pills Row 1: Battalion & Class -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-100 font-mono-clean text-xs">
+            <!-- Battalion -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">BATTALION:</span>
+              <button class="mess-bn-pill ${state.messBattalion === 'all' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold flex-shrink-0" data-bn="all">All</button>
+              ${['1ST', '2ND', '3RD', '4TH'].map(b => `
+                <button class="mess-bn-pill ${state.messBattalion === b ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium flex-shrink-0" data-bn="${b}">${b} Bn</button>
+              `).join('')}
+            </div>
+
+            <!-- Class -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">CLASS:</span>
+              <button class="mess-class-pill ${state.messClass === 'all' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold flex-shrink-0" data-class="all">All</button>
+              <button class="mess-class-pill ${state.messClass === '1CL' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-class="1CL">1CL '27</button>
+              <button class="mess-class-pill ${state.messClass === '2CL' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-class="2CL">2CL '28</button>
+              <button class="mess-class-pill ${state.messClass === '3CL' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-class="3CL">3CL '29</button>
+              <button class="mess-class-pill ${state.messClass === '4CL' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-class="4CL">4CL '30</button>
+            </div>
+          </div>
+
+          <!-- Filter Pills Row 2: Company & BOS & Status -->
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar font-mono-clean text-xs pt-2 border-t border-slate-100">
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">COY:</span>
+            <button class="mess-coy-pill ${state.messCoy === 'all' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold flex-shrink-0" data-coy="all">All</button>
+            ${['ALFA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO', 'FOXTROT', 'GOLF', 'HAWK'].map(c => `
+              <button class="mess-coy-pill ${state.messCoy === c ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium flex-shrink-0" data-coy="${c}">${c}</button>
+            `).join('')}
+
+            <span class="text-slate-300 mx-1">|</span>
+
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">BOS:</span>
+            <button class="mess-bos-pill ${state.messBOS === 'all' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2 py-1 rounded-lg border border-slate-200 text-xs font-semibold flex-shrink-0" data-bos="all">All</button>
+            <button class="mess-bos-pill ${state.messBOS === 'PA' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-bos="PA">PA</button>
+            <button class="mess-bos-pill ${state.messBOS === 'PAF' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-bos="PAF">PAF</button>
+            <button class="mess-bos-pill ${state.messBOS === 'PN' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-bos="PN">PN</button>
+
+            <span class="text-slate-300 mx-1">|</span>
+
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">STATUS:</span>
+            <button class="mess-status-pill ${state.messStatus === 'all' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2 py-1 rounded-lg border border-slate-200 text-xs font-semibold flex-shrink-0" data-status="all">All</button>
+            <button class="mess-status-pill ${state.messStatus === 'FULL DUTY' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-status="FULL DUTY">Full Duty</button>
+            <button class="mess-status-pill ${state.messStatus === 'HC' ? 'active-pill bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'} px-2 py-1 rounded-lg border border-slate-200 text-xs flex-shrink-0" data-status="HC">Holding Ctr</button>
+          </div>
+
+          <!-- Active Filter Announcement Badge -->
+          ${activeDiet !== 'all' ? `
+            <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 font-mono-clean flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="filter" class="w-4 h-4 text-amber-600"></i>
+                <span>Filtering table by special diet: <strong>${activeDiet}</strong> (${countDiet(activeDiet)} cadets Corps-wide)</span>
+              </div>
+              <button class="text-amber-700 underline text-xs font-bold hover:text-amber-900" id="messClearActiveDietTag">Remove Filter</button>
+            </div>
+          ` : ''}
+
+          <!-- Roster Table Container -->
+          <div id="messRosterTableWrapper" class="overflow-x-auto rounded-2xl border border-slate-200">
+            <!-- Dynamically populated by renderMessRosterTableRows -->
+          </div>
+        </div>
+      </div>
+    `;
+
+    renderMessRosterTableRows(roster);
+  }
+
+  // --- Render Mess Roster Table Rows ---
+  function renderMessRosterTableRows(roster) {
+    const wrapper = document.getElementById('messRosterTableWrapper');
+    if (!wrapper) return;
+
+    const q = (state.messQuery || '').toLowerCase().trim();
+    const bnFilter = state.messBattalion || 'all';
+    const coyFilter = state.messCoy || 'all';
+    const classFilter = state.messClass || 'all';
+    const bosFilter = state.messBOS || 'all';
+    const statusFilter = state.messStatus || 'all';
+    const dietFilter = state.messActiveDiet || 'all';
+
+    const filtered = roster.filter(c => {
+      if (bnFilter !== 'all' && c.bn !== bnFilter) return false;
+      if (coyFilter !== 'all' && c.coy !== coyFilter) return false;
+      if (classFilter !== 'all' && c.class !== classFilter) return false;
+      if (bosFilter !== 'all' && c.bos !== bosFilter) return false;
+      if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+      if (dietFilter !== 'all' && !(c.diets || []).includes(dietFilter)) return false;
+
+      if (!q) return true;
+      const haystack = `${c.name} ${c.coy} ${c.bn} ${c.class} ${c.bos} ${c.status} ${(c.diets || []).join(' ')}`.toLowerCase();
+      return haystack.includes(q);
+    });
+
+    if (filtered.length === 0) {
+      wrapper.innerHTML = `
+        <div class="py-12 text-center text-slate-400 font-mono-clean text-xs">
+          No cadets found matching search criteria and dietary restriction filters.
+        </div>
+      `;
+      return;
+    }
+
+    // Pagination
+    const pageSize = state.messPageSize === 'all' ? filtered.length : (state.messPageSize || 50);
+    const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+    let currentPage = state.messPage || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    state.messPage = currentPage;
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginated = state.messPageSize === 'all' ? filtered : filtered.slice(startIndex, startIndex + pageSize);
+
+    const classBadge = (cls) => {
+      const c = (cls || '4CL').toUpperCase();
+      if (c === '1CL') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">1CL</span>';
+      if (c === '2CL') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-blue-100 text-blue-900 border border-blue-300">2CL</span>';
+      if (c === '3CL') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300">3CL</span>';
+      return '<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-100 text-slate-800 border border-slate-300">4CL</span>';
+    };
+
+    const bosBadge = (bos) => {
+      const b = (bos || '').toUpperCase();
+      if (b === 'PA') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-50 text-green-800 border border-green-200">PA</span>';
+      if (b === 'PAF') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">PAF</span>';
+      if (b === 'PN') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">PN</span>';
+      return `<span class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-600">${b || 'N/A'}</span>`;
+    };
+
+    const statusBadge = (st) => {
+      const s = (st || 'FULL DUTY').toUpperCase();
+      if (s === 'FULL DUTY') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Full Duty</span>';
+      if (s === 'HC') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-100 text-rose-900 border border-rose-300">Holding Ctr</span>';
+      return `<span class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700">${s}</span>`;
+    };
+
+    const dietBadges = (diets) => {
+      if (!diets || diets.length === 0) {
+        return '<span class="text-[11px] text-slate-400 font-mono-clean">Regular Diet</span>';
+      }
+      return diets.map(d => {
+        if (d === 'NO BLOOD') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200">NO BLOOD</span>';
+        if (d === 'NO PORK') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200">NO PORK</span>';
+        if (d === 'NO SEAFOOD') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">NO SEAFOOD</span>';
+        if (d === 'NO FISH') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">NO FISH</span>';
+        if (d === 'NO SHRIMP') return '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">NO SHRIMP</span>';
+        return `<span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-red-50 text-red-800 border border-red-200">${d}</span>`;
+      }).join(' ');
+    };
+
+    wrapper.innerHTML = `
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 font-mono-clean p-3 bg-slate-50 border-b border-slate-200 gap-2">
+        <span>Showing <strong>${startIndex + 1}–${Math.min(startIndex + pageSize, filtered.length)}</strong> of <strong>${filtered.length}</strong> matching cadets (${roster.length} Total Roster)</span>
+        <div class="flex items-center gap-2">
+          <span>Rows per page:</span>
+          <button class="mess-pagesize-btn px-2 py-0.5 rounded ${state.messPageSize === 50 ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 border'}" data-size="50">50</button>
+          <button class="mess-pagesize-btn px-2 py-0.5 rounded ${state.messPageSize === 100 ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 border'}" data-size="100">100</button>
+          <button class="mess-pagesize-btn px-2 py-0.5 rounded ${state.messPageSize === 'all' ? 'bg-slate-900 text-white font-bold' : 'bg-white text-slate-700 border'}" data-size="all">All</button>
+        </div>
+      </div>
+      <table class="w-full text-left text-xs font-mono-clean">
+        <thead class="bg-slate-50/50">
+          <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px]">
+            <th class="py-3 px-3">#</th>
+            <th class="py-3 px-2">Class</th>
+            <th class="py-3 px-3 font-semibold text-slate-900">Cadet Full Name</th>
+            <th class="py-3 px-2">Company</th>
+            <th class="py-3 px-2">Battalion</th>
+            <th class="py-3 px-2">BOS</th>
+            <th class="py-3 px-2">Status</th>
+            <th class="py-3 px-3">Dietary Restrictions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 bg-white">
+          ${paginated.map((c, idx) => `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-2.5 px-3 text-slate-400 text-[11px]">${startIndex + idx + 1}</td>
+              <td class="py-2.5 px-2">${classBadge(c.class)}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
+              <td class="py-2.5 px-2 font-bold text-slate-800">${c.coy ? `${c.coy} CO` : '-'}</td>
+              <td class="py-2.5 px-2 text-slate-600">${c.bn ? `${c.bn} BN` : '-'}</td>
+              <td class="py-2.5 px-2">${bosBadge(c.bos)}</td>
+              <td class="py-2.5 px-2">${statusBadge(c.status)}</td>
+              <td class="py-2.5 px-3">${dietBadges(c.diets)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <!-- Bottom Pagination Bar -->
+      ${totalPages > 1 ? `
+        <div class="flex items-center justify-between p-3 bg-slate-50 border-t border-slate-200 text-xs font-mono-clean">
+          <div class="text-slate-500">
+            Page <strong>${currentPage}</strong> of <strong>${totalPages}</strong>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="messPrevPageBtn" class="px-3 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 font-semibold text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed" ${currentPage <= 1 ? 'disabled' : ''}>Previous</button>
+            <button id="messNextPageBtn" class="px-3 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 font-semibold text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed" ${currentPage >= totalPages ? 'disabled' : ''}>Next</button>
+          </div>
+        </div>
+      ` : ''}
+    `;
+
+    // Wire pagination buttons
+    const prevBtn = document.getElementById('messPrevPageBtn');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (state.messPage > 1) {
+          state.messPage--;
+          renderMessRosterTableRows(roster);
+          wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+
+    const nextBtn = document.getElementById('messNextPageBtn');
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (state.messPage < totalPages) {
+          state.messPage++;
+          renderMessRosterTableRows(roster);
+          wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+
+    document.querySelectorAll('.mess-pagesize-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sz = btn.getAttribute('data-size');
+        state.messPageSize = sz === 'all' ? 'all' : parseInt(sz, 10);
+        state.messPage = 1;
+        renderMessRosterTableRows(roster);
+      });
+    });
+  }
+
+  // --- Subtab 2: Weekly Menu Schedule ---
+  function renderMessWeeklyMenuView(container, messData) {
+    if (!container) return;
+    const menu = messData.menu || {};
+    const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+    const activeDay = state.messMenuDay || 'MONDAY';
+    const dayData = menu[activeDay] || {
+      morning: { viands: [], drink: '', rice: 'Steamed Rice' },
+      noon: { viands: [], drink: '', rice: 'Steamed Rice' },
+      evening: { viands: [], drink: '', rice: 'Steamed Rice' },
+      snack: ''
+    };
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        <!-- Day Selector Pills -->
+        <div class="flex items-center gap-2 p-2 rounded-2xl bg-white border border-slate-200 font-mono-clean text-xs overflow-x-auto no-scrollbar shadow-xs">
+          <span class="text-slate-400 font-bold text-[11px] uppercase px-2 flex items-center gap-1 flex-shrink-0">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span>SELECT DAY:</span>
+          </span>
+          ${days.map(d => `
+            <button class="mess-day-pill px-4 py-2 rounded-xl font-bold transition-all flex-shrink-0 ${
+              activeDay === d
+                ? 'active-pill bg-amber-600 text-white shadow-2xs'
+                : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+            }" data-day="${d}">
+              ${d}
+            </button>
+          `).join('')}
+        </div>
+
+        <!-- Meal Schedule Grid (4 Cards) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- 1. Morning Mess (0630H) -->
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-2xs space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                    <i data-lucide="sun" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-sm text-slate-900">Morning Mess</h4>
+                    <span class="text-[10px] text-slate-400 font-mono-clean">0630H – 0730H Breakfast</span>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono-clean bg-amber-50 text-amber-800 border border-amber-200">BREAKFAST</span>
+              </div>
+
+              <!-- Viands -->
+              <div class="space-y-2 mt-4 font-mono-clean text-xs">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Viands & Main Course</span>
+                ${(dayData.morning?.viands && dayData.morning.viands.length > 0) ? `
+                  <ul class="space-y-1.5">
+                    ${dayData.morning.viands.map(v => `
+                      <li class="flex items-start gap-2 text-slate-800 font-semibold">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                        <span>${v}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                ` : '<span class="text-slate-400">Standard Morning Rations</span>'}
+              </div>
+            </div>
+
+            <!-- Beverage & Rice -->
+            <div class="pt-3 border-t border-slate-100 space-y-1.5 font-mono-clean text-[11px]">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Staple:</span>
+                <span class="font-bold text-slate-800">${dayData.morning?.rice || 'Steamed Rice'}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Beverage:</span>
+                <span class="font-bold text-amber-700">${dayData.morning?.drink || 'Hot Coffee / Cocoa'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Noon Mess (1200H) -->
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-2xs space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold">
+                    <i data-lucide="utensils" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-sm text-slate-900">Noon Mess</h4>
+                    <span class="text-[10px] text-slate-400 font-mono-clean">1200H – 1300H Lunch</span>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono-clean bg-orange-50 text-orange-800 border border-orange-200">LUNCH</span>
+              </div>
+
+              <!-- Viands -->
+              <div class="space-y-2 mt-4 font-mono-clean text-xs">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Viands & Sides</span>
+                ${(dayData.noon?.viands && dayData.noon.viands.length > 0) ? `
+                  <ul class="space-y-1.5">
+                    ${dayData.noon.viands.map(v => `
+                      <li class="flex items-start gap-2 text-slate-800 font-semibold">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                        <span>${v}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                ` : '<span class="text-slate-400">Standard Noon Rations</span>'}
+              </div>
+            </div>
+
+            <!-- Beverage & Rice -->
+            <div class="pt-3 border-t border-slate-100 space-y-1.5 font-mono-clean text-[11px]">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Staple:</span>
+                <span class="font-bold text-slate-800">${dayData.noon?.rice || 'Steamed Rice'}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Beverage:</span>
+                <span class="font-bold text-orange-700">${dayData.noon?.drink || 'Chilled Juice / Iced Tea'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Evening Mess (1830H) -->
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-2xs space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                    <i data-lucide="moon" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-sm text-slate-900">Evening Mess</h4>
+                    <span class="text-[10px] text-slate-400 font-mono-clean">1830H – 1930H Dinner</span>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono-clean bg-indigo-50 text-indigo-800 border border-indigo-200">DINNER</span>
+              </div>
+
+              <!-- Viands -->
+              <div class="space-y-2 mt-4 font-mono-clean text-xs">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Viands & Dessert</span>
+                ${(dayData.evening?.viands && dayData.evening.viands.length > 0) ? `
+                  <ul class="space-y-1.5">
+                    ${dayData.evening.viands.map(v => `
+                      <li class="flex items-start gap-2 text-slate-800 font-semibold">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+                        <span>${v}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                ` : '<span class="text-slate-400">Standard Evening Rations</span>'}
+              </div>
+            </div>
+
+            <!-- Beverage & Rice -->
+            <div class="pt-3 border-t border-slate-100 space-y-1.5 font-mono-clean text-[11px]">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Staple:</span>
+                <span class="font-bold text-slate-800">${dayData.evening?.rice || 'Steamed Rice'}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Soup / Beverage:</span>
+                <span class="font-bold text-indigo-700">${dayData.evening?.drink || 'Clear Broth / Water'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. PM Snack -->
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-2xs space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                    <i data-lucide="coffee" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-sm text-slate-900">PM Snack</h4>
+                    <span class="text-[10px] text-slate-400 font-mono-clean">1530H Cadets Merienda</span>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono-clean bg-purple-50 text-purple-800 border border-purple-200">SNACK</span>
+              </div>
+
+              <!-- Snack Item -->
+              <div class="space-y-2 mt-4 font-mono-clean text-xs">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Merienda Item</span>
+                <div class="p-3 rounded-2xl bg-purple-50/50 border border-purple-100">
+                  <span class="font-bold text-sm text-purple-950 block">${dayData.snack || 'Cadet Refreshment / Pastry'}</span>
+                  <span class="text-[11px] text-purple-700 block mt-1">Served at Company Mess Areas</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Snack Protocol -->
+            <div class="pt-3 border-t border-slate-100 text-[11px] font-mono-clean text-slate-500">
+              Distributed daily by Duty Mess Cadets per company barracks.
+            </div>
+          </div>
+        </div>
+
+        <!-- Food Safety & Diet Substitution Advisory -->
+        <div class="p-5 rounded-3xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-slate-900">
+            <i data-lucide="info" class="w-4 h-4 text-amber-600"></i>
+            <span>Kitchen Standing Orders & Diet Alternative Protocol</span>
+          </div>
+          <p class="leading-relaxed">
+            Cadets on medical, allergic, or religious food restrictions are to proceed to the <strong>Special Diet Counter</strong> upon entry to Yap Hall. 
+            Cross-contamination protocols are strictly maintained for all dishes flagged with allergens (Peanuts, Eggs, Seafood, Fish). 
+            Unauthorized swapping or taking of special diet rations is strictly prohibited under Cadet Regulations.
+          </p>
+        </div>
+      </div>
+    `;
+
+    document.querySelectorAll('.mess-day-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        state.messMenuDay = pill.getAttribute('data-day') || 'MONDAY';
+        renderMessWeeklyMenuView(container, messData);
+        if (window.lucide) window.lucide.createIcons();
+      });
+    });
+  }
+
+  // --- Subtab 3: Disseminations & Bulletins ---
+  function renderMessDisseminationsView(container, messData) {
+    if (!container) return;
+    const disseminations = messData.disseminations || [];
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        <!-- Official Bulletins from Regimental Mess Officer -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Official Disseminations & Bulletins</h3>
+              <p class="text-xs text-slate-500">Standing policy directives from the Regimental Mess Officer.</p>
+            </div>
+            <span class="text-xs font-mono-clean text-amber-700 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200 font-bold">
+              ${disseminations.length} Active Notice${disseminations.length === 1 ? '' : 's'}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            ${disseminations.map(d => `
+              <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 font-mono-clean text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-md font-bold text-[10px] bg-red-100 text-red-900 border border-red-300">MESS DIRECTIVE</span>
+                    <span class="text-slate-400 font-bold">${d.id}</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-slate-500">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+                    <span>${d.date}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="font-extrabold text-base text-slate-900 uppercase tracking-tight">${d.headline}</h4>
+                  <p class="text-xs text-slate-700 leading-relaxed mt-2 whitespace-pre-line font-mono-clean">${d.content}</p>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono-clean text-slate-500">
+                  <span class="font-bold text-slate-800">AUTHORITY: ${d.author || 'REGIMENTAL MESS OFFICER'}</span>
+                  <span class="text-emerald-700 font-semibold flex items-center gap-1">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    <span>OFFICIALLY PROMULGATED</span>
+                  </span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Standing Mess Etiquette & Hall Protocols -->
+        <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="book-open" class="w-4 h-4 text-amber-600"></i>
+            <h3 class="text-sm font-bold text-slate-900">Standing Mess Hall Regulations & Dining Decorum</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono-clean leading-relaxed text-slate-700">
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <h5 class="font-bold text-slate-900 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>1. Table Decorum & Etiquette</span>
+              </h5>
+              <p class="text-slate-600 text-[11px]">
+                Cadets shall maintain military bearing during all meals. Table appointments, correct cutlery handling, and silent order must be observed. First Class cadets at the table head oversee order and table discipline.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <h5 class="font-bold text-slate-900 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>2. Packed Mess Eligibility</span>
+              </h5>
+              <p class="text-slate-600 text-[11px]">
+                Packed meals are strictly reserved for sanctioned duty details, working parties, or cadets officially admitted to the Station Hospital / Holding Center. Unauthorized removal of food constitutes a violation of Cadet Regulations.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <h5 class="font-bold text-slate-900 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>3. Special Dietary Registration</span>
+              </h5>
+              <p class="text-slate-600 text-[11px]">
+                Any adjustments to medical allergies or faith-based dietary profiles must be validated by the Academy Medical Dispensary or Corps Chaplaincy and endorsed to the Cadet Mess Council before implementation.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <h5 class="font-bold text-slate-900 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>4. Wastage & Tray Clearance</span>
+              </h5>
+              <p class="text-slate-600 text-[11px]">
+                Zero food wastage is enforced. All cadets shall clear their plates, properly stack cutlery and trays at designated clearance stations, and segregate food waste according to Academy sanitation policies.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // --- Wire Mess Events ---
+  function wireMessEvents(council, messData) {
+    const roster = messData.roster || [];
+
+    // Subtab pills
+    document.querySelectorAll('.mess-subtab-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        state.messActiveSubTab = pill.getAttribute('data-subtab') || 'shares-roster';
+        renderMessCouncilView(council);
+      });
+    });
+
+    if (state.messActiveSubTab === 'shares-roster') {
+      // Search input
+      const search = document.getElementById('messSearchInput');
+      if (search) {
+        search.addEventListener('input', (e) => {
+          state.messQuery = e.target.value;
+          state.messPage = 1;
+          renderMessRosterTableRows(roster);
+        });
+      }
+
+      // Reset filters button
+      const resetBtn = document.getElementById('messResetFiltersBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          state.messQuery = '';
+          state.messBattalion = 'all';
+          state.messCoy = 'all';
+          state.messClass = 'all';
+          state.messBOS = 'all';
+          state.messStatus = 'all';
+          state.messActiveDiet = 'all';
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      }
+
+      // Clear diet filter button
+      const clearDietBtn = document.getElementById('messClearDietFilterBtn');
+      if (clearDietBtn) {
+        clearDietBtn.addEventListener('click', () => {
+          state.messActiveDiet = 'all';
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      }
+
+      const clearDietTag = document.getElementById('messClearActiveDietTag');
+      if (clearDietTag) {
+        clearDietTag.addEventListener('click', () => {
+          state.messActiveDiet = 'all';
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      }
+
+      // Diet cards
+      document.querySelectorAll('.mess-diet-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const diet = card.getAttribute('data-diet');
+          if (state.messActiveDiet === diet) {
+            state.messActiveDiet = 'all';
+          } else {
+            state.messActiveDiet = diet;
+          }
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      });
+
+      // Battalion pills
+      document.querySelectorAll('.mess-bn-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          state.messBattalion = pill.getAttribute('data-bn') || 'all';
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      });
+
+      // Class pills
+      document.querySelectorAll('.mess-class-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          state.messClass = pill.getAttribute('data-class') || 'all';
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      });
+
+      // Company pills
+      document.querySelectorAll('.mess-coy-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          state.messCoy = pill.getAttribute('data-coy') || 'all';
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      });
+
+      // BOS pills
+      document.querySelectorAll('.mess-bos-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          state.messBOS = pill.getAttribute('data-bos') || 'all';
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      });
+
+      // Status pills
+      document.querySelectorAll('.mess-status-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          state.messStatus = pill.getAttribute('data-status') || 'all';
+          state.messPage = 1;
+          renderMessCouncilView(council);
+        });
+      });
+    }
   }
 
   // --- Render Sidebar Councils ---
@@ -1407,6 +2703,7 @@
       'SPIRITUAL DEVELOPMENT': 'spiritual',
       'SAFETY COUNCIL': 'safety',
       'GAD COUNCIL': 'gad',
+      'CCPB': 'ccpb',
       'CCPB BOARD': 'ccpb',
       'HONOR COMMITTEE': 'honor'
     };
@@ -1478,6 +2775,15 @@
       if (dom.activeCouncilTitle) dom.activeCouncilTitle.textContent = "Spiritual Development Council";
       if (dom.activeCouncilDesc) dom.activeCouncilDesc.textContent = "Faith, Pastoral Care, Religious Services Roster & Chapel Fellowship";
       renderSpiritualCouncilView(council);
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    if (council.id === 'mess') {
+      if (dom.activeCouncilTag) dom.activeCouncilTag.textContent = "SPECIALIST COUNCIL";
+      if (dom.activeCouncilTitle) dom.activeCouncilTitle.textContent = "Cadet Mess Council";
+      if (dom.activeCouncilDesc) dom.activeCouncilDesc.textContent = "Cadet Disposition, Kitchen Cooking Shares, Dietary Restrictions & Weekly Menu";
+      renderMessCouncilView(council);
       if (window.lucide) window.lucide.createIcons();
       return;
     }
@@ -1597,6 +2903,11 @@
     if (dom.socUniform) {
       dom.socUniform.textContent = sched.officers?.uniform || 'DA w/ CJ';
     }
+    if (dom.socUniformDesc) {
+      dom.socUniformDesc.textContent = (typeof window !== 'undefined' && window.getUniformFullName)
+        ? window.getUniformFullName(sched.officers?.uniform || 'DA w/ CJ')
+        : 'Drill A w/ Corps Jacket';
+    }
     if (dom.socOD) {
       const odEntry = (sched.guardRoster || []).find(g => g.postCode === 'OD' || (g.post && g.post.startsWith('OD')));
       if (odEntry && odEntry.posted && odEntry.incoming) {
@@ -1610,29 +2921,32 @@
     if (dom.socChangesContainer) {
       const changes = sched.changes || [];
       if (dom.socChangesCountBadge) {
-        dom.socChangesCountBadge.textContent = `${changes.length} ${changes.length === 1 ? 'CHANGE' : 'CHANGES'}`;
+        dom.socChangesCountBadge.textContent = `${changes.length} ${changes.length === 1 ? 'CHANGE OF SCHEDULE' : 'CHANGES OF SCHEDULE'}`;
       }
 
       if (changes.length === 0) {
         dom.socChangesContainer.innerHTML = `
           <div class="col-span-full py-4 text-center text-xs font-mono-clean text-amber-900/80">
-            No official call changes recorded for today.
+            No changes of schedule recorded for today.
           </div>
         `;
       } else {
-        dom.socChangesContainer.innerHTML = changes.map(ch => `
-          <div class="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-xs space-y-2 hover:border-amber-400 transition-colors">
-            <div class="flex items-center justify-between">
-              <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-bold font-mono-clean text-[10px] tracking-wide">${ch.time}</span>
-              <span class="text-[10px] font-mono-clean text-slate-500 uppercase tracking-wider">${ch.formation && ch.formation !== '-' ? 'VENUE: ' + ch.formation : 'CORPS CALL'}</span>
+        dom.socChangesContainer.innerHTML = changes.map(ch => {
+          const uFull = (typeof window !== 'undefined' && window.getUniformFullName) ? window.getUniformFullName(ch.uniform) : ch.uniform;
+          return `
+            <div class="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-xs space-y-2 hover:border-amber-400 transition-colors">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-bold font-mono-clean text-[10px] tracking-wide">${ch.time}</span>
+                <span class="text-[10px] font-mono-clean text-slate-500 uppercase tracking-wider">${ch.formation && ch.formation !== '-' ? 'VENUE: ' + ch.formation : 'CORPS CALL'}</span>
+              </div>
+              <h5 class="font-bold text-xs text-slate-900 font-mono-clean leading-snug">${ch.activity}</h5>
+              <div class="flex items-center gap-2 pt-1 border-t border-slate-100 text-[10px] font-mono-clean text-slate-600 flex-wrap">
+                <span>UNIFORM: <strong class="text-blue-900 font-bold" title="${uFull}">${ch.uniform || '-'}</strong>${uFull && uFull !== ch.uniform ? ` <span class="text-slate-400 font-normal">(${uFull})</span>` : ''}</span>
+                ${ch.formation && ch.formation !== '-' ? `<span>&bull;</span><span>FORMATION: <strong class="text-slate-800 font-bold">${ch.formation}</strong></span>` : ''}
+              </div>
             </div>
-            <h5 class="font-bold text-xs text-slate-900 font-mono-clean leading-snug">${ch.activity}</h5>
-            <div class="flex items-center gap-2 pt-1 border-t border-slate-100 text-[10px] font-mono-clean text-slate-600 flex-wrap">
-              <span>UNIFORM: <strong class="text-blue-900 font-bold">${ch.uniform || '-'}</strong></span>
-              ${ch.formation && ch.formation !== '-' ? `<span>&bull;</span><span>FORMATION: <strong class="text-slate-800 font-bold">${ch.formation}</strong></span>` : ''}
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
     }
 
@@ -1731,6 +3045,23 @@
       }
     }
 
+    // 6. Authorized Corps Uniforms Guide Grid
+    if (dom.socUniformGuideGrid) {
+      const defs = (typeof window !== 'undefined' && window.UNIFORM_DEFINITIONS) ? window.UNIFORM_DEFINITIONS : [];
+      dom.socUniformGuideGrid.innerHTML = defs.map(u => `
+        <div class="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/30 transition-all flex flex-col justify-between space-y-2 shadow-xs group">
+          <div class="flex items-center justify-between gap-1.5">
+            <span class="px-2 py-0.5 rounded-md bg-blue-900 text-white font-bold text-[11px] tracking-wide font-mono-clean">${u.code}</span>
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">AUTHORIZED</span>
+          </div>
+          <div>
+            <h5 class="font-bold text-xs text-slate-900 leading-snug font-mono-clean group-hover:text-blue-950 transition-colors">${u.name}</h5>
+            <p class="text-[10px] text-slate-500 font-mono-clean mt-0.5 leading-tight">${u.desc}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -1743,12 +3074,12 @@
 
     const items = [];
 
-    // 1. All Schedule Changes from SCHEDULE OF CALLS spreadsheet
+    // 1. All Changes of Schedule from SCHEDULE OF CALLS spreadsheet
     if (sched && sched.changes && sched.changes.length > 0) {
       sched.changes.forEach(ch => {
         items.push(`
           <div class="ticker-item font-mono-clean">
-            <span class="px-1.5 py-0.5 rounded bg-amber-500 text-white font-bold text-[10px]">SCHEDULE CHANGE</span>
+            <span class="px-1.5 py-0.5 rounded bg-amber-500 text-white font-bold text-[10px]">CHANGES OF SCHEDULE</span>
             <span class="font-bold text-amber-950">${ch.time}:</span>
             <span class="font-bold text-slate-900">${ch.activity}</span>
             <span class="text-slate-600">(Uniform: <strong class="text-blue-900">${ch.uniform}</strong>${ch.formation && ch.formation !== '-' ? `, Venue: <strong class="text-slate-800">${ch.formation}</strong>` : ''})</span>
@@ -1761,7 +3092,7 @@
     if (sched && sched.officers) {
       items.push(`
         <div class="ticker-item font-mono-clean">
-          <span class="px-1.5 py-0.5 rounded bg-blue-900 text-white font-bold text-[10px]">DUTY COMMAND</span>
+          <span class="px-1.5 py-0.5 rounded bg-blue-900 text-white font-bold text-[10px]">POSTED OC & AOC</span>
           <span class="text-slate-700">OC: <strong class="text-slate-900">${sched.officers.oc}</strong> &bull; AOC: <strong class="text-slate-900">${sched.officers.aoc}</strong> &bull; Uniform: <strong class="text-blue-700">${sched.officers.uniform}</strong></span>
         </div>
       `);
@@ -2033,12 +3364,18 @@
       const ape2Url = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_ape_2cl : '');
       const clubsUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_clubs : '');
       const tinUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.s1_tin : '');
-      const spiritualUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.spiritual : '');
+      const spiritual1clUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.spiritual_1cl : '');
+      const spiritual2clUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.spiritual_2cl : '');
+      const spiritual3clUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.spiritual_3cl : '');
+      const messDbUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.mess_database : '');
+      const messViandsUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.mess_viands : '');
+      const messDissemUrl = (typeof COUNCIL_SHEET_URLS !== 'undefined' ? COUNCIL_SHEET_URLS.mess_disseminations : '');
 
       // Concurrently fetch all sheets with cache busting
       const [
         schedRes, dispRes, armoryRes, attachRes, punishConductRes, punishTotalsRes,
-        expandedRes, rosterRes, squadsRes, ape1Res, ape2Res, clubsRes, tinRes, spiritualRes
+        expandedRes, rosterRes, squadsRes, ape1Res, ape2Res, clubsRes, tinRes,
+        sp1Res, sp2Res, sp3Res, messDbRes, messViandsRes, messDissemRes
       ] = await Promise.allSettled([
         syncManager.fetchLiveCSV(schedUrl),
         syncManager.fetchLiveCSV(dispUrl),
@@ -2053,7 +3390,12 @@
         syncManager.fetchLiveCSV(ape2Url),
         syncManager.fetchLiveCSV(clubsUrl),
         syncManager.fetchLiveCSV(tinUrl),
-        syncManager.fetchLiveCSV(spiritualUrl)
+        syncManager.fetchLiveCSV(spiritual1clUrl),
+        syncManager.fetchLiveCSV(spiritual2clUrl),
+        syncManager.fetchLiveCSV(spiritual3clUrl),
+        syncManager.fetchLiveCSV(messDbUrl),
+        syncManager.fetchLiveCSV(messViandsUrl),
+        syncManager.fetchLiveCSV(messDissemUrl)
       ]);
 
       const oldDataSnapshot = JSON.parse(JSON.stringify(CCAFP_CONFIG.s1Data || {}));
@@ -2194,11 +3536,47 @@
         }
       }
 
-      // 12. SPIRITUAL DEVELOPMENT COUNCIL
-      if (spiritualRes.status === 'fulfilled' && spiritualRes.value && spiritualRes.value.length > 0) {
-        const parsed = syncManager.parseSpiritual ? syncManager.parseSpiritual(spiritualRes.value) : null;
-        if (parsed && parsed.length > 0) {
-          CCAFP_CONFIG.spiritualData = parsed;
+      // 12. SPIRITUAL DEVELOPMENT COUNCIL (1CL, 2CL, 3CL)
+      let freshSpiritual = [];
+      if (sp1Res.status === 'fulfilled' && sp1Res.value && sp1Res.value.length > 0) {
+        const p1 = syncManager.parseSpiritual ? syncManager.parseSpiritual(sp1Res.value, '1CL') : null;
+        if (p1 && p1.length > 0) freshSpiritual = freshSpiritual.concat(p1);
+      }
+      if (sp2Res.status === 'fulfilled' && sp2Res.value && sp2Res.value.length > 0) {
+        const p2 = syncManager.parseSpiritual ? syncManager.parseSpiritual(sp2Res.value, '2CL') : null;
+        if (p2 && p2.length > 0) freshSpiritual = freshSpiritual.concat(p2);
+      }
+      if (sp3Res.status === 'fulfilled' && sp3Res.value && sp3Res.value.length > 0) {
+        const p3 = syncManager.parseSpiritual ? syncManager.parseSpiritual(sp3Res.value, '3CL') : null;
+        if (p3 && p3.length > 0) freshSpiritual = freshSpiritual.concat(p3);
+      }
+      if (freshSpiritual.length > 0) {
+        CCAFP_CONFIG.spiritualData = freshSpiritual;
+        hasNewData = true;
+      }
+
+      // 13. CADET MESS COUNCIL (ROSTER DATABASE, VIANDS, DISSEMINATIONS)
+      if (!CCAFP_CONFIG.messData) {
+        CCAFP_CONFIG.messData = window.MESS_MASTER_DATA || { roster: [], menu: {}, disseminations: [] };
+      }
+      if (messDbRes.status === 'fulfilled' && messDbRes.value && messDbRes.value.length > 0) {
+        const parsedRoster = syncManager.parseMessRoster(messDbRes.value);
+        if (parsedRoster && parsedRoster.length > 0) {
+          CCAFP_CONFIG.messData.roster = parsedRoster;
+          hasNewData = true;
+        }
+      }
+      if (messViandsRes.status === 'fulfilled' && messViandsRes.value && messViandsRes.value.length > 0) {
+        const parsedMenu = syncManager.parseMessMenu(messViandsRes.value);
+        if (parsedMenu && Object.keys(parsedMenu).length > 0) {
+          CCAFP_CONFIG.messData.menu = parsedMenu;
+          hasNewData = true;
+        }
+      }
+      if (messDissemRes.status === 'fulfilled' && messDissemRes.value && messDissemRes.value.length > 0) {
+        const parsedDissem = syncManager.parseMessDisseminations(messDissemRes.value);
+        if (parsedDissem && parsedDissem.length > 0) {
+          CCAFP_CONFIG.messData.disseminations = parsedDissem;
           hasNewData = true;
         }
       }
@@ -2503,19 +3881,57 @@
     if (dom.s1ApeSearchInput) {
       dom.s1ApeSearchInput.addEventListener('input', (e) => {
         state.s1ApeQuery = e.target.value;
+        state.s1ApePage = 1;
         renderS1Ape();
       });
     }
     document.querySelectorAll('.s1-ape-class-pill').forEach(pill => {
       pill.addEventListener('click', () => {
         document.querySelectorAll('.s1-ape-class-pill').forEach(p => {
-          p.className = 's1-ape-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200';
+          p.className = 's1-ape-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0';
         });
-        pill.className = 's1-ape-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold';
+        pill.className = 's1-ape-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0';
         state.s1ApeClass = pill.getAttribute('data-ape-class') || 'all';
+        state.s1ApePage = 1;
         renderS1Ape();
       });
     });
+
+    // S1 APE Company Filter Pills
+    document.querySelectorAll('.s1-ape-coy-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.s1-ape-coy-pill').forEach(p => {
+          p.className = 's1-ape-coy-pill px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-[11px] flex-shrink-0';
+        });
+        pill.className = 's1-ape-coy-pill active-pill px-2.5 py-1 rounded-lg bg-slate-800 text-white font-semibold text-[11px] flex-shrink-0';
+        state.s1ApeCompany = pill.getAttribute('data-ape-coy') || 'all';
+        state.s1ApePage = 1;
+        renderS1Ape();
+      });
+    });
+
+    // S1 APE Pagination Controls
+    if (dom.s1ApePrevBtn) {
+      dom.s1ApePrevBtn.addEventListener('click', () => {
+        if (state.s1ApePage > 1) {
+          state.s1ApePage--;
+          renderS1Ape();
+        }
+      });
+    }
+    if (dom.s1ApeNextBtn) {
+      dom.s1ApeNextBtn.addEventListener('click', () => {
+        state.s1ApePage++;
+        renderS1Ape();
+      });
+    }
+    if (dom.s1ApePageSizeSelect) {
+      dom.s1ApePageSizeSelect.addEventListener('change', (e) => {
+        state.s1ApePageSize = e.target.value;
+        state.s1ApePage = 1;
+        renderS1Ape();
+      });
+    }
 
     // S1 Clubs Search
     if (dom.s1ClubsSearchInput) {
@@ -2634,34 +4050,34 @@
 
   // --- Bootstrap Initialization ---
   function init() {
-    initTheme();
-    updateTime();
-    setInterval(updateTime, 1000);
+    try { initTheme(); } catch(e) { console.error('initTheme error:', e); }
+    try { setupEventListeners(); } catch(e) { console.error('setupEventListeners error:', e); }
+    try { updateTime(); } catch(e) {}
+    try { setInterval(updateTime, 1000); } catch(e) {}
 
     // 1. Restore cached state from previous 15-minute sync if available
-    restoreLiveSnapshotFromStorage();
+    try { restoreLiveSnapshotFromStorage(); } catch(e) { console.warn('Cache restore skipped:', e); }
 
-    // 2. Render all initial views with loaded/cached data
-    renderSidebarCouncils();
-    renderCouncilsDirectoryPills();
-    renderPriorityBulletins();
-    renderS1Data();
-    renderRsoArmory();
-    renderScheduleOfCallsView();
-    updateMarqueeTicker();
-    updateHeroStats();
-    renderCalendar();
-    renderPunishments();
-    renderStaffDirectory();
-    setupEventListeners();
+    // 2. Render all initial views with loaded/cached data safely
+    try { renderSidebarCouncils(); } catch(e) { console.error('renderSidebarCouncils error:', e); }
+    try { renderCouncilsDirectoryPills(); } catch(e) { console.error('renderCouncilsDirectoryPills error:', e); }
+    try { renderPriorityBulletins(); } catch(e) { console.error('renderPriorityBulletins error:', e); }
+    try { renderS1Data(); } catch(e) { console.error('renderS1Data error:', e); }
+    try { renderRsoArmory(); } catch(e) { console.error('renderRsoArmory error:', e); }
+    try { renderScheduleOfCallsView(); } catch(e) { console.error('renderScheduleOfCallsView error:', e); }
+    try { updateMarqueeTicker(); } catch(e) { console.error('updateMarqueeTicker error:', e); }
+    try { updateHeroStats(); } catch(e) { console.error('updateHeroStats error:', e); }
+    try { renderCalendar(); } catch(e) { console.error('renderCalendar error:', e); }
+    try { renderPunishments(); } catch(e) { console.error('renderPunishments error:', e); }
+    try { renderStaffDirectory(); } catch(e) { console.error('renderStaffDirectory error:', e); }
 
     // 3. Start 15-Minute Countdown Timer
-    startAutoSync15MinTimer();
+    try { startAutoSync15MinTimer(); } catch(e) {}
 
     // 4. Perform immediate live check in the background
-    performAutomated15MinSync(false);
+    try { performAutomated15MinSync(false); } catch(e) {}
 
-    if (window.lucide) window.lucide.createIcons();
+    try { if (window.lucide) window.lucide.createIcons(); } catch(e) {}
   }
 
   if (document.readyState === 'loading') {

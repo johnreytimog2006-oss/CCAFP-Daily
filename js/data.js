@@ -28,11 +28,11 @@ const COUNCIL_SHEET_URLS = {
   s1_squads: "https://docs.google.com/spreadsheets/d/1WgSOcIMQVFFBTAOLnxgPtPn6uNJNjBkarlei5ebvCpQ/gviz/tq?tqx=out:csv&gid=1122746587",
   s1_squads_raw: "https://docs.google.com/spreadsheets/d/1WgSOcIMQVFFBTAOLnxgPtPn6uNJNjBkarlei5ebvCpQ/edit?gid=1122746587#gid=1122746587",
 
-  s1_ape_1cl: "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/gviz/tq?tqx=out:csv&gid=592993350",
-  s1_ape_1cl_raw: "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/edit?gid=592993350#gid=592993350",
+  s1_ape_1cl: "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/gviz/tq?tqx=out:csv&gid=1436497851",
+  s1_ape_1cl_raw: "https://docs.google.com/spreadsheets/d/1gkPSf_DFNtxTXs5xz6zeF87q4ndpENIOBnkmAmBuVQE/edit?gid=1436497851#gid=1436497851",
 
-  s1_ape_2cl: "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/gviz/tq?tqx=out:csv&gid=1111921142",
-  s1_ape_2cl_raw: "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/edit?gid=1111921142#gid=1111921142",
+  s1_ape_2cl: "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/gviz/tq?tqx=out:csv&gid=813157205",
+  s1_ape_2cl_raw: "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/edit?gid=813157205#gid=813157205",
 
   s1_clubs: "https://docs.google.com/spreadsheets/d/1luG6EKlAa1fPK_SoMzpI8r25HbQ0wu0_Uefaz9RI4DY/gviz/tq?tqx=out:csv&gid=0",
   s1_clubs_raw: "https://docs.google.com/spreadsheets/d/1luG6EKlAa1fPK_SoMzpI8r25HbQ0wu0_Uefaz9RI4DY/edit?gid=0#gid=0",
@@ -40,11 +40,17 @@ const COUNCIL_SHEET_URLS = {
   s1_tin: "https://docs.google.com/spreadsheets/d/1xcTrlevaAf-y07Vwp8G-ZkD25gCMCacuJDLMexiMqZc/gviz/tq?tqx=out:csv&gid=837476447",
   s1_tin_raw: "https://docs.google.com/spreadsheets/d/1xcTrlevaAf-y07Vwp8G-ZkD25gCMCacuJDLMexiMqZc/edit?pli=1&gid=837476447#gid=837476447",
 
-  // Spiritual Development Council
-  spiritual: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=194404420",
-  spiritual_raw: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=194404420#gid=194404420",
+  // Spiritual Development Council (1CL, 2CL, 3CL Roster Endpoints)
+  spiritual: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=666856956",
+  spiritual_1cl: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=194404420",
+  spiritual_2cl: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=666856956",
+  spiritual_3cl: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=1748574266",
+  spiritual_raw: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=666856956#gid=666856956",
+  spiritual_1cl_raw: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=194404420#gid=194404420",
+  spiritual_2cl_raw: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=666856956#gid=666856956",
+  spiritual_3cl_raw: "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/edit?gid=1748574266#gid=1748574266",
 
-  // EXO Punishment Register & Conduct Sheet (Live GVIZ Endpoints)
+  // CCAFP Punishment Register & Conduct Sheet (Live GVIZ Endpoints)
   punishments: "https://docs.google.com/spreadsheets/d/1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw/gviz/tq?tqx=out:csv&gid=1784962041",
   punishments_conduct: "https://docs.google.com/spreadsheets/d/1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw/gviz/tq?tqx=out:csv&gid=1784962041",
   punishments_totals: "https://docs.google.com/spreadsheets/d/1ZMczJRnVMjF6tKDr4x0ITE2qhzpzIMkGAWdDH5LAIrw/gviz/tq?tqx=out:csv&gid=149382018",
@@ -63,7 +69,12 @@ const COUNCIL_SHEET_URLS = {
   academic: "",
   mto: "",
   exo: "",
-  mess: "",
+  mess: "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/gviz/tq?tqx=out:csv&gid=482780671",
+  mess_database: "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/gviz/tq?tqx=out:csv&gid=482780671",
+  mess_viands: "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/gviz/tq?tqx=out:csv&gid=143586769",
+  mess_disseminations: "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/gviz/tq?tqx=out:csv&gid=1204067800",
+  mess_raw: "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/edit?gid=482780671#gid=482780671",
+  mess_viands_raw: "https://docs.google.com/spreadsheets/d/14dSYE1ntxNrnBdgSn-mWU5z-GMHK7qdMcKFchgh0pAQ/edit?gid=143586769#gid=143586769",
   safety: "",
   gad: "",         // Sensitive - Gender Guidelines Only
   ccpb: "",        // Sensitive - Conduct Policies Only
@@ -71,8 +82,73 @@ const COUNCIL_SHEET_URLS = {
   calendar: ""
 };
 
+/**
+ * =========================================================================
+ * 🎖️ OFFICIAL CORPS UNIFORM DEFINITIONS & ABBREVIATIONS
+ * =========================================================================
+ */
+const UNIFORM_DEFINITIONS = [
+  { code: "AU", name: "Athletic Uniform", desc: "Corps athletic training and sports events" },
+  { code: "DW", name: "Dress White", desc: "Formal daylight ceremonies and parades" },
+  { code: "DW w/ WB & HG", name: "Dress White w/ White belt & Hop Gloves", desc: "Ceremonial inspections and formal hops" },
+  { code: "BDU", name: "Battle Dress Uniform", desc: "Tactical training, field exercises, and daily duties" },
+  { code: "BDU w/ WB & HG", name: "Battle Dress Uniform w/ White Belt & Hop Gloves", desc: "Formal tactical guard mountings" },
+  { code: "DA w/ CJ", name: "Drill A w/ Corps Jacket", desc: "Daily classroom instruction and standard military call" },
+  { code: "DA", name: "Drill A", desc: "Drill periods and seasonal mess attire" },
+  { code: "DA w/ CJ w/ WB & HG", name: "Drill A w/ Corps Jacket w/ White belt & Hop Gloves", desc: "Formal retreat, Flag ceremony, and inspection" },
+  { code: "FDU", name: "Fatigue Duty Uniform", desc: "Work details, fatigue calls, and technical screenings" },
+  { code: "GAU", name: "General Athletic Uniform", desc: "General physical training, workouts, and combatives" },
+  { code: "FDW", name: "Full Dress White", desc: "High ceremonial reviews and formal graduation ceremonies" },
+  { code: "FDW w/ WB & HG", name: "Full Dress White w/ White belt & Hop Gloves", desc: "Regimental gala parades and sacred ceremonies" },
+  { code: "DA u/a", name: "Drill A Under Arms", desc: "Drill formations with service rifles and saber details" },
+  { code: "BDU u/a", name: "Battle Dress Uniform Under Arms", desc: "Tactical guard posts and armed perimeter security" }
+];
+
+const UNIFORM_MAP = {
+  "AU": "Athletic Uniform",
+  "DW": "Dress White",
+  "DW w/ WB & HG": "Dress White w/ White belt & Hop Gloves",
+  "DW w/ WB &HG": "Dress White w/ White belt & Hop Gloves",
+  "BDU": "Battle Dress Uniform",
+  "BDU w/ WB & HG": "Battle Dress Uniform w/ White Belt & Hop Gloves",
+  "BDU w/ WB &HG": "Battle Dress Uniform w/ White Belt & Hop Gloves",
+  "DA w/ CJ": "Drill A w/ Corps Jacket",
+  "DA": "Drill A",
+  "DA w/ CJ w/ WB & HG": "Drill A w/ Corps Jacket w/ White belt & Hop Gloves",
+  "DA w/ CJ w/ WB &HG": "Drill A w/ Corps Jacket w/ White belt & Hop Gloves",
+  "FDU": "Fatigue Duty Uniform",
+  "GAU": "General Athletic Uniform",
+  "FDW": "Full Dress White",
+  "FDW w/ WB & HG": "Full Dress White w/ White belt & Hop Gloves",
+  "FDW w/ WB &HG": "Full Dress White w/ White belt & Hop Gloves",
+  "DA u/a": "Drill A Under Arms",
+  "DA U/A": "Drill A Under Arms",
+  "BDU u/a": "Battle Dress Uniform Under Arms",
+  "BDU U/A": "Battle Dress Uniform Under Arms"
+};
+
+function getUniformFullName(code) {
+  if (!code || code === '-') return '-';
+  const trimmed = String(code).trim();
+  if (UNIFORM_MAP[trimmed]) return UNIFORM_MAP[trimmed];
+  const upper = trimmed.toUpperCase();
+  for (const [k, v] of Object.entries(UNIFORM_MAP)) {
+    if (k.toUpperCase() === upper) return v;
+  }
+  if (trimmed.includes('/')) {
+    return trimmed.split('/').map(part => getUniformFullName(part.trim())).join(' / ');
+  }
+  return trimmed;
+}
+
+if (typeof window !== "undefined") {
+  window.UNIFORM_DEFINITIONS = UNIFORM_DEFINITIONS;
+  window.UNIFORM_MAP = UNIFORM_MAP;
+  window.getUniformFullName = getUniformFullName;
+}
+
 const CCAFP_CONFIG = {
-  version: "2.6.0",
+  version: "3.0.0",
   lastUpdated: "10:17:55 PM",
 
   // Priority Bulletins (Exact layout matching Alfacoy)
@@ -722,7 +798,9 @@ const CCAFP_CONFIG = {
       icon: "utensils",
       category: "Specialist Councils",
       sensitive: false,
-      description: "Cadet nutrition, daily menu rotation, table etiquette enforcement, and special dietary provisions.",
+      sheetUrl: COUNCIL_SHEET_URLS.mess_database,
+      sheetRaw: COUNCIL_SHEET_URLS.mess_raw,
+      description: "Cadet nutrition, daily menu rotation, kitchen cooking shares, dietary restrictions & weekly viands schedule.",
       defaultHeaders: ["Meal", "Main Course", "Sides & Vegetables", "Dessert / Beverage", "Diet Alternative"],
       defaultRows: [
         ["Breakfast (0630H)", "Beef Tapa & Scrambled Eggs", "Garlic Rice & Sliced Tomatoes", "Hot Chocolate / Coffee", "Fish Fillet & Eggs"],
@@ -781,7 +859,7 @@ const CCAFP_CONFIG = {
     },
     {
       id: "ccpb",
-      name: "CCPB Board",
+      name: "CCPB",
       title: "Cadet Conduct Policy Board (CCPB)",
       icon: "scale",
       category: "Sensitive Councils",
@@ -1496,7 +1574,16 @@ class SheetSyncManager {
   }
 
   parseApe(rows1CL, rows2CL) {
-    const list = [];
+    const existing = (typeof window !== 'undefined' && window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.ape) ||
+                     (typeof window !== 'undefined' && window.CCAFP_CONFIG && window.CCAFP_CONFIG.s1Data && window.CCAFP_CONFIG.s1Data.ape) || [];
+    // If incoming rows only represent a subset, retain master list of 854 cadets and update matching records
+    const list = existing.length >= 800 ? [...existing] : [];
+    const cadetMap = new Map();
+    list.forEach(c => {
+      const key = (c.sn || c.name || '').toUpperCase().trim();
+      if (key) cadetMap.set(key, c);
+    });
+
     const processRows = (rows, classLabel) => {
       if (!rows) return;
       for (let i = 1; i < rows.length; i++) {
@@ -1505,44 +1592,216 @@ class SheetSyncManager {
         const lName = r[4]?.trim() || '';
         const fName = r[2]?.trim() || '';
         if (!lName && !fName) continue;
-        list.push({
+        if (lName.toUpperCase() === 'SURNAME' || lName.toUpperCase().includes('NAME')) continue;
+        const sn = r[5]?.trim() || '';
+        const name = `${lName}, ${fName} ${r[3]?.trim() || ''}`.trim();
+        const key = (sn || name).toUpperCase().trim();
+        
+        const record = {
           class: classLabel,
-          name: `${lName}, ${fName} ${r[3]?.trim() || ''}`.trim(),
-          sn: r[5]?.trim() || '',
+          coy: r[1]?.trim() || '',
+          name: name,
+          sn: sn,
           bdate: r[6]?.trim() || '',
           urinalysis: r[7]?.trim() || 'FALSE',
           blood: r[8]?.trim() || 'FALSE',
           vitals: r[9]?.trim() || 'FALSE',
+          eye: r[10]?.trim() || 'FALSE',
+          ecg: r[11]?.trim() || 'FALSE',
+          xray: r[12]?.trim() || 'FALSE',
+          npExam: r[13]?.trim() || 'FALSE',
+          npInterview: r[14]?.trim() || 'FALSE',
           dental: r[15]?.trim() || 'FALSE',
           physical: r[16]?.trim() || 'FALSE',
           remarks: r[17]?.trim() || 'In Progress'
-        });
+        };
+
+        if (cadetMap.has(key)) {
+          Object.assign(cadetMap.get(key), record);
+        } else if (list.length < 800) {
+          list.push(record);
+          cadetMap.set(key, record);
+        }
       }
     };
-    processRows(rows1CL, '1CL');
-    processRows(rows2CL, '2CL');
-    return list;
+    if (rows1CL && rows1CL.length > 1) processRows(rows1CL, '1CL');
+    if (rows2CL && rows2CL.length > 1) processRows(rows2CL, '2CL');
+    return list.length > 0 ? list : existing;
   }
 
-  parseSpiritual(rows) {
-    if (!rows || rows.length < 3) return null;
+  parseSpiritual(rows, defaultClass) {
+    if (!rows || rows.length < 2) return [];
+    let headerIdx = -1;
+    for (let i = 0; i < Math.min(rows.length, 15); i++) {
+      const rowStr = (rows[i] || []).join(' ').toUpperCase();
+      if (rowStr.includes('CLASS') && (rowStr.includes('FIRST NAME') || rowStr.includes('LAST NAME') || rowStr.includes('SERIAL') || rowStr.includes('SN'))) {
+        headerIdx = i;
+        break;
+      }
+    }
+    const startIdx = headerIdx >= 0 ? headerIdx + 1 : 2;
+    const header = headerIdx >= 0 ? rows[headerIdx].map(h => (h || '').trim().toUpperCase()) : [];
+    const classIdx = header.indexOf('CLASS');
+    const fnIdx = header.indexOf('FIRST NAME');
+    const mnIdx = header.indexOf('MIDDLE NAME');
+    const lnIdx = header.indexOf('LAST NAME');
+    let snIdx = -1;
+    for (const name of ['SERIAL NO.', 'SERIAL NO', 'SN', 'SERIAL']) {
+      if (header.includes(name)) { snIdx = header.indexOf(name); break; }
+    }
+    const genderIdx = header.indexOf('GENDER');
+    const coyIdx = header.indexOf('COY');
+    let relIdx = -1;
+    for (const name of ['RELIGOUS SERVICE', 'RELIGIOUS SERVICE', 'RELIGION']) {
+      if (header.includes(name)) { relIdx = header.indexOf(name); break; }
+    }
+
     const list = [];
-    for (let i = 2; i < rows.length; i++) {
+    for (let i = startIdx; i < rows.length; i++) {
       const r = rows[i];
-      if (!r || r.length < 6) continue;
-      const lName = r[3]?.trim() || '';
-      const fName = r[1]?.trim() || '';
-      if (!lName && !fName) continue;
+      if (!r || r.length < 4) continue;
+      const cClass = (classIdx >= 0 && r[classIdx]?.trim()) ? r[classIdx].trim() : (r[0]?.trim() || defaultClass || '1CL');
+      const fn = fnIdx >= 0 ? (r[fnIdx]?.trim() || '') : (r[1]?.trim() || '');
+      const mn = mnIdx >= 0 ? (r[mnIdx]?.trim() || '') : (r[2]?.trim() || '');
+      const ln = lnIdx >= 0 ? (r[lnIdx]?.trim() || '') : (r[3]?.trim() || '');
+      const sn = snIdx >= 0 ? (r[snIdx]?.trim() || '') : (r[4]?.trim() || '');
+      const gender = genderIdx >= 0 ? (r[genderIdx]?.trim() || '') : (r[5]?.trim() || '');
+      const coy = coyIdx >= 0 ? (r[coyIdx]?.trim()?.toUpperCase() || '') : (r[6]?.trim()?.toUpperCase() || '');
+      const rel = relIdx >= 0 ? (r[relIdx]?.trim()?.toUpperCase() || 'CATHOLIC') : (r[7]?.trim()?.toUpperCase() || 'CATHOLIC');
+      if (!ln && !fn) continue;
       list.push({
-        class: r[0]?.trim() || '1CL',
-        name: `${lName}, ${fName} ${r[2]?.trim() || ''}`.trim(),
-        sn: r[4]?.trim() || '',
-        gender: r[5]?.trim() || '',
-        coy: r[6]?.trim() || '',
-        religion: (r[7]?.trim() || 'CATHOLIC').toUpperCase()
+        class: cClass,
+        name: `${ln}, ${fn} ${mn}`.trim().replace(/\s+/g, ' '),
+        sn: sn,
+        gender: gender,
+        coy: coy,
+        religion: rel
       });
     }
     return list;
+  }
+
+  parseMessRoster(rows) {
+    if (!rows || rows.length < 10) return [];
+    let headerIdx = -1;
+    for (let i = 0; i < Math.min(rows.length, 15); i++) {
+      const rowStr = (rows[i] || []).join(' ').toUpperCase();
+      if (rowStr.includes('COMPANY') && (rowStr.includes('NAME') || rowStr.includes('BOS') || rowStr.includes('CLASS'))) {
+        headerIdx = i;
+        break;
+      }
+    }
+    if (headerIdx < 0) headerIdx = 8;
+    const header = rows[headerIdx] || [];
+    const dietCols = header.slice(7).map(h => (h || '').trim()).filter(Boolean);
+    const roster = [];
+    for (let i = headerIdx + 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length < 6) continue;
+      const coy = (r[0] || '').trim().toUpperCase();
+      const name = (r[1] || '').trim();
+      const bos = (r[2] || '').trim().toUpperCase() || 'PA';
+      let cls = (r[3] || '').trim().toUpperCase() || '4CL';
+      if (cls === '3C;') cls = '3CL';
+      const bn = (r[4] || '').trim().toUpperCase() || '1ST';
+      const status = (r[5] || '').trim().toUpperCase() || 'FULL DUTY';
+      if (!name) continue;
+      const activeDiets = [];
+      for (let d = 0; d < dietCols.length; d++) {
+        const colIdx = 7 + d;
+        if (colIdx < r.length && r[colIdx]?.trim() === '1') {
+          activeDiets.push(dietCols[d]);
+        }
+      }
+      roster.push({
+        nr: roster.length + 1,
+        coy: coy,
+        name: name,
+        bos: bos,
+        class: cls,
+        bn: bn,
+        status: status,
+        diets: activeDiets
+      });
+    }
+    return roster;
+  }
+
+  parseMessMenu(rows) {
+    if (!rows || rows.length < 10) return null;
+    let daysRowIdx = -1;
+    for (let i = 0; i < Math.min(rows.length, 15); i++) {
+      const rowStr = (rows[i] || []).join(' ').toUpperCase();
+      if (rowStr.includes('MONDAY') && rowStr.includes('TUESDAY')) {
+        daysRowIdx = i;
+        break;
+      }
+    }
+    if (daysRowIdx < 0) return null;
+    const days = rows[daysRowIdx].slice(1, 8).map(d => (d || '').trim().toUpperCase());
+    const menu = {};
+    days.forEach(d => {
+      menu[d] = {
+        morning: { viands: [], drink: '', rice: 'Steamed Rice' },
+        noon: { viands: [], drink: '', rice: 'Steamed Rice' },
+        evening: { viands: [], drink: '', rice: 'Steamed Rice' },
+        snack: ''
+      };
+    });
+    let currentMeal = null;
+    for (let i = daysRowIdx + 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || !r.length) continue;
+      const label = (r[0] || '').trim().toUpperCase();
+      if (label.includes('MORNING MESS')) { currentMeal = 'morning'; continue; }
+      if (label.includes('NOON MESS')) { currentMeal = 'noon'; continue; }
+      if (label.includes('EVENING MESS')) { currentMeal = 'evening'; continue; }
+      if (label.includes('PM SNACK')) {
+        for (let j = 0; j < days.length; j++) {
+          if (j + 1 < r.length && r[j + 1]?.trim()) menu[days[j]].snack = r[j + 1].trim();
+        }
+        continue;
+      }
+      if (currentMeal) {
+        if (label.includes('VIAND')) {
+          for (let j = 0; j < days.length; j++) {
+            if (j + 1 < r.length && r[j + 1]?.trim()) menu[days[j]][currentMeal].viands.push(r[j + 1].trim());
+          }
+        } else if (label.includes('DRINK')) {
+          for (let j = 0; j < days.length; j++) {
+            if (j + 1 < r.length && r[j + 1]?.trim()) menu[days[j]][currentMeal].drink = r[j + 1].trim();
+          }
+        } else if (label.includes('RICE')) {
+          for (let j = 0; j < days.length; j++) {
+            if (j + 1 < r.length && r[j + 1]?.trim()) menu[days[j]][currentMeal].rice = r[j + 1].trim();
+          }
+        }
+      }
+    }
+    return menu;
+  }
+
+  parseMessDisseminations(rows) {
+    if (!rows || rows.length < 2) return [];
+    const dissem = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length < 4) continue;
+      const d_id = (r[0] || '').trim();
+      const d_date = (r[1] || '').trim();
+      const d_headline = (r[2] || '').trim();
+      const d_content = (r[3] || '').trim();
+      if (d_headline) {
+        dissem.push({
+          id: d_id || `DIS-${Date.now()}`,
+          date: d_date,
+          headline: d_headline,
+          content: d_content,
+          author: 'REGIMENTAL MESS OFFICER'
+        });
+      }
+    }
+    return dissem;
   }
 }
 
