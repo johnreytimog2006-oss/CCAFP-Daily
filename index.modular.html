@@ -343,10 +343,7 @@
               <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
               <span>Expanded Roll</span>
             </button>
-            <button class="s1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0" data-s1-tab="roster">
-              <i data-lucide="list-checks" class="w-3.5 h-3.5"></i>
-              <span>Class Roster</span>
-            </button>
+
             <button class="s1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0" data-s1-tab="squads">
               <i data-lucide="grid" class="w-3.5 h-3.5"></i>
               <span>Squad Matrix</span>
@@ -367,10 +364,7 @@
               <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
               <span>Attachment</span>
             </button>
-            <button class="s1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0" data-s1-tab="regiment-staff">
-              <i data-lucide="award" class="w-3.5 h-3.5"></i>
-              <span>Regiment Staff 2027</span>
-            </button>
+
             <button class="s1-subtab px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 flex-shrink-0" data-s1-tab="sheetview">
               <i data-lucide="table" class="w-3.5 h-3.5"></i>
               <span>Sheet Cloud Viewer</span>
@@ -386,7 +380,7 @@
             <div>
               <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-900 font-mono-clean text-[10px] font-bold uppercase">OFFICIAL INSPECTION REPORT</span>
-                <span class="text-xs text-slate-400 font-mono-clean">06 2230H OCTOBER 2026</span>
+                <span class="text-xs text-slate-400 font-mono-clean">10 1745H OCTOBER 2026</span>
               </div>
               <h3 class="font-bold text-lg text-slate-900 mt-1">CCAFP Cadet Strength Disposition</h3>
               <p class="text-xs text-slate-500 font-mono-clean">Completeness Inspection &bull; Effective vs Ineffective Personnel by Company & Gender</p>
@@ -464,36 +458,46 @@
           </div>
         </div>
 
-        <!-- ================================================================= -->
-        <!-- S1 SUB-SECTION: EXPANDED ROLL 2026-2027 (326 CADETS) -->
+                <!-- ================================================================= -->
+        <!-- S1 SUB-SECTION: EXPANDED ROLL (1,235 CADETS - ALL CLASSES) -->
         <!-- ================================================================= -->
         <div id="s1-section-expanded" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-900 font-mono-clean text-[10px] font-bold uppercase">PERSONNEL ROLL</span>
-                <span class="text-xs text-slate-400 font-mono-clean">326 REGISTERED CADETS</span>
+                <span id="s1ExpandedTotalBadge" class="text-xs text-slate-400 font-mono-clean">1,235 REGISTERED CADETS (ALL CLASSES)</span>
               </div>
               <h3 class="font-bold text-lg text-slate-900 mt-1">Master Expanded Roll 2026-2027</h3>
-              <p class="text-xs text-slate-500 font-mono-clean">Squad & Platoon Designations, Branch of Service (PA/PAF/PN), Blood Types, Religion, Regions & Contact Information</p>
+              <p class="text-xs text-slate-500 font-mono-clean">Complete Corps Roster: 1CL Mandaraig '27, 2CL Siglab Kasilag '28, 3CL Madasilak '29, and 4CL '30 across all 8 Companies</p>
             </div>
             <div class="flex items-center gap-2">
-              <input id="s1ExpandedSearchInput" type="text" placeholder="Search name, SN, designation, religion..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56 sm:w-72 font-mono-clean">
+              <input id="s1ExpandedSearchInput" type="text" placeholder="Search cadet, SN, designation, coy, religion..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56 sm:w-72 font-mono-clean">
             </div>
+          </div>
+
+          <!-- Class / Cohort Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">COHORT:</span>
+            <button class="s1-expanded-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0" data-expanded-class="all">All Classes (1,235)</button>
+            <button class="s1-expanded-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-class="1CL">1CL Mandaraig '27 (231)</button>
+            <button class="s1-expanded-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-class="2CL">2CL Siglab Kasilag '28 (326)</button>
+            <button class="s1-expanded-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-class="3CL">3CL Madasilak '29 (304)</button>
+            <button class="s1-expanded-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-class="4CL">4CL '30 (374)</button>
           </div>
 
           <!-- Company Filter Pills -->
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
-            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">COMPANY:</span>
-            <button class="s1-expanded-coy-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold" data-expanded-coy="all">All (326)</button>
-            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-expanded-coy="A">Alpha</button>
-            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-expanded-coy="B">Bravo</button>
-            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-expanded-coy="C">Charlie</button>
-            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-expanded-coy="D">Delta</button>
-            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-expanded-coy="E">Echo</button>
-            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-expanded-coy="F">Foxtrot</button>
-            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-expanded-coy="G">Golf</button>
-            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-expanded-coy="H">Hotel</button>
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">COMPANY:</span>
+            <button class="s1-expanded-coy-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0" data-expanded-coy="all">All Companies</button>
+            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-coy="ALFA">Alfa</button>
+            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-coy="BRAVO">Bravo</button>
+            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-coy="CHARLIE">Charlie</button>
+            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-coy="DELTA">Delta</button>
+            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-coy="ECHO">Echo</button>
+            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-coy="FOXTROT">Foxtrot</button>
+            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-coy="GOLF">Golf</button>
+            <button class="s1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-expanded-coy="HAWK">Hawk</button>
           </div>
 
           <!-- Expanded Table -->
@@ -502,14 +506,15 @@
               <thead>
                 <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px]">
                   <th class="py-3 px-2">#</th>
+                  <th class="py-3 px-2 text-center">Class</th>
                   <th class="py-3 px-3">Cadet Name</th>
                   <th class="py-3 px-2">Serial No.</th>
-                  <th class="py-3 px-2">Coy</th>
+                  <th class="py-3 px-2 text-center">Coy</th>
                   <th class="py-3 px-2">Platoon / Squad</th>
                   <th class="py-3 px-3">Designation / Role</th>
-                  <th class="py-3 px-2">BOS</th>
-                  <th class="py-3 px-2">G</th>
-                  <th class="py-3 px-2">Blood</th>
+                  <th class="py-3 px-2 text-center">BOS</th>
+                  <th class="py-3 px-2 text-center">G</th>
+                  <th class="py-3 px-2 text-center">Blood</th>
                   <th class="py-3 px-3">Religion</th>
                   <th class="py-3 px-2">Region</th>
                   <th class="py-3 px-3">Contact</th>
@@ -520,75 +525,47 @@
               </tbody>
             </table>
           </div>
-        </div>
 
-        <!-- ================================================================= -->
-        <!-- S1 SUB-SECTION: CLASS ROSTER 2026-2027 (374 CADETS) -->
-        <!-- ================================================================= -->
-        <div id="s1-section-roster" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-900 font-mono-clean text-[10px] font-bold uppercase">CORPS ROSTER</span>
-                <span class="text-xs text-slate-400 font-mono-clean">ACADEMIC YEAR 2026-2027</span>
-              </div>
-              <h3 class="font-bold text-lg text-slate-900 mt-1">CCAFP Cadet Master Class Roster</h3>
-              <p class="text-xs text-slate-500 font-mono-clean">374 Cadets categorized by Classes 1CL, 2CL, 3CL, and 4CL across all eight companies</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <input id="s1RosterSearchInput" type="text" placeholder="Search cadet, SN, company..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56 sm:w-64 font-mono-clean">
-            </div>
-          </div>
-
-          <!-- Class Filter Pills -->
-          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
-            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">CLASS:</span>
-            <button class="s1-roster-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold" data-roster-class="all">All Classes (374)</button>
-            <button class="s1-roster-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-roster-class="1CL">1CL First Class</button>
-            <button class="s1-roster-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-roster-class="2CL">2CL Second Class</button>
-            <button class="s1-roster-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-roster-class="3CL">3CL Third Class</button>
-            <button class="s1-roster-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-roster-class="4CL">4CL Fourth Class</button>
-          </div>
-
-          <!-- Roster Table -->
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs font-mono-clean">
-              <thead>
-                <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px]">
-                  <th class="py-3 px-2">#</th>
-                  <th class="py-3 px-2">Class</th>
-                  <th class="py-3 px-3">Full Cadet Name</th>
-                  <th class="py-3 px-3">Serial No.</th>
-                  <th class="py-3 px-2">Gender</th>
-                  <th class="py-3 px-2">Company</th>
-                </tr>
-              </thead>
-              <tbody id="s1RosterTableBody" class="divide-y divide-slate-100">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
+          <!-- Pagination Bar -->
+          <div id="s1ExpandedPagination" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs font-mono-clean">
+            <!-- Dynamically populated -->
           </div>
         </div>
 
         <!-- ================================================================= -->
-        <!-- S1 SUB-SECTION: SQUAD ORGANIZATION MATRIX -->
+        <!-- S1 SUB-SECTION: SQUAD ORGANIZATION MATRIX (ALL 8 COMPANIES) -->
         <!-- ================================================================= -->
         <div id="s1-section-squads" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-900 font-mono-clean text-[10px] font-bold uppercase">SQUAD MATRIX</span>
-                <span class="text-xs text-slate-400 font-mono-clean">FOXTROT SQUAD DESIGNATION</span>
+                <span id="s1SquadTitleBadge" class="text-xs text-slate-400 font-mono-clean">ALL 8 RESPECTIVE COMPANIES</span>
               </div>
               <h3 class="font-bold text-lg text-slate-900 mt-1">Corps Squad Organization & Tactical Designations</h3>
-              <p class="text-xs text-slate-500 font-mono-clean">Squad assignments and tactical placement across 1st, 2nd, 3rd, and 4th Platoons</p>
+              <p class="text-xs text-slate-500 font-mono-clean">All respective platoons (1st, 2nd, 3rd, and 4th Platoon) across all 8 Companies (Alfa through Hawk)</p>
             </div>
-            <!-- Squad Selector Pills -->
-            <div class="flex items-center gap-1.5 text-xs font-mono-clean">
-              <button class="s1-squad-tab-pill active-pill px-3 py-1.5 rounded-xl bg-blue-900 text-white font-semibold" data-squad="1ST SQUAD">1st Squad</button>
-              <button class="s1-squad-tab-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium" data-squad="2ND SQUAD">2nd Squad</button>
-              <button class="s1-squad-tab-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium" data-squad="3RD SQUAD">3rd Squad</button>
-            </div>
+          </div>
+
+          <!-- Company Selector Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">SELECT COMPANY:</span>
+            <button class="s1-squad-coy-pill active-pill px-3 py-1.5 rounded-xl bg-blue-900 text-white font-semibold flex-shrink-0" data-squad-coy="ALFA">Alfa Company</button>
+            <button class="s1-squad-coy-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad-coy="BRAVO">Bravo Company</button>
+            <button class="s1-squad-coy-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad-coy="CHARLIE">Charlie Company</button>
+            <button class="s1-squad-coy-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad-coy="DELTA">Delta Company</button>
+            <button class="s1-squad-coy-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad-coy="ECHO">Echo Company</button>
+            <button class="s1-squad-coy-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad-coy="FOXTROT">Foxtrot Company</button>
+            <button class="s1-squad-coy-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad-coy="GOLF">Golf Company</button>
+            <button class="s1-squad-coy-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad-coy="HAWK">Hawk Company</button>
+          </div>
+
+          <!-- Squad Selector Pills -->
+          <div class="flex items-center gap-1.5 text-xs font-mono-clean border-t border-slate-100 pt-3">
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">SELECT SQUAD:</span>
+            <button class="s1-squad-tab-pill active-pill px-3 py-1.5 rounded-xl bg-blue-900 text-white font-semibold flex-shrink-0" data-squad="1ST SQUAD">1st Squad</button>
+            <button class="s1-squad-tab-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad="2ND SQUAD">2nd Squad</button>
+            <button class="s1-squad-tab-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0" data-squad="3RD SQUAD">3rd Squad</button>
           </div>
 
           <!-- Squad 4-Platoon Grid Container -->
@@ -734,21 +711,44 @@
         </div>
 
         <!-- ================================================================= -->
-        <!-- S1 SUB-SECTION: TIN & PHILHEALTH (320 CADETS) -->
+        <!-- S1 SUB-SECTION: TIN & PHILHEALTH (822 CADETS - 1CL, 2CL & 3CL) -->
         <!-- ================================================================= -->
         <div id="s1-section-tin" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-900 font-mono-clean text-[10px] font-bold uppercase">GOVERNMENT IDENTIFIERS</span>
-                <span class="text-xs text-slate-400 font-mono-clean">320 CADETS ON FILE</span>
+                <span id="s1TinTotalBadge" class="text-xs text-slate-400 font-mono-clean">822 CADETS ON FILE (1CL, 2CL & 3CL)</span>
               </div>
               <h3 class="font-bold text-lg text-slate-900 mt-1">CCAFP Cadet TIN & PhilHealth Numbers</h3>
-              <p class="text-xs text-slate-500 font-mono-clean">Official Tax Identification Numbers (BIR) and PhilHealth Identification Numbers (PIN)</p>
+              <p class="text-xs text-slate-500 font-mono-clean">Official Tax Identification Numbers (BIR) and PhilHealth Identification Numbers (PIN) segregated by Class and Company</p>
             </div>
             <div class="flex items-center gap-2">
-              <input id="s1TinSearchInput" type="text" placeholder="Search cadet name, serial number, TIN..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56 sm:w-64 font-mono-clean">
+              <input id="s1TinSearchInput" type="text" placeholder="Search cadet name, serial number, TIN, coy..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56 sm:w-64 font-mono-clean">
             </div>
+          </div>
+
+          <!-- Class Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">CLASS:</span>
+            <button class="s1-tin-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0" data-tin-class="all">All Classes (822)</button>
+            <button class="s1-tin-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-class="1CL">1CL Mandaraig '27 (237)</button>
+            <button class="s1-tin-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-class="2CL">2CL Siglab Kasilag '28 (320)</button>
+            <button class="s1-tin-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-class="3CL">3CL Madasilak '29 (265)</button>
+          </div>
+
+          <!-- Company Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
+            <span class="text-slate-400 font-bold text-[10px] uppercase mr-1 flex-shrink-0">COMPANY:</span>
+            <button class="s1-tin-coy-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0" data-tin-coy="all">All Companies</button>
+            <button class="s1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-coy="ALFA">Alfa</button>
+            <button class="s1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-coy="BRAVO">Bravo</button>
+            <button class="s1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-coy="CHARLIE">Charlie</button>
+            <button class="s1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-coy="DELTA">Delta</button>
+            <button class="s1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-coy="ECHO">Echo</button>
+            <button class="s1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-coy="FOXTROT">Foxtrot</button>
+            <button class="s1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-coy="GOLF">Golf</button>
+            <button class="s1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-tin-coy="HAWK">Hawk</button>
           </div>
 
           <!-- TIN Table -->
@@ -757,9 +757,11 @@
               <thead>
                 <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px]">
                   <th class="py-3 px-2">#</th>
+                  <th class="py-3 px-2 text-center">Class</th>
                   <th class="py-3 px-3">Cadet Name</th>
                   <th class="py-3 px-3">Serial No.</th>
-                  <th class="py-3 px-2">Gender</th>
+                  <th class="py-3 px-2 text-center">Coy</th>
+                  <th class="py-3 px-2 text-center">Gender</th>
                   <th class="py-3 px-3">Birthdate</th>
                   <th class="py-3 px-3 font-semibold text-slate-900">TIN Number</th>
                   <th class="py-3 px-3 font-semibold text-slate-900">PhilHealth ID</th>
@@ -769,6 +771,11 @@
                 <!-- Dynamically populated -->
               </tbody>
             </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div id="s1TinPagination" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs font-mono-clean">
+            <!-- Dynamically populated -->
           </div>
         </div>
 
@@ -780,7 +787,7 @@
             <div>
               <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded bg-purple-50 text-purple-900 font-mono-clean text-[10px] font-bold uppercase">ATTACHMENT & MEDICAL STATUS</span>
-                <span class="text-xs text-slate-400 font-mono-clean">06 2230H OCTOBER 2026</span>
+                <span class="text-xs text-slate-400 font-mono-clean">10 1745H OCTOBER 2026</span>
               </div>
               <h3 class="font-bold text-lg text-slate-900 mt-1">Cadet Attachments & Medical Roster</h3>
               <p class="text-xs text-slate-500 font-mono-clean">FAD, Holding Center, Hospitalization (FDPSH / V-Luna), SIQ, Clearing-In/Out & Stockade</p>
@@ -792,15 +799,19 @@
 
           <!-- Attachment Category Filter Pills -->
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
-            <button class="attachment-cat-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold" data-cat="all">All Attachments (<span id="count-all">88</span>)</button>
-            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-cat="fad">FAD (<span id="count-fad">42</span>)</button>
-            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-cat="holding">Holding Ctr (<span id="count-holding">30</span>)</button>
-            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-cat="clearing-in">Clearing-In (<span id="count-clearingin">9</span>)</button>
-            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-cat="fdpsh">FDPSH Hosp (<span id="count-fdpsh">4</span>)</button>
-            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-cat="vluna">V-Luna Hosp (<span id="count-vluna">4</span>)</button>
-            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-cat="siq">SIQ (<span id="count-siq">2</span>)</button>
-            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-cat="clearing-out">Clearing-Out (<span id="count-clearingout">2</span>)</button>
-            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-cat="stockade">Stockade/GHQ (<span id="count-stockade">3</span>)</button>
+            <button class="attachment-cat-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0" data-cat="all">All (<span id="count-all">116</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="fad">FAD (<span id="count-fad">38</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="siq">SIQ (<span id="count-siq">0</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="fdpsh">FDPSH (<span id="count-fdpsh">4</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="vluna">VLUNA (<span id="count-vluna">3</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="ob">OB (<span id="count-ob">8</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="entrucking">Entrucking (<span id="count-entrucking">21</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="leave">Leave (<span id="count-leave">3</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="holding">Holding Ctr (<span id="count-holding">34</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="clearing-out">Clearing-Out (<span id="count-clearingout">1</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="clearing-in">Clearing-In (<span id="count-clearingin">1</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="ghq">GHQ (<span id="count-ghq">1</span>)</button>
+            <button class="attachment-cat-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0" data-cat="stockade">Stockade (<span id="count-stockade">2</span>)</button>
           </div>
 
           <!-- Attachment Records Table -->
@@ -828,75 +839,18 @@
           <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 font-mono-clean gap-2">
             <div>
               <span class="text-slate-400">Prepared by:</span>
-              <span class="font-bold text-slate-800 ml-1">JHOPRILYN S MANGAGOM C-27151</span>
-              <span class="text-blue-900 ml-1">(Officer-of-the-Day)</span>
+              <span class="font-bold text-slate-800 ml-1">HANNAH MAE K BUENO C-27038</span>
+              <span class="text-blue-900 ml-1 font-semibold">(CDT LT 1CL 'C' CO, Officer-of-the-Day)</span>
             </div>
             <div>
               <span class="text-slate-400">Checked by:</span>
-              <span class="font-bold text-slate-800 ml-1">CARL BENEDICT B ACOSTA C-26007</span>
-              <span class="text-blue-900 ml-1">(AC of RS for Personnel, R1)</span>
+              <span class="font-bold text-slate-800 ml-1">JOHN LORENZ MARI G YBANEZ C-27262</span>
+              <span class="text-blue-900 ml-1 font-semibold">(CDT LT 1CL 'H' CO, Acting AC of RS for Personnel, R1)</span>
             </div>
           </div>
         </div>
 
 
-
-        <!-- ================================================================= -->
-        <!-- S1 SUB-SECTION 5: REGIMENT STAFF 2027 -->
-        <!-- ================================================================= -->
-        <div id="s1-section-regiment-staff" class="s1-subpane hidden bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-900 font-mono-clean text-[10px] font-bold uppercase">CORPS CHAIN OF COMMAND</span>
-                <span class="text-xs text-slate-400 font-mono-clean">CLASS 2027 / 2028</span>
-              </div>
-              <h3 class="font-bold text-lg text-slate-900 mt-1">CCAFP Regimental Commander & Staff</h3>
-              <p class="text-xs text-slate-500 font-mono-clean">Command Section, Coordinating Staff (R1-R10), Special Staff Officers & Regimental NCOs</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <input id="s1StaffSearch" type="text" placeholder="Search officer, role, coy..." class="px-3.5 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56 sm:w-64 font-mono-clean">
-            </div>
-          </div>
-
-          <!-- Branch & Gender Summary Cards -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono-clean text-xs">
-            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-              <span class="text-[10px] text-slate-500 font-bold uppercase block">ARMY CADETS</span>
-              <span class="text-xl font-bold text-slate-900">9</span>
-              <span class="text-[10px] text-slate-400 block mt-0.5">Ground Forces</span>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-              <span class="text-[10px] text-blue-700 font-bold uppercase block">AERO CADETS</span>
-              <span class="text-xl font-bold text-blue-950">9</span>
-              <span class="text-[10px] text-blue-600 block mt-0.5">PAF Cadets</span>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-              <span class="text-[10px] text-cyan-700 font-bold uppercase block">MIDSHIPMEN</span>
-              <span class="text-xl font-bold text-cyan-950">9</span>
-              <span class="text-[10px] text-cyan-600 block mt-0.5">Naval Cadets</span>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-200">
-              <span class="text-[10px] text-blue-900 font-bold uppercase block">GENDER SUMMARY</span>
-              <span class="text-xl font-bold text-blue-950">17 M / 10 F</span>
-              <span class="text-[10px] text-blue-700 block mt-0.5">Total: 27 Officers</span>
-            </div>
-          </div>
-
-          <!-- Section Filter Tabs -->
-          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
-            <button class="staff-category-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold" data-staff-cat="all">All Staff (40)</button>
-            <button class="staff-category-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-staff-cat="command">Command Section (3)</button>
-            <button class="staff-category-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-staff-cat="coordinating">Coordinating Staff R1-R10 (9)</button>
-            <button class="staff-category-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-staff-cat="special">Special Staff Officers (15)</button>
-            <button class="staff-category-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-staff-cat="ncos">Regimental NCOs (13)</button>
-          </div>
-
-          <!-- Staff Display Grid -->
-          <div id="s1StaffGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
 
         <!-- ================================================================= -->
         <!-- S1 SUB-SECTION: EMBEDDED GOOGLE SHEET CLOUD VIEWER -->
@@ -1070,7 +1024,7 @@
             </div>
             <div>
               <span class="text-slate-400">Checked by:</span>
-              <span id="armoryCheckedBy" class="font-bold text-slate-800 ml-1">CARL BENEDICT B ACOSTA C-26007 (AC of RS for Supply / RSO)</span>
+              <span id="armoryCheckedBy" class="font-bold text-slate-800 ml-1">CDT 1CL CARLO JOSEPH G MAGAYANES C-26226 (AC of RS for Supply / RSO)</span>
             </div>
             <div>
               <span class="text-slate-400">Noted by:</span>
@@ -1113,7 +1067,7 @@
               </div>
               <div>
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-100">CORPS MILITARY ROUTINE</span>
+                  
                   <span id="socDateBadge" class="text-[10px] font-bold font-mono-clean text-slate-800 uppercase bg-slate-100 px-2 py-0.5 rounded border border-slate-200">07 OCTOBER 2026</span>
                   <span id="socSyncStatusBadge" class="text-[10px] font-bold font-mono-clean text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-beacon"></span>
@@ -1121,7 +1075,12 @@
                   </span>
                 </div>
                 <h2 class="font-bold text-2xl text-slate-900 mt-1">Schedule of Calls (SOC)</h2>
-                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Tactical Officers, Uniform of the Day, Guard Detail (Posted & Incoming), and Hourly Routine.</p>
+                <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Posted Officers, Uniform of the Day, Guard Detail (Posted & Incoming), and Corps SOC.</p>
+                <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 font-mono-clean text-xs font-semibold">
+                  <i data-lucide="timer" class="w-3.5 h-3.5 text-amber-600 animate-pulse"></i>
+                  <span>GUARD MOUNTING (1830H RESETS DAILY):</span>
+                  <span id="guardMountingCountdown" class="font-bold text-amber-950 tracking-wider">--h --m --s</span>
+                </div>
               </div>
             </div>
 
@@ -1165,7 +1124,7 @@
             <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
               <span class="text-[10px] font-bold font-mono-clean text-amber-700 uppercase tracking-wider block">OFFICER OF THE DAY (OD)</span>
               <h4 id="socOD" class="font-bold text-xs sm:text-sm text-slate-900 font-mono-clean truncate">1CL MANGAGOM &rarr; 1CL PLANTAR</h4>
-              <p class="text-[11px] text-slate-500 font-mono-clean">Posted 'D' &bull; Incoming 'H'</p>
+              
             </div>
           </div>
         </div>
@@ -1445,7 +1404,9 @@
                   <th class="py-3 px-2 text-center">Coy</th>
                   <th class="py-3 px-3">Delinquency / Offense</th>
                   <th class="py-3 px-2 text-center">Demerits</th>
-                  <th class="py-3 px-2 text-center">Tours</th>
+                  <th class="py-3 px-3 text-left min-w-[140px]">
+                    <div class="font-bold text-slate-700 leading-tight uppercase">TOURING<br><span class="text-[10px] text-slate-500 font-normal">(REM)</span></div>
+                  </th>
                   <th class="py-3 px-2 text-center">Confined</th>
                   <th class="py-3 px-2 text-center">Period</th>
                   <th class="py-3 px-3 text-center">Status</th>

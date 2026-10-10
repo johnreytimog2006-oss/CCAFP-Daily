@@ -1,0 +1,1069 @@
+{
+  "FAD": [
+    {
+      "no": "1",
+      "classYr": "1CL",
+      "name": "DE MESA",
+      "coy": "A",
+      "reason": "LEFT FOOT CLOSE COMPLETE FRACTURE",
+      "start": "",
+      "remarks": "21 October 2026"
+    },
+    {
+      "no": "2",
+      "classYr": "1CL",
+      "name": "RANA",
+      "coy": "C",
+      "reason": "RIGHT SHOULDER DISLOCATION",
+      "start": "17 September 2026",
+      "remarks": "14 October 2026"
+    },
+    {
+      "no": "3",
+      "classYr": "1CL",
+      "name": "ROSARIO",
+      "coy": "E",
+      "reason": "RIGHT WRIST INCOMPLETE FRACTURE",
+      "start": "07 October 2026",
+      "remarks": "14 October 2026"
+    },
+    {
+      "no": "4",
+      "classYr": "1CL",
+      "name": "MACARAYA",
+      "coy": "F",
+      "reason": "BROKEN HAND BONE",
+      "start": "15 September 2026",
+      "remarks": "14 October 2026"
+    },
+    {
+      "no": "5",
+      "classYr": "1CL",
+      "name": "BETITA",
+      "coy": "F",
+      "reason": "LOWER BACK PAIN SYNDROME",
+      "start": "01 October 2026",
+      "remarks": "13 October 2026"
+    },
+    {
+      "no": "6",
+      "classYr": "1CL",
+      "name": "DE VENANCIO",
+      "coy": "G",
+      "reason": "FRACTURE",
+      "start": "22 September 2026",
+      "remarks": "23 October 2026"
+    },
+    {
+      "no": "7",
+      "classYr": "1CL",
+      "name": "SABILLA",
+      "coy": "H",
+      "reason": "ANKLE SPRAIN",
+      "start": "07 October 2026",
+      "remarks": "15 October 2026"
+    },
+    {
+      "no": "8",
+      "classYr": "1CL",
+      "name": "MANCE",
+      "coy": "A",
+      "reason": "MRI RESULT",
+      "start": "30 September 2026",
+      "remarks": "UNDETERMINED"
+    },
+    {
+      "no": "9",
+      "classYr": "1CL",
+      "name": "CASTILLO",
+      "coy": "E",
+      "reason": "ADHESIVE CAPSULITIS",
+      "start": "09 October 2026",
+      "remarks": "12 October 2026"
+    },
+    {
+      "no": "10",
+      "classYr": "1CL",
+      "name": "RICARDE",
+      "coy": "F",
+      "reason": "HIP SPRAIN",
+      "start": "08 October 2026",
+      "remarks": "11 October 2026"
+    },
+    {
+      "no": "11",
+      "classYr": "1CL",
+      "name": "CORSAME",
+      "coy": "H",
+      "reason": "SHOULDER SPRAIN",
+      "start": "09 October 2026",
+      "remarks": "12 October 2026"
+    },
+    {
+      "no": "12",
+      "classYr": "2CL",
+      "name": "VICLAR",
+      "coy": "E",
+      "reason": "FRACTURED CLAVICLE",
+      "start": "02 September 2026",
+      "remarks": "12 October 2026"
+    },
+    {
+      "no": "13",
+      "classYr": "2CL",
+      "name": "GENTOLEO",
+      "coy": "G",
+      "reason": "LEFT ELBOW DISLOCATION",
+      "start": "",
+      "remarks": "14 October 2026"
+    },
+    {
+      "no": "14",
+      "classYr": "2CL",
+      "name": "VICENTE",
+      "coy": "B",
+      "reason": "T/C ATOPIC DERMATITIS",
+      "start": "02 October 2026",
+      "remarks": "24 October 2026"
+    },
+    {
+      "no": "15",
+      "classYr": "2CL",
+      "name": "PALOGAN",
+      "coy": "C",
+      "reason": "ANKLE SPRAIN",
+      "start": "07 October 2026",
+      "remarks": "12 October 2026"
+    },
+    {
+      "no": "16",
+      "classYr": "2CL",
+      "name": "QUINO",
+      "coy": "D",
+      "reason": "MIGRAINE",
+      "start": "09 October 2026",
+      "remarks": "11 October 2026"
+    },
+    {
+      "no": "17",
+      "classYr": "3CL",
+      "name": "PIRA",
+      "coy": "G",
+      "reason": "LEFT ELBOW SPRAIN",
+      "start": "",
+      "remarks": "14 October 2026"
+    },
+    {
+      "no": "18",
+      "classYr": "3CL",
+      "name": "LOMEREZ",
+      "coy": "H",
+      "reason": "CHRONIC CALCULUS CHOLESYSTITIS",
+      "start": "",
+      "remarks": "15 October 2026"
+    },
+    {
+      "no": "19",
+      "classYr": "3CL",
+      "name": "ENCIO",
+      "coy": "H",
+      "reason": "ANKLE SPRAIN",
+      "start": "",
+      "remarks": "16 October 2026"
+    },
+    {
+      "no": "20",
+      "classYr": "3CL",
+      "name": "POLLESCAS",
+      "coy": "B",
+      "reason": "TESTICULAR PAIN",
+      "start": "",
+      "remarks": "15 October 2026"
+    },
+    {
+      "no": "21",
+      "classYr": "4CL",
+      "name": "DRAPIZA",
+      "coy": "B",
+      "reason": "RIGHT SHOULDER SPRAIN",
+      "start": "",
+      "remarks": "13 October 2026"
+    },
+    {
+      "no": "22",
+      "classYr": "4CL",
+      "name": "COLIPANO",
+      "coy": "F",
+      "reason": "URTI",
+      "start": "28 September 2026",
+      "remarks": "UNDETERMINED"
+    },
+    {
+      "no": "23",
+      "classYr": "4CL",
+      "name": "BULQUIRIEN",
+      "coy": "D",
+      "reason": "FRACTURED FINGER",
+      "start": "07 October 2026",
+      "remarks": "14 October 2026"
+    },
+    {
+      "no": "24",
+      "classYr": "4CL",
+      "name": "PALLINGAYAN",
+      "coy": "D",
+      "reason": "LOW GRADE [UNCLEAR] PCL",
+      "start": "",
+      "remarks": "18 October 2026"
+    },
+    {
+      "no": "25",
+      "classYr": "4CL",
+      "name": "AGUSTIN",
+      "coy": "H",
+      "reason": "ANKLE SPRAIN",
+      "start": "",
+      "remarks": "14 0ctober 2026"
+    },
+    {
+      "no": "26",
+      "classYr": "4CL",
+      "name": "BERGONIO",
+      "coy": "D",
+      "reason": "HIP SPRAIN",
+      "start": "",
+      "remarks": "16 October 2026"
+    },
+    {
+      "no": "27",
+      "classYr": "4CL",
+      "name": "BARROTA",
+      "coy": "H",
+      "reason": "LEFT KNEE SPRAIN (FAD EXTEND)",
+      "start": "",
+      "remarks": "12 October 2026"
+    },
+    {
+      "no": "28",
+      "classYr": "4CL",
+      "name": "RACELIS",
+      "coy": "C",
+      "reason": "POST OPERATION SURGERY OF HERNIA",
+      "start": "",
+      "remarks": "17 0ctober 2026"
+    },
+    {
+      "no": "29",
+      "classYr": "4CL",
+      "name": "GUARDADOS",
+      "coy": "G",
+      "reason": "FREQUENT VOMITTING",
+      "start": "8 October 2026",
+      "remarks": "12 October 2026"
+    },
+    {
+      "no": "30",
+      "classYr": "4CL",
+      "name": "NADIAHAN",
+      "coy": "D",
+      "reason": "HERNIA",
+      "start": "06 October 2026",
+      "remarks": "20 October 2026"
+    },
+    {
+      "no": "31",
+      "classYr": "4CL",
+      "name": "ESLAPOR",
+      "coy": "H",
+      "reason": "VARICOCELE",
+      "start": "06 October 2026",
+      "remarks": "20 October 2026"
+    },
+    {
+      "no": "32",
+      "classYr": "4CL",
+      "name": "GARINO",
+      "coy": "A",
+      "reason": "BRONCHITIS",
+      "start": "07 October 2026",
+      "remarks": "09 October 2026"
+    },
+    {
+      "no": "33",
+      "classYr": "4CL",
+      "name": "PRIETO",
+      "coy": "E",
+      "reason": "MODERATE SENSORINEURAL HEARING LOSS, AS",
+      "start": "09 October 2026",
+      "remarks": "22 October 2026"
+    },
+    {
+      "no": "34",
+      "classYr": "4CL",
+      "name": "CAIRO",
+      "coy": "G",
+      "reason": "EPISTASIS SECONDARY TO MUCUSITIS",
+      "start": "09 October 2026",
+      "remarks": "15 October 2026"
+    },
+    {
+      "no": "35",
+      "classYr": "4CL",
+      "name": "ARNAIZ",
+      "coy": "D",
+      "reason": "AURAL POLYPS, AS",
+      "start": "09 October 2026",
+      "remarks": "15 October 2026"
+    },
+    {
+      "no": "36",
+      "classYr": "4CL",
+      "name": "SALORSANO",
+      "coy": "F",
+      "reason": "MUSKULUSKELETAL STRAIN, LEFT LEG",
+      "start": "09 October 2026",
+      "remarks": "12 October 2026"
+    },
+    {
+      "no": "37",
+      "classYr": "4CL",
+      "name": "BARTOLOME",
+      "coy": "B",
+      "reason": "WOUND IN LEFT EYEBROW",
+      "start": "09 October 2026",
+      "remarks": "16 October 2026"
+    },
+    {
+      "no": "38",
+      "classYr": "4CL",
+      "name": "COPREROS",
+      "coy": "A",
+      "reason": "TOOTH EXTRACTION",
+      "start": "08 October 2026",
+      "remarks": "11 October 2026"
+    }
+  ],
+  "SIQ": [],
+  "FDPSH": [
+    {
+      "no": "1",
+      "classYr": "2CL",
+      "name": "MIRO",
+      "coy": "G",
+      "reason": "UNDER OBSERVATION",
+      "start": "",
+      "remarks": "UNDETERMINED"
+    },
+    {
+      "no": "2",
+      "classYr": "2CL",
+      "name": "DUENAS",
+      "coy": "F",
+      "reason": "FRACTURE",
+      "start": "09 October 2026",
+      "remarks": "UNDETERMINED"
+    },
+    {
+      "no": "3",
+      "classYr": "4CL",
+      "name": "SALES",
+      "coy": "B",
+      "reason": "POST OPERATION",
+      "start": "01 October 2026",
+      "remarks": "UNDETERMINED"
+    },
+    {
+      "no": "4",
+      "classYr": "4CL",
+      "name": "DE VERA",
+      "coy": "E",
+      "reason": "UNDER MONITORING",
+      "start": "09 October 2026",
+      "remarks": "11 October 2026"
+    }
+  ],
+  "VLUNA": [
+    {
+      "no": "1",
+      "classYr": "3CL",
+      "name": "LOVENDINO",
+      "coy": "E",
+      "reason": "UNDER OBSERVATION",
+      "start": "14 June 2026",
+      "remarks": "UNDETERMINED"
+    },
+    {
+      "no": "2",
+      "classYr": "4CL",
+      "name": "ADOBE",
+      "coy": "F",
+      "reason": "T/C ADJUSTMENT DISORDER",
+      "start": "30 September 2026",
+      "remarks": "UNDETERMINED"
+    },
+    {
+      "no": "3",
+      "classYr": "4CL",
+      "name": "FAUSTINO",
+      "coy": "H",
+      "reason": "UPPER RESPIRATORY TRACT (FOR NP EVALUATION)",
+      "start": "10 September 2026",
+      "remarks": "UNDETERMINED"
+    }
+  ],
+  "OB": [
+    {
+      "no": "1",
+      "classYr": "1CL",
+      "name": "MARTINEZ",
+      "coy": "B",
+      "reason": "RESEARCH DATA GATHERING",
+      "start": "",
+      "remarks": "10 October 2026"
+    },
+    {
+      "no": "2",
+      "classYr": "1CL",
+      "name": "MOLO",
+      "coy": "B",
+      "reason": "RESEARCH DATA GATHERING",
+      "start": "",
+      "remarks": "10 October 2026"
+    },
+    {
+      "no": "3",
+      "classYr": "1CL",
+      "name": "PAGGAO",
+      "coy": "B",
+      "reason": "RESEARCH DATA GATHERING",
+      "start": "",
+      "remarks": "10 October 2026"
+    },
+    {
+      "no": "4",
+      "classYr": "1CL",
+      "name": "TAPULAO",
+      "coy": "B",
+      "reason": "RESEARCH DATA GATHERING",
+      "start": "",
+      "remarks": "10 October 2026"
+    },
+    {
+      "no": "5",
+      "classYr": "1CL",
+      "name": "ADORACION",
+      "coy": "G",
+      "reason": "PMA ICC",
+      "start": "",
+      "remarks": "10 October 2026"
+    },
+    {
+      "no": "6",
+      "classYr": "1CL",
+      "name": "CABIGO",
+      "coy": "D",
+      "reason": "PMA ICC",
+      "start": "",
+      "remarks": "10 October 2026"
+    },
+    {
+      "no": "7",
+      "classYr": "1CL",
+      "name": "MONTENEGRO",
+      "coy": "D",
+      "reason": "PMA ICC",
+      "start": "",
+      "remarks": "10 October 2026"
+    },
+    {
+      "no": "8",
+      "classYr": "3CL",
+      "name": "CAHAYON",
+      "coy": "D",
+      "reason": "PMA ICC",
+      "start": "",
+      "remarks": "10 October 2026"
+    }
+  ],
+  "ENTRUCKING": [
+    {
+      "no": "1",
+      "classYr": "1CL",
+      "name": "SARMIENTO",
+      "coy": "B",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "2",
+      "classYr": "1CL",
+      "name": "GALLAZA",
+      "coy": "E",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "3",
+      "classYr": "1CL",
+      "name": "REOJA",
+      "coy": "D",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "4",
+      "classYr": "1CL",
+      "name": "FABRO",
+      "coy": "H",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "5",
+      "classYr": "1CL",
+      "name": "GAMOS",
+      "coy": "E",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "6",
+      "classYr": "1CL",
+      "name": "LEVISTE",
+      "coy": "B",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "7",
+      "classYr": "1CL",
+      "name": "CUNTAPAY",
+      "coy": "E",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "8",
+      "classYr": "2CL",
+      "name": "MALACA",
+      "coy": "C",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "9",
+      "classYr": "2CL",
+      "name": "FERRER",
+      "coy": "G",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "10",
+      "classYr": "2CL",
+      "name": "GUTIERREZ",
+      "coy": "F",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "11",
+      "classYr": "2CL",
+      "name": "GONZALES",
+      "coy": "A",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "12",
+      "classYr": "2CL",
+      "name": "JUNIO",
+      "coy": "F",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "13",
+      "classYr": "2CL",
+      "name": "AGUILAR",
+      "coy": "H",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "14",
+      "classYr": "2CL",
+      "name": "CARONAN",
+      "coy": "E",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "15",
+      "classYr": "3CL",
+      "name": "MARQUESSES",
+      "coy": "H",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "16",
+      "classYr": "3CL",
+      "name": "ALIADO",
+      "coy": "G",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "17",
+      "classYr": "3CL",
+      "name": "SANICO",
+      "coy": "D",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "18",
+      "classYr": "3CL",
+      "name": "LORENZO",
+      "coy": "F",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "19",
+      "classYr": "3CL",
+      "name": "LORICO",
+      "coy": "A",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "20",
+      "classYr": "3CL",
+      "name": "PIMENTEL",
+      "coy": "G",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    },
+    {
+      "no": "21",
+      "classYr": "4CL",
+      "name": "VILLAVER",
+      "coy": "F",
+      "reason": "BASKETBALL BBEAL",
+      "start": "",
+      "remarks": "10 1700H October 2026"
+    }
+  ],
+  "LEAVE": [
+    {
+      "no": "1",
+      "classYr": "3CL",
+      "name": "REGANIT",
+      "coy": "G",
+      "reason": "EMERGENCY LEAVE",
+      "start": "08 October 2026",
+      "remarks": "11 October 2026"
+    },
+    {
+      "no": "2",
+      "classYr": "2CL",
+      "name": "LADERA",
+      "coy": "C",
+      "reason": "EMERGENCY LEAVE",
+      "start": "09 October 2026",
+      "remarks": "12 October 2026"
+    },
+    {
+      "no": "3",
+      "classYr": "4CL",
+      "name": "LADERA",
+      "coy": "A",
+      "reason": "EMERGENCY LEAVE",
+      "start": "09 October 2026",
+      "remarks": "12 October 2026"
+    }
+  ],
+  "HOLDING CENTER": [
+    {
+      "no": "1",
+      "classYr": "1CL",
+      "name": "SALAZAR",
+      "coy": "E",
+      "reason": "HONOR CASE",
+      "start": "22 May 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "2",
+      "classYr": "1CL",
+      "name": "SATURNINO",
+      "coy": "E",
+      "reason": "RESIGNING",
+      "start": "10 June 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "3",
+      "classYr": "1CL",
+      "name": "BERNARDO",
+      "coy": "B",
+      "reason": "HONOR CASE",
+      "start": "25 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "4",
+      "classYr": "1CL",
+      "name": "ALBERTO",
+      "coy": "E",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "04 July 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "5",
+      "classYr": "1CL",
+      "name": "ESTEBAN",
+      "coy": "H",
+      "reason": "ALEGED COUNTENANCING MALTREATMENT",
+      "start": "23 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "6",
+      "classYr": "2CL",
+      "name": "CASTRO",
+      "coy": "A",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "25 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "7",
+      "classYr": "2CL",
+      "name": "FOCASAN",
+      "coy": "A",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "23 June 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "8",
+      "classYr": "2CL",
+      "name": "SANGALANG",
+      "coy": "A",
+      "reason": "UNAUTHORIZED PUNISHMENT",
+      "start": "09 July 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "9",
+      "classYr": "2CL",
+      "name": "MAMA",
+      "coy": "B",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "25 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "10",
+      "classYr": "2CL",
+      "name": "QUEMADO",
+      "coy": "B",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "25 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "11",
+      "classYr": "2CL",
+      "name": "BAUTISTA",
+      "coy": "H",
+      "reason": "HONOR CASE",
+      "start": "27 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "12",
+      "classYr": "2CL",
+      "name": "PENALOZA",
+      "coy": "H",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "27 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "13",
+      "classYr": "2CL",
+      "name": "TANONGON",
+      "coy": "H",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "24 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "14",
+      "classYr": "2CL",
+      "name": "CRUCILLO",
+      "coy": "H",
+      "reason": "ALLEGED  MALTREATMENT",
+      "start": "23 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "15",
+      "classYr": "2CL",
+      "name": "LOMUGDANG",
+      "coy": "E",
+      "reason": "HONOR CASE",
+      "start": "22 May 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "16",
+      "classYr": "2CL",
+      "name": "GENTOLEO",
+      "coy": "G",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "24 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "17",
+      "classYr": "2CL",
+      "name": "TAMBADOC",
+      "coy": "G",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "24 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "18",
+      "classYr": "2CL",
+      "name": "CARIASO",
+      "coy": "D",
+      "reason": "UNDER INVESTIGATION",
+      "start": "17 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "19",
+      "classYr": "2CL",
+      "name": "FALCON",
+      "coy": "D",
+      "reason": "UNDER INVESTIGATION",
+      "start": "17 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "20",
+      "classYr": "2CL",
+      "name": "TAGLE",
+      "coy": "D",
+      "reason": "UNDER INVESTIGATION",
+      "start": "17 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "21",
+      "classYr": "2CL",
+      "name": "DERILO",
+      "coy": "D",
+      "reason": "UNDER INVESTIGATION",
+      "start": "17 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "22",
+      "classYr": "2CL",
+      "name": "BINWAG",
+      "coy": "B",
+      "reason": "UNDER INVESTIGATION",
+      "start": "17 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "23",
+      "classYr": "2CL",
+      "name": "ADAY",
+      "coy": "B",
+      "reason": "UNDER INVESTIGATION",
+      "start": "17 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "24",
+      "classYr": "2CL",
+      "name": "LLONO",
+      "coy": "B",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "25",
+      "classYr": "3CL",
+      "name": "PIZON",
+      "coy": "A",
+      "reason": "UNDER INVESTIGATION (MALTREATMENT CASE)",
+      "start": "",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "26",
+      "classYr": "3CL",
+      "name": "ALCANTARA",
+      "coy": "D",
+      "reason": "ACL RECONSTRUCTION SURGERY",
+      "start": "28 August 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "27",
+      "classYr": "3CL",
+      "name": "SILVA",
+      "coy": "G",
+      "reason": "HONOR CASE",
+      "start": "10 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "28",
+      "classYr": "3CL",
+      "name": "BERBANO",
+      "coy": "D",
+      "reason": "MEDICAL DISCHARGE",
+      "start": "10 October 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "29",
+      "classYr": "4CL",
+      "name": "SISON",
+      "coy": "C",
+      "reason": "INFLICTING INJURY",
+      "start": "16 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "30",
+      "classYr": "4CL",
+      "name": "DELIVA",
+      "coy": "C",
+      "reason": "UNDER INVESTIGATION",
+      "start": "16 September 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "31",
+      "classYr": "4CL",
+      "name": "LACTUD",
+      "coy": "E",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "32",
+      "classYr": "4CL",
+      "name": "AGNES",
+      "coy": "B",
+      "reason": "RESIGNING",
+      "start": "28 August 2026",
+      "remarks": "ARMY DETACHMENT"
+    },
+    {
+      "no": "33",
+      "classYr": "4CL",
+      "name": "CASTRO",
+      "coy": "C",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "07 October 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    },
+    {
+      "no": "34",
+      "classYr": "4CL",
+      "name": "ERGINA",
+      "coy": "C",
+      "reason": "ALLEGED MALTREATMENT",
+      "start": "07 October 2026",
+      "remarks": "1ST FLOOR FLORENDO HALL"
+    }
+  ],
+  "CLEARING-OUT": [
+    {
+      "no": "1",
+      "classYr": "4CL",
+      "name": "URSABIA",
+      "coy": "C",
+      "reason": "VARICOCELE (RESIGNING)",
+      "start": "01 October 2026",
+      "remarks": "FDPSH"
+    }
+  ],
+  "CLEARING-IN": [
+    {
+      "no": "1",
+      "classYr": "2CL",
+      "name": "DACWAG",
+      "coy": "",
+      "reason": "CLEARING-IN",
+      "start": "23 August 2026",
+      "remarks": "4TH FLOOR REGIS HALL"
+    }
+  ],
+  "GHQ": [
+    {
+      "no": "1",
+      "classYr": "4CL",
+      "name": "TENORIO",
+      "coy": "B",
+      "reason": "UNDETERMINED",
+      "start": "04 November 2025",
+      "remarks": "GHQ"
+    }
+  ],
+  "STOCKADE": [
+    {
+      "no": "1",
+      "classYr": "1CL",
+      "name": "LAUS",
+      "coy": "-",
+      "reason": "STOCKADE (GAD OFFENSE)",
+      "start": "21 July 2026",
+      "remarks": "PMA STOCKADE"
+    },
+    {
+      "no": "2",
+      "classYr": "1CL",
+      "name": "SALON",
+      "coy": "G",
+      "reason": "STOCKADE (FDPSH)(GAD OFFENSE)",
+      "start": "27 July 2026",
+      "remarks": "PMA STOCKADE"
+    }
+  ]
+}

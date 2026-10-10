@@ -17,9 +17,13 @@
     s1StaffCat: 'all',
     s1StaffQuery: '',
     s1ExpandedQuery: '',
+    s1ExpandedClass: 'all',
     s1ExpandedCoy: 'all',
+    s1ExpandedPage: 1,
+    s1ExpandedPageSize: 50,
     s1RosterQuery: '',
     s1RosterClass: 'all',
+    s1SquadCoy: 'ALFA',
     s1SquadActive: '1ST SQUAD',
     s1ApeQuery: '',
     s1ApeClass: 'all',
@@ -28,6 +32,10 @@
     s1ApePageSize: 50,
     s1ClubsQuery: '',
     s1TinQuery: '',
+    s1TinClass: 'all',
+    s1TinCoy: 'all',
+    s1TinPage: 1,
+    s1TinPageSize: 50,
     spiritualQuery: '',
     spiritualClass: 'all',
     spiritualReligion: 'all',
@@ -48,6 +56,8 @@
     activeCouncilId: 's1',
     liveCache: {},
     staffLevel: 'regiment',
+    staffRegimentCat: 'all',
+    staffRegimentQuery: '',
     punishmentQuery: '',
     punishCoy: 'all',
     isSyncing: false,
@@ -89,8 +99,10 @@
     // S1 New Extended Sub-Panes
     s1ExpandedSearchInput: document.getElementById('s1ExpandedSearchInput'),
     s1ExpandedTableBody: document.getElementById('s1ExpandedTableBody'),
+    s1ExpandedPagination: document.getElementById('s1ExpandedPagination'),
     s1RosterSearchInput: document.getElementById('s1RosterSearchInput'),
     s1RosterTableBody: document.getElementById('s1RosterTableBody'),
+    s1SquadTitleBadge: document.getElementById('s1SquadTitleBadge'),
     s1SquadGridContainer: document.getElementById('s1SquadGridContainer'),
     s1ApeSearchInput: document.getElementById('s1ApeSearchInput'),
     s1ApeTableBody: document.getElementById('s1ApeTableBody'),
@@ -104,6 +116,8 @@
     s1ClubsTableBody: document.getElementById('s1ClubsTableBody'),
     s1TinSearchInput: document.getElementById('s1TinSearchInput'),
     s1TinTableBody: document.getElementById('s1TinTableBody'),
+    s1TinTotalBadge: document.getElementById('s1TinTotalBadge'),
+    s1TinPagination: document.getElementById('s1TinPagination'),
     s1SheetSelector: document.getElementById('s1SheetSelector'),
     s1SheetIframe: document.getElementById('s1SheetIframe'),
     s1SheetExternalLink: document.getElementById('s1SheetExternalLink'),
@@ -118,6 +132,7 @@
     socDateBadge: document.getElementById('socDateBadge'),
     socSyncStatusBadge: document.getElementById('socSyncStatusBadge'),
     socSyncBtn: document.getElementById('socSyncBtn'),
+    guardMountingCountdown: document.getElementById('guardMountingCountdown'),
     socOC: document.getElementById('socOC'),
     socAOC: document.getElementById('socAOC'),
     socUniform: document.getElementById('socUniform'),
@@ -158,12 +173,29 @@
   };
 
   // --- Clock & Timestamps ---
+  function updateGuardMountingCountdown() {
+    const el = dom.guardMountingCountdown || document.getElementById('guardMountingCountdown');
+    if (!el) return;
+    const now = new Date();
+    // Guard Mounting resets daily at 1830H (18:30:00)
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 30, 0, 0);
+    if (now.getTime() >= target.getTime()) {
+      target.setDate(target.getDate() + 1);
+    }
+    const diffMs = target.getTime() - now.getTime();
+    const hours = Math.floor(diffMs / 3600000);
+    const minutes = Math.floor((diffMs % 3600000) / 60000);
+    const seconds = Math.floor((diffMs % 60000) / 1000);
+    el.textContent = `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+  }
+
   function updateTime() {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     if (dom.lastUpdatedClock) {
       dom.lastUpdatedClock.textContent = timeStr;
     }
+    updateGuardMountingCountdown();
   }
 
   // --- Automated 15-Minute Sync Manager & Local Storage Persistence ---
@@ -619,16 +651,17 @@
       setVal('rsoReportDateBadge', arm.reportDate);
     }
 
-    // Dynamic Verification Signatures (Always Real-Time)
-    const prep = arm.signatures?.preparedBy || (typeof arm.signOff?.preparedBy === 'string' ? arm.signOff.preparedBy : "CDT LT 1CL JHOPRILYN S MANGAGOM C-27151 (Officer-of-the-Day)");
-    const chk = arm.signatures?.checkedBy || (typeof arm.signOff?.checkedBy === 'string' ? arm.signOff.checkedBy : "CARL BENEDICT B ACOSTA C-26007 (AC of RS for Supply / RSO)");
-    let noted = arm.signatures?.notedBy;
-    if (!noted && arm.signOff?.notedBy) {
-      noted = Array.isArray(arm.signOff.notedBy) ? arm.signOff.notedBy.join(' • ') : arm.signOff.notedBy;
-    }
-    if (!noted || noted.includes("GIRON")) {
-      noted = "MAJ JAMES A MARTINEZ PA (Officer-in-Charge)";
-    }
+    // Dynamic Verification Signatures (Always Real-Time & Live from SOC)
+    const sched = CCAFP_CONFIG.scheduleOfCalls || {};
+    const odEntry = (sched.guardRoster || []).find(g => g.postCode === 'OD' || (g.post && g.post.startsWith('OD')));
+    let odName = (odEntry && odEntry.posted) ? odEntry.posted : "JHOPRILYN S MANGAGOM C-27151 'D' CO";
+    if (!odName.toUpperCase().includes('CDT')) odName = `CDT LT ${odName}`;
+    const prep = `${odName} (Officer-of-the-Day)`;
+
+    const chk = "CDT 1CL CARLO JOSEPH G MAGAYANES C-26226 (AC of RS for Supply / RSO)";
+
+    const ocName = sched.officers?.oc || "MAJ JAMES A MARTINEZ PA";
+    const noted = `${ocName} (Officer-in-Charge)`;
 
     const prepEl = document.getElementById('armoryPreparedBy');
     if (prepEl) prepEl.textContent = prep;
@@ -642,7 +675,7 @@
     renderS1Armory();
   }
 
-  // 3. ATTACHMENT RENDERER
+  // 3. ATTACHMENT RENDERER (ALL 12 CATEGORIES)
   function renderS1Attachment() {
     if (!dom.s1AttachmentTableBody) return;
     const att = CCAFP_CONFIG.s1Data?.attachment || {};
@@ -651,48 +684,62 @@
     const siqList = Array.isArray(att.siqList) ? att.siqList : [];
     const fdpshList = Array.isArray(att.fdpshList) ? att.fdpshList : [];
     const vlunaList = Array.isArray(att.vlunaList) ? att.vlunaList : [];
+    const obList = Array.isArray(att.obList) ? att.obList : [];
+    const entruckingList = Array.isArray(att.entruckingList) ? att.entruckingList : [];
+    const leaveList = Array.isArray(att.leaveList) ? att.leaveList : [];
     const holdingCenterList = Array.isArray(att.holdingCenterList) ? att.holdingCenterList : [];
-    const clearingInList = Array.isArray(att.clearingInList) ? att.clearingInList : [];
     const clearingOutList = Array.isArray(att.clearingOutList) ? att.clearingOutList : [];
+    const clearingInList = Array.isArray(att.clearingInList) ? att.clearingInList : [];
     const ghqList = Array.isArray(att.ghqList) ? att.ghqList : [];
     const stockadeList = Array.isArray(att.stockadeList) ? att.stockadeList : [];
 
     const allItems = [
-      ...fadList.map(x => ({ ...x, category: 'FAD', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', details: x.condition, extra: x.release })),
-      ...siqList.map(x => ({ ...x, category: 'SIQ', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', details: x.reason, extra: x.release })),
-      ...fdpshList.map(x => ({ ...x, category: 'FDPSH Hospital', badgeColor: 'bg-red-50 text-red-700 border-red-200', details: x.reason, extra: x.release })),
-      ...vlunaList.map(x => ({ ...x, category: 'V-Luna Hospital', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', details: x.reason, extra: x.release })),
-      ...holdingCenterList.map(x => ({ ...x, category: 'Holding Center', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200', details: x.reason, extra: x.barracks })),
-      ...clearingInList.map(x => ({ ...x, category: 'Clearing-In', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', details: x.reason, extra: x.remarks })),
-      ...clearingOutList.map(x => ({ ...x, category: 'Clearing-Out', badgeColor: 'bg-orange-50 text-orange-700 border-orange-200', details: x.reason, extra: x.remarks })),
-      ...ghqList.map(x => ({ ...x, category: 'GHQ Detail', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200', details: x.reason, extra: x.remarks })),
-      ...stockadeList.map(x => ({ ...x, category: 'PMA Stockade', badgeColor: 'bg-slate-100 text-slate-800 border-slate-300', details: x.reason, extra: x.remarks }))
+      ...fadList.map(x => ({ ...x, category: 'FAD', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', details: x.condition || x.reason, extra: x.remarks || x.release || '-' })),
+      ...siqList.map(x => ({ ...x, category: 'SIQ', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', details: x.reason || x.condition, extra: x.remarks || x.release || '-' })),
+      ...fdpshList.map(x => ({ ...x, category: 'FDPSH', badgeColor: 'bg-red-50 text-red-700 border-red-200', details: x.reason || x.condition, extra: x.remarks || x.release || 'FDPSH' })),
+      ...vlunaList.map(x => ({ ...x, category: 'VLUNA', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', details: x.reason || x.condition, extra: x.remarks || x.release || 'V-Luna Hosp' })),
+      ...obList.map(x => ({ ...x, category: 'OB', badgeColor: 'bg-teal-50 text-teal-700 border-teal-200', details: x.reason || x.condition, extra: x.remarks || 'Official Business' })),
+      ...entruckingList.map(x => ({ ...x, category: 'Entrucking', badgeColor: 'bg-cyan-50 text-cyan-700 border-cyan-200', details: x.reason || x.condition, extra: x.remarks || 'Detailed Duty' })),
+      ...leaveList.map(x => ({ ...x, category: 'Leave', badgeColor: 'bg-violet-50 text-violet-700 border-violet-200', details: x.reason || x.condition, extra: x.remarks || 'Emergency Leave' })),
+      ...holdingCenterList.map(x => ({ ...x, category: 'Holding Center', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200', details: x.reason || x.condition, extra: x.barracks || x.remarks || '1st Floor FH' })),
+      ...clearingOutList.map(x => ({ ...x, category: 'Clearing-Out', badgeColor: 'bg-orange-50 text-orange-700 border-orange-200', details: x.reason || x.condition, extra: x.remarks || '-' })),
+      ...clearingInList.map(x => ({ ...x, category: 'Clearing-In', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', details: x.reason || x.condition, extra: x.remarks || 'Regis Hall' })),
+      ...ghqList.map(x => ({ ...x, category: 'GHQ Detail', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200', details: x.reason || x.condition, extra: x.remarks || 'GHQ' })),
+      ...stockadeList.map(x => ({ ...x, category: 'PMA Stockade', badgeColor: 'bg-slate-100 text-slate-800 border-slate-300', details: x.reason || x.condition, extra: x.remarks || 'PMA Stockade' }))
     ];
 
     // Update counts
     const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     setEl('count-all', allItems.length);
     setEl('count-fad', fadList.length);
-    setEl('count-holding', holdingCenterList.length);
-    setEl('count-clearingin', clearingInList.length);
+    setEl('count-siq', siqList.length);
     setEl('count-fdpsh', fdpshList.length);
     setEl('count-vluna', vlunaList.length);
-    setEl('count-siq', siqList.length);
+    setEl('count-ob', obList.length);
+    setEl('count-entrucking', entruckingList.length);
+    setEl('count-leave', leaveList.length);
+    setEl('count-holding', holdingCenterList.length);
     setEl('count-clearingout', clearingOutList.length);
-    setEl('count-stockade', ghqList.length + stockadeList.length);
+    setEl('count-clearingin', clearingInList.length);
+    setEl('count-ghq', ghqList.length);
+    setEl('count-stockade', stockadeList.length);
 
     let filtered = allItems;
-    const cat = state.s1AttachmentCat;
+    const cat = (state.s1AttachmentCat || 'all').toLowerCase();
     if (cat === 'fad') filtered = filtered.filter(i => i.category === 'FAD');
-    else if (cat === 'holding') filtered = filtered.filter(i => i.category === 'Holding Center');
-    else if (cat === 'clearing-in') filtered = filtered.filter(i => i.category === 'Clearing-In');
-    else if (cat === 'fdpsh') filtered = filtered.filter(i => i.category.includes('FDPSH'));
-    else if (cat === 'vluna') filtered = filtered.filter(i => i.category.includes('V-Luna'));
     else if (cat === 'siq') filtered = filtered.filter(i => i.category === 'SIQ');
+    else if (cat === 'fdpsh') filtered = filtered.filter(i => i.category === 'FDPSH');
+    else if (cat === 'vluna') filtered = filtered.filter(i => i.category === 'VLUNA');
+    else if (cat === 'ob') filtered = filtered.filter(i => i.category === 'OB');
+    else if (cat === 'entrucking') filtered = filtered.filter(i => i.category === 'Entrucking');
+    else if (cat === 'leave') filtered = filtered.filter(i => i.category === 'Leave');
+    else if (cat === 'holding') filtered = filtered.filter(i => i.category === 'Holding Center');
     else if (cat === 'clearing-out') filtered = filtered.filter(i => i.category === 'Clearing-Out');
-    else if (cat === 'stockade') filtered = filtered.filter(i => i.category.includes('Stockade') || i.category.includes('GHQ'));
+    else if (cat === 'clearing-in') filtered = filtered.filter(i => i.category === 'Clearing-In');
+    else if (cat === 'ghq') filtered = filtered.filter(i => i.category.includes('GHQ'));
+    else if (cat === 'stockade') filtered = filtered.filter(i => i.category.includes('Stockade'));
 
-    const q = state.s1AttachmentQuery.toLowerCase();
+    const q = (state.s1AttachmentQuery || '').toLowerCase().trim();
     if (q) {
       filtered = filtered.filter(i =>
         (i.name && i.name.toLowerCase().includes(q)) ||
@@ -708,7 +755,7 @@
       dom.s1AttachmentTableBody.innerHTML = `
         <tr>
           <td colspan="8" class="p-8 text-center text-slate-400 font-sans">
-            No cadet attachment records found matching current search.
+            No cadet attachment records found matching current category or search criteria.
           </td>
         </tr>
       `;
@@ -816,15 +863,19 @@
     }).join('');
   }
 
-  // 6. EXPANDED ROLL RENDERER (326 CADETS)
+  // 6. EXPANDED ROLL RENDERER (1,235 CADETS - 1CL, 2CL, 3CL, 4CL)
   function renderS1Expanded() {
     if (!dom.s1ExpandedTableBody) return;
     const list = CCAFP_CONFIG.s1Data?.expanded || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.expanded) || [];
     const q = (state.s1ExpandedQuery || '').toLowerCase().trim();
-    const coyFilter = state.s1ExpandedCoy || 'all';
+    const classFilter = (state.s1ExpandedClass || 'all').toUpperCase();
+    const coyFilter = (state.s1ExpandedCoy || 'all').toUpperCase();
 
     const filtered = list.filter(item => {
-      if (coyFilter !== 'all' && (item.coy || '').toUpperCase() !== coyFilter.toUpperCase()) {
+      if (classFilter !== 'ALL' && (item.class || '').toUpperCase() !== classFilter) {
+        return false;
+      }
+      if (coyFilter !== 'ALL' && (item.coy || '').toUpperCase() !== coyFilter) {
         return false;
       }
       if (!q) return true;
@@ -834,19 +885,49 @@
              (item.religion || '').toLowerCase().includes(q) ||
              (item.region || '').toLowerCase().includes(q) ||
              (item.bos || '').toLowerCase().includes(q) ||
+             (item.coy || '').toLowerCase().includes(q) ||
+             (item.class || '').toLowerCase().includes(q) ||
              (item.contact || '').toLowerCase().includes(q);
+    });
+
+    // Update active class pills UI
+    document.querySelectorAll('.s1-expanded-class-pill').forEach(pill => {
+      const c = (pill.getAttribute('data-expanded-class') || '').toUpperCase();
+      if (c === classFilter) {
+        pill.className = 's1-expanded-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0';
+      } else {
+        pill.className = 's1-expanded-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0';
+      }
+    });
+
+    // Update active coy pills UI
+    document.querySelectorAll('.s1-expanded-coy-pill').forEach(pill => {
+      const cy = (pill.getAttribute('data-expanded-coy') || '').toUpperCase();
+      if (cy === coyFilter) {
+        pill.className = 's1-expanded-coy-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0';
+      } else {
+        pill.className = 's1-expanded-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0';
+      }
     });
 
     if (filtered.length === 0) {
       dom.s1ExpandedTableBody.innerHTML = `
         <tr>
-          <td colspan="12" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
+          <td colspan="13" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
             No matching cadets found in Master Expanded Roll.
           </td>
         </tr>
       `;
+      if (dom.s1ExpandedPagination) dom.s1ExpandedPagination.innerHTML = '';
       return;
     }
+
+    const pageSize = state.s1ExpandedPageSize === 'all' ? filtered.length : (parseInt(state.s1ExpandedPageSize, 10) || 50);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / (pageSize || 1)));
+    if (state.s1ExpandedPage > totalPages) state.s1ExpandedPage = totalPages;
+    if (state.s1ExpandedPage < 1) state.s1ExpandedPage = 1;
+    const startIdx = (state.s1ExpandedPage - 1) * pageSize;
+    const pageItems = state.s1ExpandedPageSize === 'all' ? filtered : filtered.slice(startIdx, startIdx + pageSize);
 
     const bosBadge = (bos) => {
       const b = (bos || '').toUpperCase();
@@ -856,79 +937,113 @@
       return `<span class="px-2 py-0.5 rounded font-bold bg-slate-100 text-slate-700">${b || '-'}</span>`;
     };
 
-    dom.s1ExpandedTableBody.innerHTML = filtered.map((c, idx) => `
+    const classBadge = (cl) => {
+      const c = (cl || '').toUpperCase();
+      if (c === '1CL') return '<span class="font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[10px]">1CL</span>';
+      if (c === '2CL') return '<span class="font-bold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 text-[10px]">2CL</span>';
+      if (c === '3CL') return '<span class="font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[10px]">3CL</span>';
+      if (c === '4CL') return '<span class="font-bold text-purple-800 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200 text-[10px]">4CL</span>';
+      return `<span class="font-bold text-slate-700 text-[10px]">${c || '-'}</span>`;
+    };
+
+    const coyBadge = (coy) => {
+      const c = (coy || '').toUpperCase();
+      return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">${c || '-'}</span>`;
+    };
+
+    dom.s1ExpandedTableBody.innerHTML = pageItems.map((c, idx) => `
       <tr class="hover:bg-slate-50/80 transition-colors">
-        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
+        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${startIdx + idx + 1}</td>
+        <td class="py-2.5 px-2 text-center">${classBadge(c.class)}</td>
         <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
         <td class="py-2.5 px-2 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
-        <td class="py-2.5 px-2 font-bold text-slate-800">${c.coy || '-'}</td>
+        <td class="py-2.5 px-2 text-center">${coyBadge(c.coy)}</td>
         <td class="py-2.5 px-2 text-slate-600 text-[11px]">${c.platoon || '-'} / ${c.squad || '-'}</td>
         <td class="py-2.5 px-3 text-slate-700 font-medium text-[11px]">${c.designation || '-'}</td>
-        <td class="py-2.5 px-2">${bosBadge(c.bos)}</td>
-        <td class="py-2.5 px-2 font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
-        <td class="py-2.5 px-2"><span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 text-[10px] font-bold border border-rose-100">${c.blood || '-'}</span></td>
+        <td class="py-2.5 px-2 text-center">${bosBadge(c.bos)}</td>
+        <td class="py-2.5 px-2 text-center font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
+        <td class="py-2.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 text-[10px] font-bold border border-rose-100">${c.blood || '-'}</span></td>
         <td class="py-2.5 px-3 text-slate-600 text-[11px] truncate max-w-[150px]" title="${c.religion || ''}">${c.religion || '-'}</td>
         <td class="py-2.5 px-2 text-slate-600 text-[11px]">${c.region || '-'}</td>
         <td class="py-2.5 px-3 text-slate-600 text-[11px]">${c.contact || '—'}</td>
       </tr>
     `).join('');
-  }
 
-  // 7. CLASS ROSTER RENDERER (374 CADETS)
-  function renderS1Roster() {
-    if (!dom.s1RosterTableBody) return;
-    const list = CCAFP_CONFIG.s1Data?.roster || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.roster) || [];
-    const q = (state.s1RosterQuery || '').toLowerCase().trim();
-    const classFilter = state.s1RosterClass || 'all';
-
-    const filtered = list.filter(item => {
-      if (classFilter !== 'all' && (item.class || '').toUpperCase() !== classFilter.toUpperCase()) {
-        return false;
-      }
-      if (!q) return true;
-      return (item.name || '').toLowerCase().includes(q) ||
-             (item.sn || '').toLowerCase().includes(q) ||
-             (item.coy || '').toLowerCase().includes(q);
-    });
-
-    if (filtered.length === 0) {
-      dom.s1RosterTableBody.innerHTML = `
-        <tr>
-          <td colspan="6" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
-            No cadets found in Class Roster matching criteria.
-          </td>
-        </tr>
+    // Pagination container
+    if (dom.s1ExpandedPagination) {
+      const endIdx = state.s1ExpandedPageSize === 'all' ? filtered.length : Math.min(startIdx + pageSize, filtered.length);
+      dom.s1ExpandedPagination.innerHTML = `
+        <div class="text-xs text-slate-600 font-medium">
+          Showing ${filtered.length > 0 ? startIdx + 1 : 0}-${endIdx} of ${filtered.length} cadets (${list.length} total)
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 mr-2">
+            <span class="text-[11px] text-slate-400">Rows:</span>
+            <select id="s1ExpandedPageSizeSelect" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none">
+              <option value="50" ${state.s1ExpandedPageSize == 50 ? 'selected' : ''}>50</option>
+              <option value="100" ${state.s1ExpandedPageSize == 100 ? 'selected' : ''}>100</option>
+              <option value="250" ${state.s1ExpandedPageSize == 250 ? 'selected' : ''}>250</option>
+              <option value="all" ${state.s1ExpandedPageSize === 'all' ? 'selected' : ''}>All</option>
+            </select>
+          </div>
+          <button id="s1ExpandedPrevBtn" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors" ${state.s1ExpandedPage <= 1 ? 'disabled' : ''}>
+            &larr; Prev
+          </button>
+          <span class="px-2 text-xs font-bold text-slate-800">${state.s1ExpandedPage} / ${totalPages}</span>
+          <button id="s1ExpandedNextBtn" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors" ${state.s1ExpandedPage >= totalPages ? 'disabled' : ''}>
+            Next &rarr;
+          </button>
+        </div>
       `;
-      return;
+      const prevBtn = document.getElementById('s1ExpandedPrevBtn');
+      const nextBtn = document.getElementById('s1ExpandedNextBtn');
+      const sizeSelect = document.getElementById('s1ExpandedPageSizeSelect');
+      if (prevBtn) prevBtn.onclick = () => { if (state.s1ExpandedPage > 1) { state.s1ExpandedPage--; renderS1Expanded(); } };
+      if (nextBtn) nextBtn.onclick = () => { if (state.s1ExpandedPage < totalPages) { state.s1ExpandedPage++; renderS1Expanded(); } };
+      if (sizeSelect) sizeSelect.onchange = (e) => { state.s1ExpandedPageSize = e.target.value; state.s1ExpandedPage = 1; renderS1Expanded(); };
     }
-
-    const classBadge = (cls) => {
-      const c = (cls || '').toUpperCase();
-      if (c === '1CL') return '<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-bold">1CL (2027)</span>';
-      if (c === '2CL') return '<span class="px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-bold">2CL (2028)</span>';
-      if (c === '3CL') return '<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">3CL (2029)</span>';
-      if (c === '4CL') return '<span class="px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200 font-bold">4CL (2030)</span>';
-      return `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700">${c}</span>`;
-    };
-
-    dom.s1RosterTableBody.innerHTML = filtered.map((c, idx) => `
-      <tr class="hover:bg-slate-50/80 transition-colors">
-        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
-        <td class="py-2.5 px-2">${classBadge(c.class)}</td>
-        <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
-        <td class="py-2.5 px-3 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
-        <td class="py-2.5 px-2 font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
-        <td class="py-2.5 px-2 font-bold text-slate-800">${c.coy ? `${c.coy} CO` : '-'}</td>
-      </tr>
-    `).join('');
   }
 
-  // 8. SQUAD ORGANIZATION MATRIX RENDERER
+  // 7. CLASS ROSTER RENDERER (CONSOLIDATED INTO EXPANDED ROLL)
+  function renderS1Roster() {
+    renderS1Expanded();
+  }
+
+  // 8. SQUAD ORGANIZATION MATRIX RENDERER (ALL 8 COMPANIES)
   function renderS1Squads() {
     if (!dom.s1SquadGridContainer) return;
     const squads = CCAFP_CONFIG.s1Data?.squads || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.squads) || {};
+    const activeCoy = (state.s1SquadCoy || 'ALFA').toUpperCase();
     const activeSquadKey = state.s1SquadActive || '1ST SQUAD';
-    const activeSquad = squads[activeSquadKey] || { p1: [], p2: [], p3: [], p4: [] };
+
+    const coyData = squads[activeCoy] || squads['ALFA'] || squads;
+    const activeSquad = coyData[activeSquadKey] || (squads[activeSquadKey] ? squads[activeSquadKey] : { p1: [], p2: [], p3: [], p4: [] });
+
+    // Update company pills UI
+    document.querySelectorAll('.s1-squad-coy-pill').forEach(btn => {
+      const c = (btn.getAttribute('data-squad-coy') || '').toUpperCase();
+      if (c === activeCoy) {
+        btn.className = 's1-squad-coy-pill active-pill px-3 py-1.5 rounded-xl bg-blue-900 text-white font-semibold flex-shrink-0';
+      } else {
+        btn.className = 's1-squad-coy-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0';
+      }
+    });
+
+    // Update squad pills UI
+    document.querySelectorAll('.s1-squad-tab-pill').forEach(btn => {
+      const sq = btn.getAttribute('data-squad');
+      if (sq === activeSquadKey) {
+        btn.className = 's1-squad-tab-pill active-pill px-3 py-1.5 rounded-xl bg-blue-900 text-white font-semibold flex-shrink-0';
+      } else {
+        btn.className = 's1-squad-tab-pill px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium flex-shrink-0';
+      }
+    });
+
+    // Update title badge
+    if (dom.s1SquadTitleBadge) {
+      const totalCadets = (activeSquad.p1?.length || 0) + (activeSquad.p2?.length || 0) + (activeSquad.p3?.length || 0) + (activeSquad.p4?.length || 0);
+      dom.s1SquadTitleBadge.textContent = `${activeCoy} COMPANY • ${activeSquadKey} (${totalCadets} CADETS)`;
+    }
 
     const platoons = [
       { id: 'p1', name: '1ST PLATOON', members: activeSquad.p1 || [], border: 'stripe-blue', dot: 'bg-blue-600' },
@@ -948,11 +1063,14 @@
         </div>
         <div class="space-y-1.5 max-h-[480px] overflow-y-auto pr-1">
           ${p.members.map((m, idx) => {
-            const is1CL = m.startsWith('1CL');
-            const is2CL = m.startsWith('2CL');
+            const mUpper = m.toUpperCase();
+            const is1CL = mUpper.includes('1CL');
+            const is2CL = mUpper.includes('2CL');
+            const is3CL = mUpper.includes('3CL');
+            const is4CL = mUpper.includes('4CL');
             const badge = is1CL 
               ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">1CL</span>'
-              : (is2CL ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">2CL</span>' : '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">CDT</span>');
+              : (is2CL ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">2CL</span>' : (is3CL ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">3CL</span>' : (is4CL ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">4CL</span>' : '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">CDT</span>')));
             return `
               <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 hover:bg-slate-100 text-xs font-mono-clean transition-colors">
                 <span class="text-slate-400 text-[10px] w-5">${idx + 1}.</span>
@@ -1158,42 +1276,132 @@
     `).join('');
   }
 
-  // 11. TIN & PHILHEALTH RENDERER (320 CADETS)
+  // 11. TIN & PHILHEALTH RENDERER (822 CADETS - 1CL, 2CL, 3CL)
   function renderS1Tin() {
     if (!dom.s1TinTableBody) return;
     const list = CCAFP_CONFIG.s1Data?.tin || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.tin) || [];
+    const classFilter = (state.s1TinClass || 'all').toUpperCase();
+    const coyFilter = (state.s1TinCoy || 'all').toUpperCase();
     const q = (state.s1TinQuery || '').toLowerCase().trim();
 
     const filtered = list.filter(item => {
+      if (classFilter !== 'ALL' && (item.class || '').toUpperCase() !== classFilter) {
+        return false;
+      }
+      if (coyFilter !== 'ALL' && (item.coy || '').toUpperCase() !== coyFilter) {
+        return false;
+      }
       if (!q) return true;
       return (item.name || '').toLowerCase().includes(q) ||
              (item.sn || '').toLowerCase().includes(q) ||
              (item.tin || '').toLowerCase().includes(q) ||
-             (item.philhealth || '').toLowerCase().includes(q);
+             (item.philhealth || '').toLowerCase().includes(q) ||
+             (item.coy || '').toLowerCase().includes(q) ||
+             (item.class || '').toLowerCase().includes(q);
+    });
+
+    if (dom.s1TinTotalBadge) {
+      dom.s1TinTotalBadge.textContent = `${filtered.length} CADETS ON FILE (${list.length} TOTAL)`;
+    }
+
+    // Update active class pills UI
+    document.querySelectorAll('.s1-tin-class-pill').forEach(btn => {
+      const c = (btn.getAttribute('data-tin-class') || '').toUpperCase();
+      if (c === classFilter) {
+        btn.className = 's1-tin-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0';
+      } else {
+        btn.className = 's1-tin-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0';
+      }
+    });
+
+    // Update active company pills UI
+    document.querySelectorAll('.s1-tin-coy-pill').forEach(btn => {
+      const cy = (btn.getAttribute('data-tin-coy') || '').toUpperCase();
+      if (cy === coyFilter) {
+        btn.className = 's1-tin-coy-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0';
+      } else {
+        btn.className = 's1-tin-coy-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0';
+      }
     });
 
     if (filtered.length === 0) {
       dom.s1TinTableBody.innerHTML = `
         <tr>
-          <td colspan="7" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
-            No TIN records found matching search query.
+          <td colspan="9" class="py-8 text-center text-slate-400 font-mono-clean text-xs">
+            No TIN & PhilHealth records found matching current criteria.
           </td>
         </tr>
       `;
+      if (dom.s1TinPagination) dom.s1TinPagination.innerHTML = '';
       return;
     }
 
-    dom.s1TinTableBody.innerHTML = filtered.map((c, idx) => `
+    const pageSize = state.s1TinPageSize === 'all' ? filtered.length : (parseInt(state.s1TinPageSize, 10) || 50);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / (pageSize || 1)));
+    if (state.s1TinPage > totalPages) state.s1TinPage = totalPages;
+    if (state.s1TinPage < 1) state.s1TinPage = 1;
+    const startIdx = (state.s1TinPage - 1) * pageSize;
+    const pageItems = state.s1TinPageSize === 'all' ? filtered : filtered.slice(startIdx, startIdx + pageSize);
+
+    const classBadge = (cl) => {
+      const c = (cl || '').toUpperCase();
+      if (c === '1CL') return '<span class="font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[10px]">1CL</span>';
+      if (c === '2CL') return '<span class="font-bold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 text-[10px]">2CL</span>';
+      if (c === '3CL') return '<span class="font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[10px]">3CL</span>';
+      return `<span class="font-bold text-slate-700 text-[10px]">${c || '-'}</span>`;
+    };
+
+    const coyBadge = (coy) => {
+      const c = (coy || '').toUpperCase();
+      return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">${c || '-'}</span>`;
+    };
+
+    dom.s1TinTableBody.innerHTML = pageItems.map((c, idx) => `
       <tr class="hover:bg-slate-50/80 transition-colors">
-        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${idx + 1}</td>
+        <td class="py-2.5 px-2 text-slate-400 text-[11px]">${startIdx + idx + 1}</td>
+        <td class="py-2.5 px-2 text-center">${classBadge(c.class)}</td>
         <td class="py-2.5 px-3 font-semibold text-slate-900">${c.name || '-'}</td>
         <td class="py-2.5 px-3 text-blue-900 font-bold text-[11px]">${c.sn || '-'}</td>
-        <td class="py-2.5 px-2 font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
+        <td class="py-2.5 px-2 text-center">${coyBadge(c.coy)}</td>
+        <td class="py-2.5 px-2 text-center font-bold ${c.gender === 'F' ? 'text-rose-600' : 'text-slate-700'}">${c.gender || '-'}</td>
         <td class="py-2.5 px-3 text-slate-600 text-[11px]">${c.bdate || '-'}</td>
         <td class="py-2.5 px-3 font-mono text-emerald-800 font-semibold bg-emerald-50/30 text-[11px]">${c.tin || '—'}</td>
         <td class="py-2.5 px-3 font-mono text-slate-800 text-[11px]">${c.philhealth || '—'}</td>
       </tr>
     `).join('');
+
+    if (dom.s1TinPagination) {
+      const endIdx = state.s1TinPageSize === 'all' ? filtered.length : Math.min(startIdx + pageSize, filtered.length);
+      dom.s1TinPagination.innerHTML = `
+        <div class="text-xs text-slate-600 font-medium">
+          Showing ${filtered.length > 0 ? startIdx + 1 : 0}-${endIdx} of ${filtered.length} cadets (${list.length} total)
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1 mr-2">
+            <span class="text-[11px] text-slate-400">Rows:</span>
+            <select id="s1TinPageSizeSelect" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none">
+              <option value="50" ${state.s1TinPageSize == 50 ? 'selected' : ''}>50</option>
+              <option value="100" ${state.s1TinPageSize == 100 ? 'selected' : ''}>100</option>
+              <option value="250" ${state.s1TinPageSize == 250 ? 'selected' : ''}>250</option>
+              <option value="all" ${state.s1TinPageSize === 'all' ? 'selected' : ''}>All</option>
+            </select>
+          </div>
+          <button id="s1TinPrevBtn" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors" ${state.s1TinPage <= 1 ? 'disabled' : ''}>
+            &larr; Prev
+          </button>
+          <span class="px-2 text-xs font-bold text-slate-800">${state.s1TinPage} / ${totalPages}</span>
+          <button id="s1TinNextBtn" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors" ${state.s1TinPage >= totalPages ? 'disabled' : ''}>
+            Next &rarr;
+          </button>
+        </div>
+      `;
+      const prevBtn = document.getElementById('s1TinPrevBtn');
+      const nextBtn = document.getElementById('s1TinNextBtn');
+      const sizeSelect = document.getElementById('s1TinPageSizeSelect');
+      if (prevBtn) prevBtn.onclick = () => { if (state.s1TinPage > 1) { state.s1TinPage--; renderS1Tin(); } };
+      if (nextBtn) nextBtn.onclick = () => { if (state.s1TinPage < totalPages) { state.s1TinPage++; renderS1Tin(); } };
+      if (sizeSelect) sizeSelect.onchange = (e) => { state.s1TinPageSize = e.target.value; state.s1TinPage = 1; renderS1Tin(); };
+    }
   }
 
   // 12. S1 MULTI-SHEET VIEWER ENGINE
@@ -1244,10 +1452,59 @@
     }
   }
 
+  // --- Daily Bible Verse Store & Laptop Bible Study Sync ---
+  const BIBLE_VERSES_MONTHLY = [
+    { text: "Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", reference: "Joshua 1:9", reflection: "Courage in duty and steadfast faith." },
+    { text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.", reference: "Proverbs 3:5-6", reflection: "Total surrender of plans into God's sovereign guidance." },
+    { text: "I can do all this through him who gives me strength.", reference: "Philippians 4:13", reflection: "Endurance through spiritual reliance." },
+    { text: "Those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.", reference: "Isaiah 40:31", reflection: "Unwearied perseverance in rigorous discipline." },
+    { text: "The Lord is my shepherd, I lack nothing. He makes me lie down in green pastures, he leads me beside quiet waters, he refreshes my soul.", reference: "Psalm 23:1-3", reflection: "Spiritual rest and replenishment." },
+    { text: "God is our refuge and strength, an ever-present help in trouble. Therefore we will not fear, though the earth give way.", reference: "Psalm 46:1-2", reflection: "Divine anchor in life's tempests." },
+    { text: "And we know that in all things God works for the good of those who love him, who have been called according to his purpose.", reference: "Romans 8:28", reflection: "All trials refine our character for higher purposes." },
+    { text: "He has shown you, O mortal, what is good. And what does the Lord require of you? To act justly and to love mercy and to walk humbly with your God.", reference: "Micah 6:8", reflection: "The hallmarks of true military and spiritual honor." },
+    { text: "For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.", reference: "2 Timothy 1:7", reflection: "Discipline, sound mind, and fearless purpose." },
+    { text: "Your word is a lamp for my feet, a light on my path.", reference: "Psalm 119:105", reflection: "Divine guidance through daily scripture meditation." },
+    { text: "Be on your guard; stand firm in the faith; be courageous; be strong. Do everything in love.", reference: "1 Corinthians 16:13-14", reflection: "Vigilance, courage, and unconditional love." },
+    { text: "The Lord is my light and my salvation—whom shall I fear? The Lord is the stronghold of my life—of whom shall I be afraid?", reference: "Psalm 27:1", reflection: "Fearless conviction in God's eternal protection." },
+    { text: "Finally, be strong in the Lord and in his mighty power. Put on the full armor of God, so that you can take your stand against the devil's schemes.", reference: "Ephesians 6:10-11", reflection: "Spiritual armor for the warrior of Christ." },
+    { text: "Come to me, all you who are weary and burdened, and I will give you rest.", reference: "Matthew 11:28", reflection: "Peace in Christ amidst demanding routines." },
+    { text: "The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning; great is your faithfulness.", reference: "Lamentations 3:22-23", reflection: "A fresh start every dawn." },
+    { text: "Commit to the Lord whatever you do, and he will establish your plans.", reference: "Proverbs 16:3", reflection: "Dedicate all academic and tactical tasks to God." },
+    { text: "Peace I leave with you; my peace I give you. I do not give to you as the world gives. Do not let your hearts be troubled and do not be afraid.", reference: "John 14:27", reflection: "Inner calm beyond human understanding." },
+    { text: "For I know the plans I have for you,” declares the Lord, “plans to prosper you and not to harm you, plans to give you hope and a future.", reference: "Jeremiah 29:11", reflection: "God's sovereign blueprint for our lives." },
+    { text: "Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.", reference: "Galatians 6:9", reflection: "Persistence and faithful service." },
+    { text: "The Lord will fight for you; you need only to be still.", reference: "Exodus 14:14", reflection: "Trusting God when obstacles seem insurmountable." },
+    { text: "Cast all your anxiety on him because he cares for you.", reference: "1 Peter 5:7", reflection: "Releasing mental burdens into loving hands." },
+    { text: "The name of the Lord is a fortified tower; the righteous run to it and are safe.", reference: "Proverbs 18:10", reflection: "Security in God's holy name." },
+    { text: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.", reference: "Colossians 3:23", reflection: "Excellence as worship in cadet duties." },
+    { text: "Blessed is the one who perseveres under trial because, having stood the test, that person will receive the crown of life.", reference: "James 1:12", reflection: "Resilience in character and spirit." },
+    { text: "Even youths grow tired and weary, and young men stumble and fall; but those who hope in the Lord will renew their strength.", reference: "Isaiah 40:30-31", reflection: "Supernatural endurance." },
+    { text: "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.", reference: "Philippians 4:6", reflection: "Turn every worry into a prayer of praise." },
+    { text: "No weapon formed against you shall prosper.", reference: "Isaiah 54:17", reflection: "Divine defense in every battle." },
+    { text: "The fruit of the Spirit is love, joy, peace, forbearance, kindness, goodness, faithfulness, gentleness and self-control.", reference: "Galatians 5:22-23", reflection: "The virtues of a Christian military leader." },
+    { text: "I have fought the good fight, I have finished the race, I have kept the faith.", reference: "2 Timothy 4:7", reflection: "Faithfulness until the very end." },
+    { text: "Greater love has no one than this: to lay down one's life for one's friends.", reference: "John 15:13", reflection: "Sacrificial duty and brotherhood." },
+    { text: "Now to him who is able to do immeasurably more than all we ask or imagine, according to his power that is at work within us.", reference: "Ephesians 3:20", reflection: "God's limitless power at work in you." }
+  ];
+
+  function getDailyBibleVerse() {
+    try {
+      const stored = localStorage.getItem('CCAFP_DAILY_BIBLE_VERSE');
+      if (stored) {
+        const item = JSON.parse(stored);
+        if (item && item.text) return item;
+      }
+    } catch(e) {}
+    const day = (new Date()).getDate();
+    return BIBLE_VERSES_MONTHLY[Math.max(0, Math.min(BIBLE_VERSES_MONTHLY.length - 1, day - 1))];
+  }
+
   // 13. SPIRITUAL DEVELOPMENT COUNCIL SPECIALIZED PORTAL RENDERER
   function renderSpiritualCouncilView(council) {
     if (!dom.councilDynamicContainer) return;
     const list = CCAFP_CONFIG.spiritualData || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.spiritual) || [];
+    const dailyVerse = getDailyBibleVerse();
+    const todayStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase();
     
     // Class Counts
     const totalAll = list.length;
@@ -1293,6 +1550,46 @@
 
     dom.councilDynamicContainer.innerHTML = `
       <div class="space-y-6">
+        <!-- Daily Bible Verse Featured Card (Synced with Laptop Bible Study App) -->
+        <div class="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-amber-50 via-white to-purple-50/50 border border-amber-200/90 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/60 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold border border-amber-300/40">
+                <i data-lucide="book-open" class="w-4 h-4 text-amber-700"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[10px] font-bold font-mono-clean text-amber-900 uppercase tracking-widest bg-amber-100/90 px-2 py-0.5 rounded border border-amber-200">DAILY BIBLE VERSE</span>
+                  <span class="text-[10px] font-mono-clean text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>BIBLE STUDY APP SYNCED</span>
+                  </span>
+                  <span class="text-xs text-slate-400 font-mono-clean ml-1">${todayStr}</span>
+                </div>
+                <h4 class="font-bold text-sm text-slate-900 mt-0.5 font-mono-clean">Scripture Meditation of the Day</h4>
+              </div>
+            </div>
+            <button id="syncBibleVerseBtn" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-amber-50 text-amber-950 font-mono-clean text-xs font-semibold border border-amber-300 shadow-2xs transition-colors self-start sm:self-auto" title="Update scripture from Bible Study app">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-700"></i>
+              <span>Sync with Bible Study App</span>
+            </button>
+          </div>
+          <div class="space-y-2.5">
+            <blockquote class="text-base sm:text-lg font-serif italic text-slate-900 leading-relaxed font-medium">
+              “${dailyVerse.text}”
+            </blockquote>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 font-mono-clean">
+              <span class="text-xs sm:text-sm font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>${dailyVerse.reference}</span>
+              </span>
+              <span class="text-[11px] text-slate-500 italic">
+                ${dailyVerse.reflection || 'Source: Bible Study App'}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- Live Cloud Sheet Connection Banner -->
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-3xl bg-purple-50/70 border border-purple-200">
           <div class="flex items-start sm:items-center gap-3.5">
@@ -1568,6 +1865,28 @@
         renderSpiritualTableRows(list);
       });
     });
+
+    const syncBtn = document.getElementById('syncBibleVerseBtn');
+    if (syncBtn) {
+      syncBtn.addEventListener('click', () => {
+        const cur = getDailyBibleVerse();
+        const textPrompt = prompt("Enter Daily Bible Verse (from your laptop 'Bible Study' app):", cur.text || '');
+        if (textPrompt === null) return;
+        const refPrompt = prompt("Enter Book Chapter:Verse Reference (e.g. Proverbs 3:5-6):", cur.reference || '');
+        if (refPrompt === null) return;
+        const refNotes = prompt("Enter Devotional Reflection / Notes:", cur.reflection || 'Source: Bible Study App');
+        if (textPrompt.trim()) {
+          const newVerse = {
+            text: textPrompt.trim(),
+            reference: (refPrompt || 'Scripture').trim(),
+            reflection: (refNotes || 'Source: Bible Study App').trim()
+          };
+          localStorage.setItem('CCAFP_DAILY_BIBLE_VERSE', JSON.stringify(newVerse));
+          showToast('Daily Bible Verse synced successfully with Bible Study app!', 'success');
+          renderSpiritualCouncilView(council);
+        }
+      });
+    }
   }
 
   // --- Cadet Mess Council View Rendering ---
@@ -2967,27 +3286,41 @@
           <tr><td colspan="4" class="py-6 text-center text-xs font-mono-clean text-slate-400">No matching guard post found.</td></tr>
         `;
       } else {
-        dom.dutyGuardRosterTableBody.innerHTML = guards.map(g => `
-          <tr class="hover:bg-slate-50/70 transition-colors">
-            <td class="py-3 px-4 font-bold text-slate-900 font-mono-clean">
-              <div class="flex items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                <span>${g.post}</span>
-              </div>
-            </td>
-            <td class="py-3 px-4 font-mono-clean font-semibold text-blue-950">
-              <span class="px-2 py-0.5 rounded bg-blue-50 border border-blue-100 text-blue-900">${g.posted}</span>
-            </td>
-            <td class="py-3 px-4 font-mono-clean font-semibold text-emerald-800">
-              <span class="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-900">${g.incoming}</span>
-            </td>
-            <td class="py-3 px-4 text-center font-mono-clean">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${g.incoming && g.incoming !== '-' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-600'}">
-                ${g.incoming && g.incoming !== '-' ? 'RELIEF DUE' : 'ON DUTY'}
-              </span>
-            </td>
-          </tr>
-        `).join('');
+        const today = new Date();
+        const isFriOrSat = today.getDay() === 5 || today.getDay() === 6;
+
+        dom.dutyGuardRosterTableBody.innerHTML = guards.map(g => {
+          const isCal = (g.postCode && (g.postCode === 'CAL 1' || g.postCode === 'CAL 2')) ||
+                        (g.post && (g.post.toUpperCase().includes('CAL 1') || g.post.toUpperCase().includes('CAL 2')));
+          const isCalWeekend = isFriOrSat && isCal;
+          const incomingDisplay = isCalWeekend ? 'N/A' : (g.incoming || '-');
+          const statusText = isCalWeekend ? 'N/A' : (g.incoming && g.incoming !== '-' ? 'RELIEF DUE' : 'ON DUTY');
+          const statusClass = isCalWeekend 
+            ? 'bg-slate-100 text-slate-500 border border-slate-200' 
+            : (g.incoming && g.incoming !== '-' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-600');
+
+          return `
+            <tr class="hover:bg-slate-50/70 transition-colors">
+              <td class="py-3 px-4 font-bold text-slate-900 font-mono-clean">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                  <span>${g.post}</span>
+                </div>
+              </td>
+              <td class="py-3 px-4 font-mono-clean font-semibold text-blue-950">
+                <span class="px-2 py-0.5 rounded bg-blue-50 border border-blue-100 text-blue-900">${g.posted}</span>
+              </td>
+              <td class="py-3 px-4 font-mono-clean font-semibold ${isCalWeekend ? 'text-slate-500' : 'text-emerald-800'}">
+                <span class="px-2 py-0.5 rounded ${isCalWeekend ? 'bg-slate-100 border border-slate-200 text-slate-500' : 'bg-emerald-50 border border-emerald-100 text-emerald-900'}">${incomingDisplay}</span>
+              </td>
+              <td class="py-3 px-4 text-center font-mono-clean">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusClass}">
+                  ${statusText}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
     }
 
@@ -3224,39 +3557,56 @@
       return;
     }
 
-    dom.punishmentTableBody.innerHTML = filtered.map(item => `
-      <tr class="hover:bg-slate-50/70 transition-colors">
-        <td class="py-3 px-3 font-sans font-semibold text-slate-900">${item.cadetName}</td>
-        <td class="py-3 px-2 text-slate-500 font-mono-clean text-[11px]">${item.serialNo}</td>
-        <td class="py-3 px-2 text-center text-slate-600 font-bold">${item.class || '1CL'}</td>
-        <td class="py-3 px-2 text-center font-bold text-blue-900 bg-blue-50/40 rounded">${item.company} Coy</td>
-        <td class="py-3 px-3 text-slate-800 font-sans">
-          <div class="font-medium">${item.offense}</div>
-          <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
-            (item.offenseClass || '').includes('Class I') ? 'bg-red-50 text-red-700 border border-red-200' :
-            (item.offenseClass || '').includes('Class II') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
-            'bg-slate-100 text-slate-700 border border-slate-200'
-          }">${item.offenseClass || 'Class III'} &bull; ${item.nature || 'Negligence of Duty'}</span>
-        </td>
-        <td class="py-3 px-2 text-center text-red-600 font-bold font-mono-clean text-xs">${item.demerits || 0}</td>
-        <td class="py-3 px-2 text-center text-amber-600 font-bold font-mono-clean text-xs">${item.tours || 0}</td>
-        <td class="py-3 px-2 text-center">
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
-            item.confined === 'YES' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-slate-100 text-slate-600'
-          }">${item.confined || 'NO'}</span>
-        </td>
-        <td class="py-3 px-2 text-center text-slate-500 text-[11px] font-mono-clean whitespace-nowrap">
-          ${item.startDate && item.startDate !== '-' ? `${item.startDate} &rarr; ${item.endDate || '-'}` : '-'}
-        </td>
-        <td class="py-3 px-3 text-center">
-          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-            item.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-            item.status === 'Confined' ? 'bg-red-50 text-red-700 border border-red-200' :
-            'bg-amber-50 text-amber-800 border border-amber-200'
-          }">${item.status || 'Ongoing'}</span>
-        </td>
-      </tr>
-    `).join('');
+    dom.punishmentTableBody.innerHTML = filtered.map(item => {
+      const totalHours = Number(item.tours) || 0;
+      const remHours = item.toursRem !== undefined ? Number(item.toursRem) : (item.remaining !== undefined ? Number(item.remaining) : totalHours);
+      const servedHours = item.served !== undefined ? Number(item.served) : Math.max(0, totalHours - remHours);
+      const pct = totalHours > 0 ? Math.min(100, Math.max(0, Math.round((servedHours / totalHours) * 100))) : 0;
+
+      return `
+        <tr class="hover:bg-slate-50/70 transition-colors">
+          <td class="py-3 px-3 font-sans font-semibold text-slate-900">${item.cadetName}</td>
+          <td class="py-3 px-2 text-slate-500 font-mono-clean text-[11px]">${item.serialNo}</td>
+          <td class="py-3 px-2 text-center text-slate-600 font-bold">${item.class || '1CL'}</td>
+          <td class="py-3 px-2 text-center font-bold text-blue-900 bg-blue-50/40 rounded">${item.company} Coy</td>
+          <td class="py-3 px-3 text-slate-800 font-sans">
+            <div class="font-medium">${item.offense}</div>
+            <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+              (item.offenseClass || '').includes('Class I') ? 'bg-red-50 text-red-700 border border-red-200' :
+              (item.offenseClass || '').includes('Class II') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+              'bg-slate-100 text-slate-700 border border-slate-200'
+            }">${item.offenseClass || 'Class III'} &bull; ${item.nature || 'Negligence of Duty'}</span>
+          </td>
+          <td class="py-3 px-2 text-center text-red-600 font-bold font-mono-clean text-xs">${item.demerits || 0}</td>
+          <td class="py-3 px-3 text-left">
+            <div class="w-full max-w-[140px]">
+              <div class="flex items-center justify-between text-[11px] font-mono-clean font-semibold text-slate-800 mb-1">
+                <span>${remHours}h rem</span>
+                <span class="text-slate-500 font-normal">${totalHours}h</span>
+              </div>
+              <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: ${pct}%;"></div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-2 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+              item.confined === 'YES' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-slate-100 text-slate-600'
+            }">${item.confined || 'NO'}</span>
+          </td>
+          <td class="py-3 px-2 text-center text-slate-500 text-[11px] font-mono-clean whitespace-nowrap">
+            ${item.startDate && item.startDate !== '-' ? `${item.startDate} &rarr; ${item.endDate || '-'}` : '-'}
+          </td>
+          <td class="py-3 px-3 text-center">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              item.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+              item.status === 'Confined' ? 'bg-red-50 text-red-700 border border-red-200' :
+              'bg-amber-50 text-amber-800 border border-amber-200'
+            }">${item.status || 'Ongoing'}</span>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   // --- Staff Directory ---
@@ -3265,34 +3615,155 @@
     const level = state.staffLevel;
 
     if (level === 'regiment') {
+      const staffData = CCAFP_CONFIG.s1Data?.regimentStaff2027 || CCAFP_CONFIG.s1Data?.regimentStaff || {};
+      const cmd = Array.isArray(staffData.commandSection) ? staffData.commandSection : [];
+      const coord = Array.isArray(staffData.coordinatingStaff) ? staffData.coordinatingStaff : [];
+      const spec = Array.isArray(staffData.specialStaff) ? staffData.specialStaff : [];
+      const ncos = Array.isArray(staffData.ncos) ? staffData.ncos : [];
+
+      const allEntries = [
+        ...cmd.map(s => ({ ...s, section: 'command', sectionLabel: 'COMMAND SECTION', borderClass: 'stripe-red' })),
+        ...coord.map(s => ({ ...s, section: 'coordinating', sectionLabel: `COORDINATING STAFF (${s.code || ''})`, borderClass: 'stripe-blue' })),
+        ...spec.map(s => ({ ...s, section: 'special', sectionLabel: 'SPECIAL STAFF OFFICER', borderClass: 'stripe-amber' })),
+        ...ncos.map(s => ({ ...s, section: 'ncos', sectionLabel: 'REGIMENTAL NCO', borderClass: 'stripe-emerald' }))
+      ];
+
+      const catFilter = state.staffRegimentCat || 'all';
+      let filtered = allEntries;
+      if (catFilter !== 'all') {
+        filtered = filtered.filter(s => s.section === catFilter);
+      }
+
+      const q = (state.staffRegimentQuery || '').toLowerCase().trim();
+      if (q) {
+        filtered = filtered.filter(s =>
+          (s.name || '').toLowerCase().includes(q) ||
+          (s.role || '').toLowerCase().includes(q) ||
+          (s.coy || '').toLowerCase().includes(q) ||
+          (s.serial || '').toLowerCase().includes(q)
+        );
+      }
+
+      const bSum = staffData.branchSummary || { army: 9, aero: 9, navy: 9, total: 27 };
+      const gSum = staffData.genderSummary || { male: 17, female: 10, total: 27 };
+
       dom.staffDisplayContainer.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          ${CCAFP_CONFIG.staffDirectory.regiment.map(s => {
-            const initial = s.name.replace(/^(CDT|CPT|LT|SGT|S\/SGT|F\/CPT|MAJ|1CL|2CL|3CL|4CL|\s)+/g, '').trim().charAt(0) || 'C';
-            return `
-              <div class="pma-cadet-card">
-                <div class="pma-cadet-header">
-                  <div class="pma-cadet-avatar">${initial}</div>
-                  <div class="min-w-0 flex-1">
-                    <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block label-tracked">PMA CLASS ${s.class}</span>
-                    <h4 class="font-extrabold text-base text-white tracking-tight leading-snug mt-0.5 uppercase truncate">${s.name}</h4>
-                    <div class="flex items-center gap-1.5 mt-2">
-                      <span class="pma-cadet-badge">${s.company} Coy</span>
-                      <span class="pma-cadet-badge">${s.badge || 'Staff'}</span>
+        <div class="space-y-5">
+          <!-- Header Summary & KPI Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 font-mono-clean text-xs">
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] text-slate-400 font-bold block uppercase">TOTAL STAFF</span>
+              <span class="text-lg font-bold text-slate-900">${allEntries.length} Officers & NCOs</span>
+              <span class="text-[10px] text-slate-500 block">Class 2027</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200">
+              <span class="text-[10px] text-emerald-700 font-bold block uppercase">PHIL ARMY (PA)</span>
+              <span class="text-lg font-bold text-emerald-950">${bSum.army || 9} Cadets</span>
+              <span class="text-[10px] text-emerald-600 block">Ground Combat</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-blue-50/70 border border-blue-200">
+              <span class="text-[10px] text-blue-700 font-bold block uppercase">AIR FORCE (PAF)</span>
+              <span class="text-lg font-bold text-blue-950">${bSum.aero || 9} Cadets</span>
+              <span class="text-[10px] text-blue-600 block">Aero Wings</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-cyan-50/70 border border-cyan-200">
+              <span class="text-[10px] text-cyan-700 font-bold block uppercase">PHIL NAVY (PN)</span>
+              <span class="text-lg font-bold text-cyan-950">${bSum.navy || 9} Cadets</span>
+              <span class="text-[10px] text-cyan-600 block">Naval Command</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-200">
+              <span class="text-[10px] text-indigo-700 font-bold block uppercase">MALE OFFICERS</span>
+              <span class="text-lg font-bold text-indigo-950">${gSum.male || 17} Cadets</span>
+              <span class="text-[10px] text-indigo-600 block">Commissioning</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-rose-50/70 border border-rose-200">
+              <span class="text-[10px] text-rose-700 font-bold block uppercase">FEMALE OFFICERS</span>
+              <span class="text-lg font-bold text-rose-950">${gSum.female || 10} Cadets</span>
+              <span class="text-[10px] text-rose-600 block">Commissioning</span>
+            </div>
+          </div>
+
+          <!-- Filter Pills & Search Bar -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-mono-clean">
+              <span class="text-slate-400 font-bold text-[10px] uppercase mr-1">BRANCH:</span>
+              <button class="task-staff-cat-pill ${catFilter === 'all' ? 'active-pill bg-blue-900 text-white font-semibold' : 'bg-white text-slate-700 hover:bg-slate-100'} px-3 py-1 rounded-lg border border-slate-200 flex-shrink-0" data-staff-cat="all">All (${allEntries.length})</button>
+              <button class="task-staff-cat-pill ${catFilter === 'command' ? 'active-pill bg-blue-900 text-white font-semibold' : 'bg-white text-slate-700 hover:bg-slate-100'} px-3 py-1 rounded-lg border border-slate-200 flex-shrink-0" data-staff-cat="command">Command (${cmd.length})</button>
+              <button class="task-staff-cat-pill ${catFilter === 'coordinating' ? 'active-pill bg-blue-900 text-white font-semibold' : 'bg-white text-slate-700 hover:bg-slate-100'} px-3 py-1 rounded-lg border border-slate-200 flex-shrink-0" data-staff-cat="coordinating">Coordinating (${coord.length})</button>
+              <button class="task-staff-cat-pill ${catFilter === 'special' ? 'active-pill bg-blue-900 text-white font-semibold' : 'bg-white text-slate-700 hover:bg-slate-100'} px-3 py-1 rounded-lg border border-slate-200 flex-shrink-0" data-staff-cat="special">Special Staff (${spec.length})</button>
+              <button class="task-staff-cat-pill ${catFilter === 'ncos' ? 'active-pill bg-blue-900 text-white font-semibold' : 'bg-white text-slate-700 hover:bg-slate-100'} px-3 py-1 rounded-lg border border-slate-200 flex-shrink-0" data-staff-cat="ncos">Regt NCOs (${ncos.length})</button>
+            </div>
+            <div>
+              <input id="taskStaffSearchInput" type="text" value="${state.staffRegimentQuery || ''}" placeholder="Search staff name, role, serial..." class="px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56 font-mono-clean">
+            </div>
+          </div>
+
+          <!-- Staff Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${filtered.map(s => {
+              const initial = s.name.replace(/^(CDT|CPT|LT|SGT|S\/SGT|F\/CPT|MAJ|1CL|2CL|3CL|4CL|\s)+/g, '').trim().charAt(0) || 'C';
+              return `
+                <div class="pma-cadet-card">
+                  <div class="pma-cadet-header">
+                    <div class="pma-cadet-avatar">${initial}</div>
+                    <div class="min-w-0 flex-1">
+                      <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase block label-tracked">PMA CLASS 2027</span>
+                      <h4 class="font-extrabold text-base text-white tracking-tight leading-snug mt-0.5 uppercase truncate">${s.name}</h4>
+                      <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+                        ${s.coy ? `<span class="pma-cadet-badge">${s.coy}</span>` : ''}
+                        ${s.rank ? `<span class="pma-cadet-badge">${s.rank}</span>` : ''}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="pma-cadet-body">
+                    <div class="pma-cadet-field">
+                      <span class="text-[11px] font-medium text-slate-400 block">Appointment / Role</span>
+                      <span class="font-bold text-sm text-slate-900 block mt-0.5 leading-snug">${s.role}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div class="pma-cadet-field">
+                        <span class="text-[11px] font-medium text-slate-400 block">Cadet Serial</span>
+                        <span class="font-bold text-sm text-slate-900 block mt-0.5 font-mono-clean">${s.serial || '—'}</span>
+                      </div>
+                      <div class="pma-cadet-field">
+                        <span class="text-[11px] font-medium text-slate-400 block">Staff Unit</span>
+                        <span class="font-bold text-xs text-blue-900 block mt-1">${s.sectionLabel}</span>
+                      </div>
+                    </div>
+                    <div class="pt-1 text-[11px] text-slate-400 flex items-center justify-between">
+                      <span>Source: CCAFP Staff Roster 2027</span>
+                      <span class="text-emerald-600 font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Active Duty</span>
+                      </span>
                     </div>
                   </div>
                 </div>
-                <div class="pma-cadet-body">
-                  <div class="pma-cadet-field">
-                    <span class="text-[11px] font-medium text-slate-400 block">Appointment</span>
-                    <span class="font-bold text-sm text-slate-900 block mt-0.5 leading-snug">${s.role}</span>
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join('')}
+              `;
+            }).join('')}
+          </div>
         </div>
       `;
+
+      // Attach listeners for category pills & search
+      document.querySelectorAll('.task-staff-cat-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          state.staffRegimentCat = pill.getAttribute('data-staff-cat') || 'all';
+          renderStaffDirectory();
+        });
+      });
+
+      const searchInput = document.getElementById('taskStaffSearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          state.staffRegimentQuery = e.target.value;
+          renderStaffDirectory();
+        });
+        if (state.staffRegimentQuery) {
+          searchInput.focus();
+          searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+        }
+      }
     } else if (level === 'battalion') {
       dom.staffDisplayContainer.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -3995,6 +4466,51 @@
         renderPunishments();
       });
     });
+
+    // S1 Expanded Class Filter Pills
+    document.querySelectorAll('.s1-expanded-class-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.s1-expanded-class-pill').forEach(p => {
+          p.className = 's1-expanded-class-pill px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 flex-shrink-0';
+        });
+        pill.className = 's1-expanded-class-pill active-pill px-3 py-1 rounded-lg bg-blue-900 text-white font-semibold flex-shrink-0';
+        state.s1ExpandedClass = pill.getAttribute('data-expanded-class') || 'all';
+        state.s1ExpandedPage = 1;
+        renderS1Expanded();
+      });
+    });
+
+    // S1 Squad Company Filter Pills
+    document.querySelectorAll('.s1-squad-coy-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        state.s1SquadCoy = pill.getAttribute('data-squad-coy') || 'ALFA';
+        renderS1Squads();
+      });
+    });
+
+    // S1 TIN Class & Company Filter Pills
+    document.querySelectorAll('.s1-tin-class-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        state.s1TinClass = pill.getAttribute('data-tin-class') || 'all';
+        state.s1TinPage = 1;
+        renderS1Tin();
+      });
+    });
+    document.querySelectorAll('.s1-tin-coy-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        state.s1TinCoy = pill.getAttribute('data-tin-coy') || 'all';
+        state.s1TinPage = 1;
+        renderS1Tin();
+      });
+    });
+
+    // Punishment Search Input
+    if (dom.punishmentSearchInput) {
+      dom.punishmentSearchInput.addEventListener('input', (e) => {
+        state.punishmentQuery = e.target.value;
+        renderPunishments();
+      });
+    }
 
     // Punishment Sync Button
     if (dom.punishSyncBtn) {
