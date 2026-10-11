@@ -166,18 +166,6 @@
 
         <!-- Right Column: Authentication Form Container -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
-          
-          <!-- Neon Auth & Cloud Sync Status Header -->
-          <div class="w-full max-w-md flex items-center justify-between px-2 mb-3">
-            <div id="authNeonStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/30 text-[10.5px] font-mono-clean font-bold text-emerald-300">
-              <span id="neonStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span>
-              <span id="authNeonStatusText">⚡ NEON AUTH ENGINE ACTIVE</span>
-            </div>
-            <div class="text-[10px] font-mono-clean text-slate-400 flex items-center gap-1.5">
-              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-              <span>Better Auth &bull; Cloud Synced</span>
-            </div>
-          </div>
 
           <!-- View 1: Login Card -->
           <div id="authLoginCard" class="auth-card-container rounded-3xl p-7 sm:p-9 w-full max-w-md space-y-5 text-slate-100">
@@ -188,17 +176,6 @@
                 <span class="px-2 py-0.5 rounded text-[10px] font-mono-clean font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400 uppercase">SECURE GATEWAY</span>
               </div>
               <p class="text-xs text-slate-400 font-mono-clean mt-1">Cadet Authentication & Role Access Control</p>
-            </div>
-
-            <!-- Mother Account First Initialization Banner -->
-            <div id="firstAccountNotice" class="hidden p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs space-y-1">
-              <div class="font-bold flex items-center gap-1.5 text-amber-300">
-                <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
-                <span>First Account Initialization</span>
-              </div>
-              <p class="text-[11.5px] text-amber-200/90 leading-relaxed font-mono-clean">
-                The very first account registered automatically becomes the <strong>Mother Account (Primary Admin)</strong> with complete system authority.
-              </p>
             </div>
 
             <!-- Login Form -->
@@ -269,28 +246,6 @@
               <p class="text-xs text-slate-400 font-mono-clean mt-1">Set your numeric username and account password</p>
             </div>
 
-            <!-- Mother Account First Initialization Banner -->
-            <div id="regMotherNotice" class="hidden p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs space-y-1 font-mono-clean">
-              <div class="font-bold flex items-center gap-1.5 text-amber-300">
-                <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
-                <span>Primary Admin Authorization Available</span>
-              </div>
-              <p class="text-[11.5px] text-amber-200/90 leading-relaxed">
-                The Primary Admin position is currently unclaimed. Enter the designated authorization code below to establish the <strong>ONLY Primary Admin</strong> account.
-              </p>
-            </div>
-
-            <!-- Primary Admin Already Claimed Notice (Visible to all other devices) -->
-            <div id="regPrimaryClaimedNotice" class="hidden p-3.5 rounded-2xl bg-[#0b1320] border border-emerald-500/30 text-slate-300 text-xs space-y-1.5 font-mono-clean">
-              <div class="font-bold flex items-center gap-2 text-emerald-300">
-                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-                <span>Primary Admin Established: <span id="regPrimaryAdminUserDisplay" class="text-amber-400 font-bold"></span></span>
-              </div>
-              <p class="text-[11px] text-slate-400 leading-relaxed">
-                The Primary Admin role is locked. New registrations will be automatically provisioned with standard Viewer privileges and synchronized to the High Command database.
-              </p>
-            </div>
-
             <!-- Create Account Form -->
             <form id="authRegisterForm" class="space-y-4" onsubmit="return false;">
               
@@ -326,26 +281,6 @@
                     <i data-lucide="eye" class="w-4 h-4"></i>
                   </button>
                 </div>
-              </div>
-
-              <!-- Primary Admin One-Time Authorization Code (Hidden after claimed) -->
-              <div id="regAdminCodeContainer" class="space-y-1.5 hidden">
-                <div class="flex items-center justify-between">
-                  <label for="regAdminCode" class="text-xs font-bold font-mono-clean text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <i data-lucide="key" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span>Primary Admin Security Code</span>
-                  </label>
-                  <span class="text-[9.5px] font-mono-clean font-bold text-amber-400 bg-amber-950/70 border border-amber-500/30 px-1.5 py-0.5 rounded">ONE-TIME PASSCODE</span>
-                </div>
-                <div class="relative">
-                  <input type="password" id="regAdminCode" placeholder="Enter 'Regimental6_CEIS' for Primary Admin" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-amber-500/40 text-amber-200 font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
-                  <button type="button" id="toggleRegAdminCodeBtn" class="absolute right-3.5 top-3.5 text-slate-500 hover:text-amber-400">
-                    <i data-lucide="eye" class="w-4 h-4"></i>
-                  </button>
-                </div>
-                <p class="text-[11px] text-slate-400 font-mono-clean leading-relaxed">
-                  Enter designated code to initialize this account as the <strong>ONLY Primary Admin</strong>. If incorrect or blank, this account will be registered as a standard Cadet Viewer, and authorization will transfer to the next account.
-                </p>
               </div>
 
               <div id="regFeedback" class="text-xs text-rose-300 hidden font-mono-clean p-2.5 rounded-lg bg-rose-950/50 border border-rose-500/40"></div>
@@ -2597,7 +2532,7 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-slate-400">Primary Admin:</span>
-              <span id="modalNeonPrimaryAdmin" class="text-amber-400 font-bold">Unclaimed (Ready for Setup)</span>
+              <span id="modalNeonPrimaryAdmin" class="text-emerald-400 font-bold">Established (Cadet 28331)</span>
             </div>
           </div>
 

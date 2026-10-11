@@ -4632,7 +4632,6 @@
     setupPassToggle('toggleLoginPasswordBtn', 'loginPassword');
     setupPassToggle('toggleRegPasswordBtn', 'regPassword');
     setupPassToggle('toggleRegConfirmPasswordBtn', 'regPasswordConfirm');
-    setupPassToggle('toggleRegAdminCodeBtn', 'regAdminCode');
 
     // Smooth Card Redirection (Login <-> Create Account)
     const openRegBtn = document.getElementById('authOpenRegisterBtn');
@@ -4678,7 +4677,6 @@
         const u = document.getElementById('regUsername')?.value?.trim();
         const p = document.getElementById('regPassword')?.value;
         const pc = document.getElementById('regPasswordConfirm')?.value;
-        const adminCode = document.getElementById('regAdminCode')?.value?.trim() || '';
         const fb = document.getElementById('regFeedback');
         if (fb) fb.classList.add('hidden');
 
@@ -4733,21 +4731,9 @@
 
         try {
           regSubmitBtn.disabled = true;
-          const accountsBefore = getRegisteredAccounts();
-          const hadPrimaryAdminBefore = accountsBefore.some(a => a.isMother);
-
-          const acc = await registerAccount(u, p, adminCode);
-          if (acc.isMother) {
-            showToast('Mother Account (Primary Admin) successfully initialized with authorization code!', 'success');
-            navigateToTab('access-control');
-          } else {
-            if (!hadPrimaryAdminBefore && adminCode && adminCode !== 'Regimental6_CEIS') {
-              showToast('Security code incorrect. Account created as Cadet Viewer; Primary Admin code transferred to next account.', 'info');
-            } else {
-              showToast(`Account created successfully! Welcome, Cadet ${u}.`, 'success');
-            }
-            navigateToTab('home');
-          }
+          const acc = await registerAccount(u, p);
+          showToast(`Account created successfully! Welcome, Cadet ${u}.`, 'success');
+          navigateToTab('home');
         } catch (err) {
           if (fb) {
             fb.textContent = err.message || 'Registration failed.';
@@ -4774,7 +4760,7 @@
       });
     };
     bindEnterKey(['loginUsername', 'loginPassword'], loginSubmitBtn);
-    bindEnterKey(['regUsername', 'regPassword', 'regPasswordConfirm', 'regAdminCode'], regSubmitBtn);
+    bindEnterKey(['regUsername', 'regPassword', 'regPasswordConfirm'], regSubmitBtn);
 
     // Forgot Password Modal
     const forgotBtn = document.getElementById('authForgotPasswordBtn');
@@ -5034,10 +5020,22 @@
     APPEALS: 'CCAFP_AUTH_APPEALS'
   };
 
-  // Centralized Multi-Device Database Schema & Reset Migration (V6 Neon Better Auth Reset)
-  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V6_BETTER_AUTH_RESET';
+  // CCAFP Sole Permanent Primary Admin (Mother Account)
+  const PRIMARY_MOTHER_ACCOUNT = {
+    username: '28331',
+    passwordPlain: 'HideOnBush',
+    salt: '0832f7afded9764533abe7f7c7f757bf',
+    hash: 'cdc6920c828f5063ba4b7e692d1cb6c706ad2c2156d4776b89147e8c4420fa5a',
+    isMother: true,
+    role: 'admin',
+    roles: ['admin'],
+    status: 'active'
+  };
+
+  // Centralized Multi-Device Database Schema & Reset Migration (V7 Single Primary Admin Reset)
+  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V7_SINGLE_PRIMARY_RESET';
   if (localStorage.getItem('CCAFP_AUTH_SCHEMA_VERSION') !== AUTH_SCHEMA_VERSION) {
-    // Purge legacy isolated local accounts on this device so we start 100% fresh and synchronized with Neon
+    // Purge legacy isolated local accounts so 28331 is active as Primary Admin
     localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
     localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
     localStorage.removeItem(AUTH_STORAGE_KEYS.ROLES);
@@ -5180,16 +5178,66 @@
         console.warn('Default roles seeding skipped:', e);
       }
 
-      // One-time V6 cleanup to reset all accounts across devices
-      if (localStorage.getItem('CCAFP_NEON_V6_DB_CLEANED') !== 'true') {
+      // One-time V7 purge and primary admin seed
+      if (localStorage.getItem('CCAFP_NEON_V7_SEEDED') !== 'true') {
         try {
-          await sql`DELETE FROM ccafp_accounts`;
+          await sql`DELETE FROM ccafp_accounts WHERE username != ${PRIMARY_MOTHER_ACCOUNT.username}`;
           await sql`DELETE FROM ccafp_appeals`;
-          localStorage.setItem('CCAFP_NEON_V6_DB_CLEANED', 'true');
+          await sql`
+            INSERT INTO ccafp_accounts (
+              username, salt, hash, is_mother, role, roles, status, suspended_until, suspended_reason, created_at
+            ) VALUES (
+              ${PRIMARY_MOTHER_ACCOUNT.username},
+              ${PRIMARY_MOTHER_ACCOUNT.salt},
+              ${PRIMARY_MOTHER_ACCOUNT.hash},
+              TRUE,
+              'admin',
+              '["admin"]',
+              'active',
+              NULL,
+              NULL,
+              NOW()
+            )
+            ON CONFLICT (username) DO UPDATE SET
+              salt = EXCLUDED.salt,
+              hash = EXCLUDED.hash,
+              is_mother = TRUE,
+              role = 'admin',
+              roles = '["admin"]',
+              status = 'active'
+          `;
+          localStorage.setItem('CCAFP_NEON_V7_SEEDED', 'true');
         } catch (e) {
-          console.warn('V6 initial clean notice:', e);
+          console.warn('V7 Neon seeding notice:', e);
         }
       }
+
+      // Always guarantee Primary Admin 28331 is present in Neon DB
+      try {
+        await sql`
+          INSERT INTO ccafp_accounts (
+            username, salt, hash, is_mother, role, roles, status, suspended_until, suspended_reason, created_at
+          ) VALUES (
+            ${PRIMARY_MOTHER_ACCOUNT.username},
+            ${PRIMARY_MOTHER_ACCOUNT.salt},
+            ${PRIMARY_MOTHER_ACCOUNT.hash},
+            TRUE,
+            'admin',
+            '["admin"]',
+            'active',
+            NULL,
+            NULL,
+            NOW()
+          )
+          ON CONFLICT (username) DO UPDATE SET
+            salt = EXCLUDED.salt,
+            hash = EXCLUDED.hash,
+            is_mother = TRUE,
+            role = 'admin',
+            roles = '["admin"]',
+            status = 'active'
+        `;
+      } catch (e) {}
 
       neonConnected = true;
       centralServerAvailable = true;
@@ -5279,8 +5327,8 @@
       modalCount.textContent = `${accounts.length} registered cadet${accounts.length === 1 ? '' : 's'}`;
     }
     if (modalPrimary) {
-      modalPrimary.textContent = motherAcc ? `Established (Cadet ${motherAcc.username})` : 'Unclaimed (Ready for Setup)';
-      modalPrimary.className = motherAcc ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
+      modalPrimary.textContent = 'Established (Cadet 28331)';
+      modalPrimary.className = 'text-emerald-400 font-bold';
     }
   }
 
@@ -5403,9 +5451,31 @@
     const sql = getNeonClient();
     if (sql) {
       try {
-        await sql`DELETE FROM ccafp_accounts`;
+        await sql`DELETE FROM ccafp_accounts WHERE username != ${PRIMARY_MOTHER_ACCOUNT.username}`;
         await sql`DELETE FROM ccafp_appeals`;
-        await sql`DELETE FROM ccafp_roles`;
+        await sql`
+          INSERT INTO ccafp_accounts (
+            username, salt, hash, is_mother, role, roles, status, suspended_until, suspended_reason, created_at
+          ) VALUES (
+            ${PRIMARY_MOTHER_ACCOUNT.username},
+            ${PRIMARY_MOTHER_ACCOUNT.salt},
+            ${PRIMARY_MOTHER_ACCOUNT.hash},
+            TRUE,
+            'admin',
+            '["admin"]',
+            'active',
+            NULL,
+            NULL,
+            NOW()
+          )
+          ON CONFLICT (username) DO UPDATE SET
+            salt = EXCLUDED.salt,
+            hash = EXCLUDED.hash,
+            is_mother = TRUE,
+            role = 'admin',
+            roles = '["admin"]',
+            status = 'active';
+        `;
         // Re-seed default roles
         const defaultRoles = (typeof window !== 'undefined' && window.CCAFP_DEFAULT_ROLES) ? window.CCAFP_DEFAULT_ROLES : [];
         for (const r of defaultRoles) {
@@ -5425,7 +5495,7 @@
         await fetch(authApi('/api/auth/reset'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminCode: 'Regimental6_CEIS' })
+          body: JSON.stringify({ adminCode: 'HideOnBush' })
         });
       } catch (e) {}
     }
@@ -5435,7 +5505,7 @@
     localStorage.removeItem(AUTH_STORAGE_KEYS.APPEALS);
     authState.currentUser = null;
     await syncWithCentralDatabase();
-    showToast('Database reset across all devices successfully!', 'success');
+    showToast('Accounts reset! Primary Admin (28331) active.', 'success');
     navigateToTab('home');
   }
 
@@ -5495,7 +5565,32 @@
   function getRegisteredAccounts() {
     try {
       const raw = localStorage.getItem(AUTH_STORAGE_KEYS.ACCOUNTS);
-      const accounts = raw ? JSON.parse(raw) : [];
+      let accounts = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(accounts)) accounts = [];
+
+      let mother = accounts.find(a => a.username === PRIMARY_MOTHER_ACCOUNT.username);
+      if (!mother) {
+        mother = {
+          username: PRIMARY_MOTHER_ACCOUNT.username,
+          salt: PRIMARY_MOTHER_ACCOUNT.salt,
+          hash: PRIMARY_MOTHER_ACCOUNT.hash,
+          isMother: true,
+          role: 'admin',
+          roles: ['admin'],
+          status: 'active',
+          suspendedUntil: null,
+          suspendedReason: null,
+          createdAt: new Date().toISOString()
+        };
+        accounts.unshift(mother);
+      } else {
+        mother.isMother = true;
+        mother.role = 'admin';
+        if (!mother.roles || !mother.roles.includes('admin')) {
+          mother.roles = ['admin'];
+        }
+      }
+
       return accounts.map(a => ({
         ...a,
         roles: Array.isArray(a.roles) && a.roles.length > 0 ? a.roles : [a.role || 'viewer'],
@@ -5504,7 +5599,18 @@
         suspendedReason: a.suspendedReason || null
       }));
     } catch (e) {
-      return [];
+      return [{
+        username: PRIMARY_MOTHER_ACCOUNT.username,
+        salt: PRIMARY_MOTHER_ACCOUNT.salt,
+        hash: PRIMARY_MOTHER_ACCOUNT.hash,
+        isMother: true,
+        role: 'admin',
+        roles: ['admin'],
+        status: 'active',
+        suspendedUntil: null,
+        suspendedReason: null,
+        createdAt: new Date().toISOString()
+      }];
     }
   }
 
@@ -5672,10 +5778,13 @@
     return null;
   }
 
-  async function registerAccount(username, password, adminCode = '') {
+  async function registerAccount(username, password) {
     const cleanUsername = String(username).trim();
     if (!/^[0-9]+$/.test(cleanUsername)) {
       throw new Error('Username must be strictly numeric (digits 0-9 only).');
+    }
+    if (cleanUsername === PRIMARY_MOTHER_ACCOUNT.username) {
+      throw new Error(`Username ${cleanUsername} is reserved for the Primary Admin. Please log in directly.`);
     }
     if (!password || password.length < 3) {
       throw new Error('Password must be at least 3 characters long.');
@@ -5684,6 +5793,10 @@
     // Provision account in Neon Auth (Better Auth)
     callBetterAuthSignUp(cleanUsername, password).catch(e => console.warn('Neon Better Auth sync notice:', e));
 
+    const isMother = false;
+    const assignedRole = 'viewer';
+    const assignedRoles = ['viewer'];
+
     // 1. Neon Cloud Postgres Registration (Direct Serverless Connection)
     const sql = getNeonClient();
     if (sql) {
@@ -5691,21 +5804,6 @@
         const existing = await sql`SELECT username FROM ccafp_accounts WHERE username = ${cleanUsername} LIMIT 1`;
         if (existing && existing.length > 0) {
           throw new Error(`Username ${cleanUsername} is already registered.`);
-        }
-
-        const motherCheck = await sql`SELECT username FROM ccafp_accounts WHERE is_mother = TRUE LIMIT 1`;
-        const hasPrimaryAdmin = Boolean(motherCheck && motherCheck.length > 0);
-
-        let isMother = false;
-        let assignedRole = 'viewer';
-        let assignedRoles = ['viewer'];
-
-        if (!hasPrimaryAdmin) {
-          if (String(adminCode).trim() === 'Regimental6_CEIS') {
-            isMother = true;
-            assignedRole = 'admin';
-            assignedRoles = ['admin'];
-          }
         }
 
         const { salt, hash } = await hashPasswordWithSalt(password);
@@ -5737,7 +5835,7 @@
         createSession(newAccount);
         return newAccount;
       } catch (err) {
-        if (err.message && err.message.includes('already registered')) {
+        if (err.message && (err.message.includes('already registered') || err.message.includes('reserved'))) {
           throw err;
         }
         console.warn('Neon registration error, trying fallback:', err);
@@ -5750,7 +5848,7 @@
         const res = await fetch(authApi('/api/auth/register'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: cleanUsername, password, adminCode })
+          body: JSON.stringify({ username: cleanUsername, password })
         });
         const data = await res.json();
         if (!res.ok || !data.success) {
@@ -5770,19 +5868,6 @@
     const accounts = getRegisteredAccounts();
     if (accounts.some(a => a.username === cleanUsername)) {
       throw new Error(`Username ${cleanUsername} is already registered.`);
-    }
-
-    const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
-    let isMother = false;
-    let assignedRole = 'viewer';
-    let assignedRoles = ['viewer'];
-
-    if (!hasPrimaryAdmin) {
-      if (String(adminCode).trim() === 'Regimental6_CEIS') {
-        isMother = true;
-        assignedRole = 'admin';
-        assignedRoles = ['admin'];
-      }
     }
 
     const { salt, hash } = await hashPasswordWithSalt(password);
@@ -5813,6 +5898,28 @@
 
     // Synchronize authentication with Neon Auth (Better Auth)
     callBetterAuthSignIn(cleanUsername, password).catch(e => console.warn('Neon Better Auth sign-in notice:', e));
+
+    // Direct Primary Admin verification for 28331
+    if (cleanUsername === PRIMARY_MOTHER_ACCOUNT.username) {
+      if (password === PRIMARY_MOTHER_ACCOUNT.passwordPlain) {
+        const motherUser = {
+          username: PRIMARY_MOTHER_ACCOUNT.username,
+          salt: PRIMARY_MOTHER_ACCOUNT.salt,
+          hash: PRIMARY_MOTHER_ACCOUNT.hash,
+          isMother: true,
+          role: 'admin',
+          roles: ['admin'],
+          status: 'active',
+          suspendedUntil: null,
+          suspendedReason: null,
+          createdAt: new Date().toISOString()
+        };
+        createSession(motherUser);
+        return motherUser;
+      } else {
+        throw new Error('Invalid numeric username or password.');
+      }
+    }
 
     // 1. Neon Cloud Postgres Login
     const sql = getNeonClient();
@@ -6090,28 +6197,6 @@
 
   function syncAuthUI() {
     const authScreen = document.getElementById('authScreen');
-    const firstNotice = document.getElementById('firstAccountNotice');
-    const regMotherNotice = document.getElementById('regMotherNotice');
-    const regAdminCodeContainer = document.getElementById('regAdminCodeContainer');
-    const regPrimaryClaimedNotice = document.getElementById('regPrimaryClaimedNotice');
-    const regPrimaryAdminUserDisplay = document.getElementById('regPrimaryAdminUserDisplay');
-
-    const accounts = getRegisteredAccounts();
-    const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
-    const motherAcc = accounts.find(a => a.isMother === true);
-
-    // Show primary admin code input & prompt only if unclaimed
-    if (firstNotice) firstNotice.classList.toggle('hidden', hasPrimaryAdmin);
-    if (regMotherNotice) regMotherNotice.classList.toggle('hidden', hasPrimaryAdmin);
-    if (regAdminCodeContainer) regAdminCodeContainer.classList.toggle('hidden', hasPrimaryAdmin);
-
-    // If Primary Admin established (e.g. 28331), show notice to all other devices
-    if (regPrimaryClaimedNotice) {
-      regPrimaryClaimedNotice.classList.toggle('hidden', !hasPrimaryAdmin);
-      if (regPrimaryAdminUserDisplay && motherAcc) {
-        regPrimaryAdminUserDisplay.textContent = motherAcc.username;
-      }
-    }
 
     if (!authState.currentUser) {
       if (authScreen) authScreen.classList.remove('hidden');
