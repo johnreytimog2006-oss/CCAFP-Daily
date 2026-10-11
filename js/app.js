@@ -5077,11 +5077,23 @@
   }
 
   // --- UNIVERSAL NEON SERVERLESS POSTGRES & CLOUD DATABASE ADAPTER ---
+  const DEFAULT_NEON_DB_URL = 'postgresql://neondb_owner:npg_jU6C4PQTYWKg@ep-fancy-firefly-b323bksf-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+
   let neonConnected = false;
   let neonSqlInstance = null;
   let neonInitAttempted = false;
   let centralServerAvailable = false;
   let centralDbState = null;
+
+  async function waitForNeon(maxMs = 2500) {
+    if (typeof window !== 'undefined' && window.neon) return true;
+    const start = Date.now();
+    while (Date.now() - start < maxMs) {
+      await new Promise(r => setTimeout(r, 60));
+      if (typeof window !== 'undefined' && window.neon) return true;
+    }
+    return false;
+  }
 
   function getNeonDbUrl() {
     let fromStorage = typeof localStorage !== 'undefined' ? (localStorage.getItem('CCAFP_NEON_DB_URL') || localStorage.getItem('CCAFP_CUSTOM_DB_URL') || '') : '';
@@ -5089,7 +5101,7 @@
       fromStorage = '';
     }
     const fromConfig = (typeof window !== 'undefined' && window.CCAFP_NEON_CONFIG && window.CCAFP_NEON_CONFIG.databaseUrl) ? window.CCAFP_NEON_CONFIG.databaseUrl : '';
-    return (fromStorage || fromConfig || '').trim();
+    return (fromStorage || fromConfig || DEFAULT_NEON_DB_URL).trim();
   }
 
   function getNeonClient() {
@@ -5178,40 +5190,6 @@
         console.warn('Default roles seeding skipped:', e);
       }
 
-      // One-time V7 purge and primary admin seed
-      if (localStorage.getItem('CCAFP_NEON_V7_SEEDED') !== 'true') {
-        try {
-          await sql`DELETE FROM ccafp_accounts WHERE username != ${PRIMARY_MOTHER_ACCOUNT.username}`;
-          await sql`DELETE FROM ccafp_appeals`;
-          await sql`
-            INSERT INTO ccafp_accounts (
-              username, salt, hash, is_mother, role, roles, status, suspended_until, suspended_reason, created_at
-            ) VALUES (
-              ${PRIMARY_MOTHER_ACCOUNT.username},
-              ${PRIMARY_MOTHER_ACCOUNT.salt},
-              ${PRIMARY_MOTHER_ACCOUNT.hash},
-              TRUE,
-              'admin',
-              '["admin"]',
-              'active',
-              NULL,
-              NULL,
-              NOW()
-            )
-            ON CONFLICT (username) DO UPDATE SET
-              salt = EXCLUDED.salt,
-              hash = EXCLUDED.hash,
-              is_mother = TRUE,
-              role = 'admin',
-              roles = '["admin"]',
-              status = 'active'
-          `;
-          localStorage.setItem('CCAFP_NEON_V7_SEEDED', 'true');
-        } catch (e) {
-          console.warn('V7 Neon seeding notice:', e);
-        }
-      }
-
       // Always guarantee Primary Admin 28331 is present in Neon DB
       try {
         await sql`
@@ -5251,9 +5229,18 @@
   }
 
   if (typeof window !== 'undefined') {
+    if (window.neon) {
+      initNeonDatabase().then(() => syncWithCentralDatabase());
+    }
     window.addEventListener('neon-loaded', () => {
       initNeonDatabase().then(() => syncWithCentralDatabase());
     });
+    // Auto-probe Neon after 500ms in case module loaded earlier
+    setTimeout(() => {
+      if (window.neon && !neonConnected) {
+        initNeonDatabase().then(() => syncWithCentralDatabase());
+      }
+    }, 500);
   }
 
   function getApiBaseUrl() {
@@ -5779,25 +5766,33 @@
   }
 
   async function registerAccount(username, password) {
-    const cleanUsername = String(username).trim();
+    const cleanUsername = String(username || '').trim();
+    const cleanPassword = String(password || '').trim();
     if (!/^[0-9]+$/.test(cleanUsername)) {
       throw new Error('Username must be strictly numeric (digits 0-9 only).');
     }
     if (cleanUsername === PRIMARY_MOTHER_ACCOUNT.username) {
+      if (
+        cleanPassword === PRIMARY_MOTHER_ACCOUNT.passwordPlain ||
+        cleanPassword.toLowerCase() === PRIMARY_MOTHER_ACCOUNT.passwordPlain.toLowerCase()
+      ) {
+        return loginAccount(cleanUsername, cleanPassword);
+      }
       throw new Error(`Username ${cleanUsername} is reserved for the Primary Admin. Please log in directly.`);
     }
-    if (!password || password.length < 3) {
+    if (!cleanPassword || cleanPassword.length < 3) {
       throw new Error('Password must be at least 3 characters long.');
     }
 
     // Provision account in Neon Auth (Better Auth)
-    callBetterAuthSignUp(cleanUsername, password).catch(e => console.warn('Neon Better Auth sync notice:', e));
+    callBetterAuthSignUp(cleanUsername, cleanPassword).catch(e => console.warn('Neon Better Auth sync notice:', e));
 
     const isMother = false;
     const assignedRole = 'viewer';
     const assignedRoles = ['viewer'];
 
     // 1. Neon Cloud Postgres Registration (Direct Serverless Connection)
+    await waitForNeon(1500);
     const sql = getNeonClient();
     if (sql) {
       try {
@@ -5806,7 +5801,7 @@
           throw new Error(`Username ${cleanUsername} is already registered.`);
         }
 
-        const { salt, hash } = await hashPasswordWithSalt(password);
+        const { salt, hash } = await hashPasswordWithSalt(cleanPassword);
         const nowIso = new Date().toISOString();
 
         await sql`
@@ -5848,7 +5843,7 @@
         const res = await fetch(authApi('/api/auth/register'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: cleanUsername, password })
+          body: JSON.stringify({ username: cleanUsername, password: cleanPassword })
         });
         const data = await res.json();
         if (!res.ok || !data.success) {
@@ -5870,7 +5865,7 @@
       throw new Error(`Username ${cleanUsername} is already registered.`);
     }
 
-    const { salt, hash } = await hashPasswordWithSalt(password);
+    const { salt, hash } = await hashPasswordWithSalt(cleanPassword);
     const newAccount = {
       username: cleanUsername,
       salt,
@@ -5891,17 +5886,21 @@
   }
 
   async function loginAccount(username, password) {
-    const cleanUsername = String(username).trim();
+    const cleanUsername = String(username || '').trim();
+    const cleanPassword = String(password || '').trim();
     if (!/^[0-9]+$/.test(cleanUsername)) {
       throw new Error('Username must be strictly numeric (digits 0-9 only).');
     }
 
     // Synchronize authentication with Neon Auth (Better Auth)
-    callBetterAuthSignIn(cleanUsername, password).catch(e => console.warn('Neon Better Auth sign-in notice:', e));
+    callBetterAuthSignIn(cleanUsername, cleanPassword).catch(e => console.warn('Neon Better Auth sign-in notice:', e));
 
-    // Direct Primary Admin verification for 28331
+    // Direct Primary Admin verification for 28331 (supports exact and case-insensitive HideOnBush)
     if (cleanUsername === PRIMARY_MOTHER_ACCOUNT.username) {
-      if (password === PRIMARY_MOTHER_ACCOUNT.passwordPlain) {
+      if (
+        cleanPassword === PRIMARY_MOTHER_ACCOUNT.passwordPlain ||
+        cleanPassword.toLowerCase() === PRIMARY_MOTHER_ACCOUNT.passwordPlain.toLowerCase()
+      ) {
         const motherUser = {
           username: PRIMARY_MOTHER_ACCOUNT.username,
           salt: PRIMARY_MOTHER_ACCOUNT.salt,
@@ -5916,12 +5915,11 @@
         };
         createSession(motherUser);
         return motherUser;
-      } else {
-        throw new Error('Invalid numeric username or password.');
       }
     }
 
     // 1. Neon Cloud Postgres Login
+    await waitForNeon(1500);
     const sql = getNeonClient();
     if (sql) {
       try {
@@ -5931,7 +5929,7 @@
         }
 
         const userRow = rows[0];
-        const { hash } = await hashPasswordWithSalt(password, userRow.salt);
+        const { hash } = await hashPasswordWithSalt(cleanPassword, userRow.salt);
         if (hash !== userRow.hash) {
           throw new Error('Invalid numeric username or password.');
         }
@@ -6018,7 +6016,7 @@
       throw new Error('Invalid numeric username or password.');
     }
 
-    const { hash } = await hashPasswordWithSalt(password, user.salt);
+    const { hash } = await hashPasswordWithSalt(cleanPassword, user.salt);
     if (hash !== user.hash) {
       throw new Error('Invalid numeric username or password.');
     }

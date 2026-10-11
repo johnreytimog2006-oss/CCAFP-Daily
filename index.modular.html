@@ -41,6 +41,14 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+  <!-- Centralized Cloud Auth & Database Configuration -->
+  <script>
+    window.CCAFP_NEON_CONFIG = {
+      databaseUrl: 'postgresql://neondb_owner:npg_jU6C4PQTYWKg@ep-fancy-firefly-b323bksf-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require',
+      betterAuthUrl: 'https://ep-fancy-firefly-b323bksf.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth'
+    };
+  </script>
+
   <!-- Neon Auth (Better Auth) & Neon Serverless Postgres SDKs -->
   <script type="module">
     import { createAuthClient } from 'https://esm.sh/better-auth@1.1.21/client';
