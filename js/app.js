@@ -4909,80 +4909,115 @@
       });
     }
 
-    // Central Multi-Device Database Settings Modal
-    const authDbStatusBadge = document.getElementById('authDbStatusBadge');
-    const openDbConfigModalBtn = document.getElementById('openDbConfigModalBtn');
-    const closeDbConfigModalBtn = document.getElementById('closeDbConfigModalBtn');
-    const closeDbConfigModalBottomBtn = document.getElementById('closeDbConfigModalBottomBtn');
-    const ccafpDbConfigModal = document.getElementById('ccafpDbConfigModal');
-    const customDbEndpointInput = document.getElementById('customDbEndpointInput');
-    const saveCustomDbEndpointBtn = document.getElementById('saveCustomDbEndpointBtn');
-    const testDbEndpointBtn = document.getElementById('testDbEndpointBtn');
-    const modalLanIpDisplay = document.getElementById('modalLanIpDisplay');
-    const copyLanIpBtn = document.getElementById('copyLanIpBtn');
+    // Neon Cloud Database Settings Modal & Badges
+    const authNeonStatusBadge = document.getElementById('authNeonStatusBadge') || document.getElementById('authDbStatusBadge');
+    const openNeonConfigModalBtn = document.getElementById('openNeonConfigModalBtn') || document.getElementById('openDbConfigModalBtn');
+    const acNeonStatusBadge = document.getElementById('acNeonStatusBadge') || document.getElementById('acDbSyncStatusBadge');
+    const acOpenNeonModalBtn = document.getElementById('acOpenNeonModalBtn');
+    const closeNeonConfigModalBtn = document.getElementById('closeNeonConfigModalBtn') || document.getElementById('closeDbConfigModalBtn');
+    const closeNeonConfigModalBottomBtn = document.getElementById('closeNeonConfigModalBottomBtn') || document.getElementById('closeDbConfigModalBottomBtn');
+    const neonConfigModal = document.getElementById('neonConfigModal') || document.getElementById('ccafpDbConfigModal');
+    const neonDatabaseUrlInput = document.getElementById('neonDatabaseUrlInput') || document.getElementById('customDbEndpointInput');
+    const saveNeonUrlBtn = document.getElementById('saveNeonUrlBtn') || document.getElementById('saveCustomDbEndpointBtn');
+    const testNeonConnectionBtn = document.getElementById('testNeonConnectionBtn') || document.getElementById('testDbEndpointBtn');
+    const clearNeonUrlBtn = document.getElementById('clearNeonUrlBtn');
 
-    function openDbConfigDialog() {
-      if (customDbEndpointInput) {
-        customDbEndpointInput.value = localStorage.getItem('CCAFP_CUSTOM_DB_URL') || localStorage.getItem('CCAFP_FIREBASE_URL') || '';
+    function openNeonConfigDialog() {
+      if (neonDatabaseUrlInput) {
+        neonDatabaseUrlInput.value = getNeonDbUrl();
       }
-      if (modalLanIpDisplay) {
-        if (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
-          modalLanIpDisplay.textContent = window.location.origin;
-        } else {
-          modalLanIpDisplay.textContent = 'http://localhost:8080';
-        }
-      }
-      updateDbConnectionBadge(centralServerAvailable, firebaseDbInstance ? 'firebase' : 'server');
-      if (ccafpDbConfigModal) ccafpDbConfigModal.classList.remove('hidden');
+      updateDbConnectionBadge(neonConnected || centralServerAvailable, neonConnected ? 'neon' : 'server');
+      if (neonConfigModal) neonConfigModal.classList.remove('hidden');
       if (window.lucide) window.lucide.createIcons();
     }
 
-    if (authDbStatusBadge) authDbStatusBadge.addEventListener('click', openDbConfigDialog);
-    const acDbBadge = document.getElementById('acDbSyncStatusBadge');
-    if (acDbBadge) acDbBadge.addEventListener('click', openDbConfigDialog);
-    if (openDbConfigModalBtn) openDbConfigModalBtn.addEventListener('click', openDbConfigDialog);
-    if (closeDbConfigModalBtn && ccafpDbConfigModal) closeDbConfigModalBtn.addEventListener('click', () => ccafpDbConfigModal.classList.add('hidden'));
-    if (closeDbConfigModalBottomBtn && ccafpDbConfigModal) closeDbConfigModalBottomBtn.addEventListener('click', () => ccafpDbConfigModal.classList.add('hidden'));
+    if (authNeonStatusBadge) authNeonStatusBadge.addEventListener('click', openNeonConfigDialog);
+    if (acNeonStatusBadge) acNeonStatusBadge.addEventListener('click', openNeonConfigDialog);
+    if (openNeonConfigModalBtn) openNeonConfigModalBtn.addEventListener('click', openNeonConfigDialog);
+    if (acOpenNeonModalBtn) acOpenNeonModalBtn.addEventListener('click', openNeonConfigDialog);
+    if (closeNeonConfigModalBtn && neonConfigModal) closeNeonConfigModalBtn.addEventListener('click', () => neonConfigModal.classList.add('hidden'));
+    if (closeNeonConfigModalBottomBtn && neonConfigModal) closeNeonConfigModalBottomBtn.addEventListener('click', () => neonConfigModal.classList.add('hidden'));
 
-    if (copyLanIpBtn && modalLanIpDisplay) {
-      copyLanIpBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(modalLanIpDisplay.textContent.trim()).then(() => {
-          showToast('Network URL copied to clipboard!', 'success');
-        });
+    if (saveNeonUrlBtn && neonDatabaseUrlInput) {
+      saveNeonUrlBtn.addEventListener('click', async () => {
+        const val = neonDatabaseUrlInput.value.trim();
+        if (!val) {
+          showToast('Please enter a valid Neon PostgreSQL connection string.', 'warning');
+          return;
+        }
+        saveNeonUrlBtn.disabled = true;
+        saveNeonUrlBtn.innerHTML = '<span class="inline-block mr-1">⏳</span> Connecting to Neon...';
+        localStorage.setItem('CCAFP_NEON_DB_URL', val);
+        neonSqlInstance = null;
+        neonInitAttempted = false;
+
+        const initOk = await initNeonDatabase(true);
+        const syncOk = await syncWithCentralDatabase();
+
+        saveNeonUrlBtn.disabled = false;
+        saveNeonUrlBtn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Save &amp; Connect Neon</span>';
+        if (window.lucide) window.lucide.createIcons();
+
+        if (initOk && syncOk) {
+          showToast('✓ Connected to Neon Serverless Postgres Cloud! Multi-device sync active.', 'success');
+          if (neonConfigModal) neonConfigModal.classList.add('hidden');
+        } else {
+          showToast('Connection failed. Please check your Neon connection string format and credentials.', 'error');
+        }
       });
     }
 
-    if (saveCustomDbEndpointBtn && customDbEndpointInput) {
-      saveCustomDbEndpointBtn.addEventListener('click', async () => {
-        const val = customDbEndpointInput.value.trim();
-        if (val.includes('firebaseio.com') || val.includes('firebasedatabase.app')) {
-          localStorage.setItem('CCAFP_FIREBASE_URL', val);
-          localStorage.removeItem('CCAFP_CUSTOM_DB_URL');
-          initFirebaseDatabase();
-        } else {
-          localStorage.setItem('CCAFP_CUSTOM_DB_URL', val);
-          localStorage.removeItem('CCAFP_FIREBASE_URL');
+    if (testNeonConnectionBtn) {
+      testNeonConnectionBtn.addEventListener('click', async () => {
+        testNeonConnectionBtn.disabled = true;
+        testNeonConnectionBtn.textContent = 'Testing...';
+
+        const tempVal = neonDatabaseUrlInput ? neonDatabaseUrlInput.value.trim() : '';
+        const testUrl = tempVal || getNeonDbUrl();
+
+        if (!testUrl) {
+          testNeonConnectionBtn.disabled = false;
+          testNeonConnectionBtn.textContent = 'Test Connection';
+          showToast('Please paste a Neon connection string first.', 'warning');
+          return;
         }
-        showToast('Database Endpoint saved. Synchronizing...', 'info');
-        const ok = await syncWithCentralDatabase();
-        if (ok) {
-          showToast('✓ Central Database connected successfully across all devices!', 'success');
+
+        if (typeof window !== 'undefined' && window.neon) {
+          try {
+            const testSql = window.neon(testUrl);
+            const res = await testSql`SELECT 1 as connected`;
+            testNeonConnectionBtn.disabled = false;
+            testNeonConnectionBtn.textContent = 'Test Connection';
+            if (res && res.length > 0 && res[0].connected === 1) {
+              showToast('✓ Neon Cloud Postgres is reachable and responsive!', 'success');
+            } else {
+              showToast('Neon query returned unexpected result.', 'warning');
+            }
+            return;
+          } catch (e) {
+            testNeonConnectionBtn.disabled = false;
+            testNeonConnectionBtn.textContent = 'Test Connection';
+            showToast(`Neon connection error: ${e.message || 'Could not connect'}`, 'error');
+            return;
+          }
         } else {
-          showToast('Could not reach endpoint. Verify server is running or URL is valid.', 'warning');
+          testNeonConnectionBtn.disabled = false;
+          testNeonConnectionBtn.textContent = 'Test Connection';
+          showToast('Neon driver is still loading. Please try again in a moment.', 'warning');
         }
       });
     }
 
-    if (testDbEndpointBtn) {
-      testDbEndpointBtn.addEventListener('click', async () => {
-        testDbEndpointBtn.textContent = 'Testing...';
-        const ok = await syncWithCentralDatabase();
-        testDbEndpointBtn.textContent = 'Test Connection';
-        if (ok) {
-          showToast('✓ Central Database is active and syncing in real-time!', 'success');
-        } else {
-          showToast('Endpoint unreachable. Ensure python3 server.py is running or URL is correct.', 'error');
-        }
+    if (clearNeonUrlBtn) {
+      clearNeonUrlBtn.addEventListener('click', () => {
+        localStorage.removeItem('CCAFP_NEON_DB_URL');
+        localStorage.removeItem('CCAFP_CUSTOM_DB_URL');
+        if (neonDatabaseUrlInput) neonDatabaseUrlInput.value = '';
+        neonSqlInstance = null;
+        neonConnected = false;
+        centralServerAvailable = false;
+        updateDbConnectionBadge(false);
+        showToast('Neon disconnected. Now operating in local offline cache mode.', 'info');
       });
     }
 
@@ -5003,14 +5038,15 @@
     APPEALS: 'CCAFP_AUTH_APPEALS'
   };
 
-  // Centralized Multi-Device Database Schema & Reset Migration (V4 Force Reset)
-  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V4_RESET_CENTRAL';
+  // Centralized Multi-Device Database Schema & Reset Migration (V5 Neon Cloud Reset)
+  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V5_NEON_CENTRAL';
   if (localStorage.getItem('CCAFP_AUTH_SCHEMA_VERSION') !== AUTH_SCHEMA_VERSION) {
-    // Purge legacy isolated local accounts on this device
+    // Purge legacy isolated local accounts on this device so we start 100% synchronized with Neon
     localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
     localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
     localStorage.removeItem(AUTH_STORAGE_KEYS.ROLES);
     localStorage.removeItem(AUTH_STORAGE_KEYS.APPEALS);
+    localStorage.removeItem('CCAFP_CUSTOM_DB_URL');
     localStorage.setItem('CCAFP_AUTH_SCHEMA_VERSION', AUTH_SCHEMA_VERSION);
   }
 
@@ -5046,14 +5082,127 @@
     }
   }
 
-  // --- UNIVERSAL MULTI-DEVICE DATABASE ADAPTER ---
+  // --- UNIVERSAL NEON SERVERLESS POSTGRES & CLOUD DATABASE ADAPTER ---
+  let neonConnected = false;
+  let neonSqlInstance = null;
+  let neonInitAttempted = false;
   let centralServerAvailable = false;
   let centralDbState = null;
-  let firebaseDbInstance = null;
-  let firebaseInitialized = false;
+
+  function getNeonDbUrl() {
+    let fromStorage = typeof localStorage !== 'undefined' ? (localStorage.getItem('CCAFP_NEON_DB_URL') || localStorage.getItem('CCAFP_CUSTOM_DB_URL') || '') : '';
+    if (fromStorage && !fromStorage.startsWith('postgres://') && !fromStorage.startsWith('postgresql://')) {
+      fromStorage = '';
+    }
+    const fromConfig = (typeof window !== 'undefined' && window.CCAFP_NEON_CONFIG && window.CCAFP_NEON_CONFIG.databaseUrl) ? window.CCAFP_NEON_CONFIG.databaseUrl : '';
+    return (fromStorage || fromConfig || '').trim();
+  }
+
+  function getNeonClient() {
+    const url = getNeonDbUrl();
+    if (!url) return null;
+    if (typeof window !== 'undefined' && window.neon) {
+      try {
+        if (!neonSqlInstance || neonSqlInstance._dbUrl !== url) {
+          neonSqlInstance = window.neon(url);
+          neonSqlInstance._dbUrl = url;
+        }
+        return neonSqlInstance;
+      } catch (e) {
+        console.warn('Neon client initialization error:', e);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  async function initNeonDatabase(force = false) {
+    const sql = getNeonClient();
+    if (!sql) {
+      neonConnected = false;
+      return false;
+    }
+    if (neonInitAttempted && !force && neonConnected) return true;
+
+    try {
+      neonInitAttempted = true;
+      // 1. Create ccafp_accounts table
+      await sql`
+        CREATE TABLE IF NOT EXISTS ccafp_accounts (
+          username VARCHAR(50) PRIMARY KEY,
+          salt TEXT NOT NULL,
+          hash TEXT NOT NULL,
+          is_mother BOOLEAN DEFAULT FALSE,
+          role TEXT DEFAULT 'viewer',
+          roles TEXT DEFAULT '["viewer"]',
+          status TEXT DEFAULT 'active',
+          suspended_until TEXT,
+          suspended_reason TEXT,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        )
+      `;
+
+      // 2. Create ccafp_roles table
+      await sql`
+        CREATE TABLE IF NOT EXISTS ccafp_roles (
+          id VARCHAR(50) PRIMARY KEY,
+          name TEXT NOT NULL,
+          short_name TEXT,
+          type TEXT DEFAULT 'Custom Role',
+          description TEXT,
+          permissions TEXT DEFAULT '[]',
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        )
+      `;
+
+      // 3. Create ccafp_appeals table
+      await sql`
+        CREATE TABLE IF NOT EXISTS ccafp_appeals (
+          id VARCHAR(50) PRIMARY KEY,
+          username VARCHAR(50) NOT NULL,
+          reason TEXT,
+          statement TEXT,
+          status TEXT DEFAULT 'pending',
+          submitted_at TIMESTAMPTZ DEFAULT NOW()
+        )
+      `;
+
+      // 4. Seed default roles if roles table is empty
+      try {
+        const existingRoles = await sql`SELECT count(*) as count FROM ccafp_roles`;
+        if (existingRoles && existingRoles[0] && parseInt(existingRoles[0].count, 10) === 0) {
+          const defaultRoles = (typeof window !== 'undefined' && window.CCAFP_DEFAULT_ROLES) ? window.CCAFP_DEFAULT_ROLES : [];
+          for (const r of defaultRoles) {
+            await sql`
+              INSERT INTO ccafp_roles (id, name, short_name, type, description, permissions)
+              VALUES (${r.id}, ${r.name}, ${r.shortName || r.name}, ${r.type || 'Standard'}, ${r.description || ''}, ${JSON.stringify(r.permissions || [])})
+              ON CONFLICT (id) DO NOTHING
+            `;
+          }
+        }
+      } catch (e) {
+        console.warn('Default roles seeding skipped:', e);
+      }
+
+      neonConnected = true;
+      centralServerAvailable = true;
+      updateDbConnectionBadge(true, 'neon');
+      return true;
+    } catch (err) {
+      console.warn('Neon table initialization error:', err);
+      neonConnected = false;
+      return false;
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('neon-loaded', () => {
+      initNeonDatabase().then(() => syncWithCentralDatabase());
+    });
+  }
 
   function getApiBaseUrl() {
-    const custom = (localStorage.getItem('CCAFP_CUSTOM_DB_URL') || (window.CCAFP_DATABASE_CONFIG && window.CCAFP_DATABASE_CONFIG.customEndpoint) || '').trim();
+    const custom = (localStorage.getItem('CCAFP_CUSTOM_DB_URL') || '').trim();
     if (custom) return custom.replace(/\/+$/, '');
     if (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
       return window.location.origin;
@@ -5066,135 +5215,152 @@
     return `${base}${path}`;
   }
 
-  function initFirebaseDatabase() {
-    if (firebaseInitialized) return firebaseDbInstance;
-    const firebaseUrl = (localStorage.getItem('CCAFP_FIREBASE_URL') || (window.CCAFP_DATABASE_CONFIG && window.CCAFP_DATABASE_CONFIG.firebaseUrl) || '').trim();
-    if (!firebaseUrl || typeof firebase === 'undefined') return null;
-
-    try {
-      if (!firebase.apps || !firebase.apps.length) {
-        firebase.initializeApp({ databaseURL: firebaseUrl });
-      }
-      firebaseDbInstance = firebase.database();
-      firebaseInitialized = true;
-
-      firebaseDbInstance.ref('ccafp_data').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data && Array.isArray(data.accounts)) {
-          centralServerAvailable = true;
-          centralDbState = data;
-          updateDbConnectionBadge(true, 'firebase');
-
-          localStorage.setItem(AUTH_STORAGE_KEYS.ACCOUNTS, JSON.stringify(data.accounts || []));
-          if (data.roles && data.roles.length > 0) {
-            localStorage.setItem(AUTH_STORAGE_KEYS.ROLES, JSON.stringify(data.roles));
-          }
-          localStorage.setItem(AUTH_STORAGE_KEYS.APPEALS, JSON.stringify(data.appeals || []));
-
-          if (authState.currentUser) {
-            const freshUser = (data.accounts || []).find(a => a.username === authState.currentUser.username);
-            if (freshUser) {
-              authState.currentUser.roles = freshUser.roles || [freshUser.role];
-              authState.currentUser.role = freshUser.role;
-              authState.currentUser.isMother = freshUser.isMother;
-              authState.currentUser.status = freshUser.status;
-            }
-          }
-
-          syncAuthUI();
-          const acView = document.getElementById('view-access-control');
-          if (acView && !acView.classList.contains('hidden') && authState.currentUser?.isMother) {
-            renderAccessControlView();
-          }
-        }
-      });
-      return firebaseDbInstance;
-    } catch (e) {
-      console.warn('Firebase initialization error:', e);
-      return null;
-    }
-  }
-
-  function saveCentralCloudState(accounts, roles, appeals) {
-    if (firebaseDbInstance) {
-      try {
-        firebaseDbInstance.ref('ccafp_data').set({
-          accounts: accounts || getRegisteredAccounts(),
-          roles: roles || getRoles(),
-          appeals: appeals || getAppeals(),
-          updatedAt: new Date().toISOString()
-        });
-      } catch (e) {}
-    }
-  }
-
-  function updateDbConnectionBadge(isConnected, provider = 'server') {
+  function updateDbConnectionBadge(isConnected, provider = 'neon') {
     const isOnline = Boolean(isConnected);
 
     // 1. Access Control Top Badge
-    const acBadge = document.getElementById('acDbSyncStatusBadge');
-    const acText = document.getElementById('acDbSyncStatusText');
+    const acBadge = document.getElementById('acNeonStatusBadge') || document.getElementById('acDbSyncStatusBadge');
+    const acText = document.getElementById('acNeonStatusText') || document.getElementById('acDbSyncStatusText');
+    const acDot = document.getElementById('acNeonStatusDot');
     if (acBadge && acText) {
       if (isOnline) {
-        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300';
-        acText.textContent = provider === 'firebase' ? 'CENTRAL CLOUD DATABASE CONNECTED (FIREBASE)' : 'CENTRAL MULTI-DEVICE SERVER CONNECTED';
+        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300 cursor-pointer';
+        acText.textContent = provider === 'neon' ? '⚡ NEON SERVERLESS DATABASE CONNECTED' : 'CENTRAL SERVER CONNECTED';
+        if (acDot) acDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
       } else {
-        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/40 text-[10.5px] font-mono font-bold text-rose-300';
-        acText.textContent = 'STANDALONE / DISCONNECTED (RUN server.py OR SET CLOUD SYNC)';
+        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[10.5px] font-mono font-bold text-slate-400 cursor-pointer';
+        acText.textContent = 'STANDALONE / LOCAL CACHE (NEON DISCONNECTED)';
+        if (acDot) acDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
       }
     }
 
     // 2. Login Screen Status Badge
-    const authBadge = document.getElementById('authDbStatusBadge');
-    const authText = document.getElementById('authDbStatusText');
+    const authBadge = document.getElementById('authNeonStatusBadge') || document.getElementById('authDbStatusBadge');
+    const authText = document.getElementById('authNeonStatusText') || document.getElementById('authDbStatusText');
+    const authDot = document.getElementById('neonStatusDot');
     if (authBadge && authText) {
       if (isOnline) {
         authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono-clean font-bold text-emerald-300 hover:scale-[1.02] transition-transform cursor-pointer';
-        authBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span><span id="authDbStatusText">${provider === 'firebase' ? 'CENTRAL CLOUD DB CONNECTED' : 'CENTRAL DATABASE CONNECTED'}</span>`;
+        authText.textContent = provider === 'neon' ? '⚡ NEON CLOUD DATABASE: READY' : 'CENTRAL DATABASE CONNECTED';
+        if (authDot) authDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
       } else {
-        authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/40 text-[10.5px] font-mono-clean font-bold text-rose-300 hover:scale-[1.02] transition-transform cursor-pointer';
-        authBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span><span id="authDbStatusText">STANDALONE / DISCONNECTED</span>`;
+        authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[10.5px] font-mono-clean font-bold text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all cursor-pointer';
+        authText.textContent = '⚡ NEON: LOCAL CACHE MODE';
+        if (authDot) authDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
       }
     }
 
     // 3. Modal Diagnostic Fields
-    const modalStatus = document.getElementById('modalDbStatusText');
-    const modalIndicator = document.getElementById('modalDbStatusIndicator');
-    const modalMode = document.getElementById('modalDbModeText');
-    const modalCount = document.getElementById('modalDbAccountsCount');
-    const modalPrimary = document.getElementById('modalDbPrimaryAdmin');
+    const modalStatus = document.getElementById('modalNeonStatusText') || document.getElementById('modalDbStatusText');
+    const modalDot = document.getElementById('modalNeonStatusDot') || document.getElementById('modalDbStatusIndicator');
+    const modalEndpoint = document.getElementById('modalNeonEndpointDisplay') || document.getElementById('modalDbModeText');
+    const modalCount = document.getElementById('modalNeonAccountsCount') || document.getElementById('modalDbAccountsCount');
+    const modalPrimary = document.getElementById('modalNeonPrimaryAdmin') || document.getElementById('modalDbPrimaryAdmin');
 
     const accounts = getRegisteredAccounts();
     const motherAcc = accounts.find(a => a.isMother);
 
     if (modalStatus) {
-      modalStatus.textContent = isOnline ? 'CONNECTED & SYNCING' : 'OFFLINE / DISCONNECTED';
-      modalStatus.className = isOnline ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
+      modalStatus.textContent = isOnline ? 'CONNECTED & SYNCING' : 'LOCAL OFFLINE CACHE';
+      modalStatus.className = isOnline ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
     }
-    if (modalIndicator) {
-      modalIndicator.className = isOnline ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' : 'w-2 h-2 rounded-full bg-rose-500';
+    if (modalDot) {
+      modalDot.className = isOnline ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' : 'w-2 h-2 rounded-full bg-amber-400';
     }
-    if (modalMode) {
-      modalMode.textContent = isOnline
-        ? (provider === 'firebase' ? 'Firebase Realtime Cloud Database' : 'Central Python Server (server.py)')
-        : 'Local Offline Cache';
+    if (modalEndpoint) {
+      const dbUrl = getNeonDbUrl();
+      if (dbUrl) {
+        try {
+          const u = new URL(dbUrl);
+          modalEndpoint.textContent = `${u.hostname} (${u.pathname.replace(/^\//, '') || 'neondb'})`;
+        } catch (e) {
+          modalEndpoint.textContent = 'Neon Cloud Database';
+        }
+      } else {
+        modalEndpoint.textContent = 'Not Configured (Using Local Storage)';
+      }
     }
     if (modalCount) {
       modalCount.textContent = `${accounts.length} registered cadet${accounts.length === 1 ? '' : 's'}`;
     }
     if (modalPrimary) {
-      modalPrimary.textContent = motherAcc ? `Established (${motherAcc.username})` : 'Unclaimed';
+      modalPrimary.textContent = motherAcc ? `Established (Cadet ${motherAcc.username})` : 'Unclaimed (Ready for Setup)';
       modalPrimary.className = motherAcc ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
     }
   }
 
   async function syncWithCentralDatabase() {
-    if (firebaseDbInstance) {
-      updateDbConnectionBadge(true, 'firebase');
-      syncAuthUI();
-      return true;
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        const accRows = await sql`SELECT * FROM ccafp_accounts ORDER BY created_at ASC`;
+        const roleRows = await sql`SELECT * FROM ccafp_roles`;
+        const appealRows = await sql`SELECT * FROM ccafp_appeals ORDER BY submitted_at ASC`;
+
+        const accounts = (accRows || []).map(r => ({
+          username: r.username,
+          salt: r.salt,
+          hash: r.hash,
+          isMother: Boolean(r.is_mother),
+          role: r.role || 'viewer',
+          roles: Array.isArray(r.roles) ? r.roles : (typeof r.roles === 'string' ? JSON.parse(r.roles) : [r.role || 'viewer']),
+          status: r.status || 'active',
+          suspendedUntil: r.suspended_until || null,
+          suspendedReason: r.suspended_reason || null,
+          createdAt: r.created_at
+        }));
+
+        const roles = (roleRows || []).map(r => ({
+          id: r.id,
+          name: r.name,
+          shortName: r.short_name || r.name,
+          type: r.type || 'Custom Role',
+          description: r.description || '',
+          permissions: Array.isArray(r.permissions) ? r.permissions : (typeof r.permissions === 'string' ? JSON.parse(r.permissions) : [])
+        }));
+
+        const appeals = (appealRows || []).map(r => ({
+          id: r.id,
+          username: r.username,
+          reason: r.reason,
+          statement: r.statement,
+          status: r.status || 'pending',
+          submittedAt: r.submitted_at
+        }));
+
+        neonConnected = true;
+        centralServerAvailable = true;
+        updateDbConnectionBadge(true, 'neon');
+
+        localStorage.setItem(AUTH_STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
+        if (roles.length > 0) {
+          localStorage.setItem(AUTH_STORAGE_KEYS.ROLES, JSON.stringify(roles));
+        }
+        localStorage.setItem(AUTH_STORAGE_KEYS.APPEALS, JSON.stringify(appeals));
+
+        // Keep current logged-in user in sync
+        if (authState.currentUser) {
+          const freshUser = accounts.find(a => a.username === authState.currentUser.username);
+          if (freshUser) {
+            authState.currentUser.roles = freshUser.roles || [freshUser.role];
+            authState.currentUser.role = freshUser.role;
+            authState.currentUser.isMother = freshUser.isMother;
+            authState.currentUser.status = freshUser.status;
+          }
+        }
+
+        syncAuthUI();
+        const acView = document.getElementById('view-access-control');
+        if (acView && !acView.classList.contains('hidden') && authState.currentUser?.isMother) {
+          renderAccessControlView();
+        }
+        return true;
+      } catch (e) {
+        console.warn('Neon sync query error:', e);
+      }
     }
 
+    // Optional legacy local server fallback
     try {
       const res = await fetch(authApi('/api/auth/state'), { cache: 'no-store' });
       if (res.ok) {
@@ -5210,7 +5376,6 @@
           }
           localStorage.setItem(AUTH_STORAGE_KEYS.APPEALS, JSON.stringify(data.appeals || []));
 
-          // Keep current logged-in user in sync
           if (authState.currentUser) {
             const freshUser = (data.accounts || []).find(a => a.username === authState.currentUser.username);
             if (freshUser) {
@@ -5229,10 +5394,9 @@
           return true;
         }
       }
-    } catch (e) {
-      // Server unreachable
-    }
+    } catch (e) {}
 
+    neonConnected = false;
     centralServerAvailable = false;
     updateDbConnectionBadge(false);
     syncAuthUI();
@@ -5241,45 +5405,42 @@
 
   // Reset database across ALL devices
   async function resetCentralDatabaseAcrossDevices() {
-    if (firebaseDbInstance) {
+    const sql = getNeonClient();
+    if (sql) {
       try {
-        await firebaseDbInstance.ref('ccafp_data').set({
-          accounts: [],
-          roles: [],
-          appeals: [],
-          updatedAt: new Date().toISOString()
-        });
-      } catch(e) {}
+        await sql`DELETE FROM ccafp_accounts`;
+        await sql`DELETE FROM ccafp_appeals`;
+        await sql`DELETE FROM ccafp_roles`;
+        // Re-seed default roles
+        const defaultRoles = (typeof window !== 'undefined' && window.CCAFP_DEFAULT_ROLES) ? window.CCAFP_DEFAULT_ROLES : [];
+        for (const r of defaultRoles) {
+          await sql`
+            INSERT INTO ccafp_roles (id, name, short_name, type, description, permissions)
+            VALUES (${r.id}, ${r.name}, ${r.shortName || r.name}, ${r.type || 'Standard'}, ${r.description || ''}, ${JSON.stringify(r.permissions || [])})
+            ON CONFLICT (id) DO NOTHING
+          `;
+        }
+      } catch (e) {
+        console.warn('Neon reset error:', e);
+      }
     }
 
     if (centralServerAvailable) {
       try {
-        const res = await fetch(authApi('/api/auth/reset'), {
+        await fetch(authApi('/api/auth/reset'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ adminCode: 'Regimental6_CEIS' })
         });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
-          localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
-          localStorage.removeItem(AUTH_STORAGE_KEYS.APPEALS);
-          authState.currentUser = null;
-          await syncWithCentralDatabase();
-          showToast('Central database reset across all devices successfully!', 'success');
-          navigateToTab('home');
-          return;
-        }
       } catch (e) {}
     }
 
-    // Fallback local reset
     localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
     localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
     localStorage.removeItem(AUTH_STORAGE_KEYS.APPEALS);
     authState.currentUser = null;
-    syncAuthUI();
-    showToast('Database reset successfully.', 'success');
+    await syncWithCentralDatabase();
+    showToast('Database reset across all devices successfully!', 'success');
     navigateToTab('home');
   }
 
@@ -5442,7 +5603,67 @@
       throw new Error('Password must be at least 3 characters long.');
     }
 
-    // Server-First Registration (Unified Database Across All Devices)
+    // 1. Neon Cloud Postgres Registration (Direct Serverless Connection)
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        const existing = await sql`SELECT username FROM ccafp_accounts WHERE username = ${cleanUsername} LIMIT 1`;
+        if (existing && existing.length > 0) {
+          throw new Error(`Username ${cleanUsername} is already registered.`);
+        }
+
+        const motherCheck = await sql`SELECT username FROM ccafp_accounts WHERE is_mother = TRUE LIMIT 1`;
+        const hasPrimaryAdmin = Boolean(motherCheck && motherCheck.length > 0);
+
+        let isMother = false;
+        let assignedRole = 'viewer';
+        let assignedRoles = ['viewer'];
+
+        if (!hasPrimaryAdmin) {
+          if (String(adminCode).trim() === 'Regimental6_CEIS') {
+            isMother = true;
+            assignedRole = 'admin';
+            assignedRoles = ['admin'];
+          }
+        }
+
+        const { salt, hash } = await hashPasswordWithSalt(password);
+        const nowIso = new Date().toISOString();
+
+        await sql`
+          INSERT INTO ccafp_accounts (
+            username, salt, hash, is_mother, role, roles, status, suspended_until, suspended_reason, created_at
+          ) VALUES (
+            ${cleanUsername}, ${salt}, ${hash}, ${isMother}, ${assignedRole},
+            ${JSON.stringify(assignedRoles)}, 'active', NULL, NULL, ${nowIso}
+          )
+        `;
+
+        const newAccount = {
+          username: cleanUsername,
+          salt,
+          hash,
+          isMother,
+          role: assignedRole,
+          roles: assignedRoles,
+          status: 'active',
+          suspendedUntil: null,
+          suspendedReason: null,
+          createdAt: nowIso
+        };
+
+        await syncWithCentralDatabase();
+        createSession(newAccount);
+        return newAccount;
+      } catch (err) {
+        if (err.message && err.message.includes('already registered')) {
+          throw err;
+        }
+        console.warn('Neon registration error, trying fallback:', err);
+      }
+    }
+
+    // 2. Legacy Server Registration (if running)
     if (centralServerAvailable) {
       try {
         const res = await fetch(authApi('/api/auth/register'), {
@@ -5464,7 +5685,7 @@
       }
     }
 
-    // Fallback if central server is offline
+    // 3. Fallback Local Storage Registration (Offline Cache)
     const accounts = getRegisteredAccounts();
     if (accounts.some(a => a.username === cleanUsername)) {
       throw new Error(`Username ${cleanUsername} is already registered.`);
@@ -5509,7 +5730,71 @@
       throw new Error('Username must be strictly numeric (digits 0-9 only).');
     }
 
-    // Server-First Authentication (Unified Database Across All Devices)
+    // 1. Neon Cloud Postgres Login
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        const rows = await sql`SELECT * FROM ccafp_accounts WHERE username = ${cleanUsername} LIMIT 1`;
+        if (!rows || rows.length === 0) {
+          throw new Error('Invalid numeric username or password.');
+        }
+
+        const userRow = rows[0];
+        const { hash } = await hashPasswordWithSalt(password, userRow.salt);
+        if (hash !== userRow.hash) {
+          throw new Error('Invalid numeric username or password.');
+        }
+
+        let parsedRoles = ['viewer'];
+        try {
+          parsedRoles = Array.isArray(userRow.roles) ? userRow.roles : (typeof userRow.roles === 'string' ? JSON.parse(userRow.roles) : [userRow.role || 'viewer']);
+        } catch (e) {
+          parsedRoles = [userRow.role || 'viewer'];
+        }
+
+        const user = {
+          username: userRow.username,
+          salt: userRow.salt,
+          hash: userRow.hash,
+          isMother: Boolean(userRow.is_mother),
+          role: userRow.role || 'viewer',
+          roles: parsedRoles,
+          status: userRow.status || 'active',
+          suspendedUntil: userRow.suspended_until || null,
+          suspendedReason: userRow.suspended_reason || null,
+          createdAt: userRow.created_at
+        };
+
+        if (user.status === 'suspended') {
+          if (user.suspendedUntil && user.suspendedUntil !== 'permanent') {
+            const expiry = new Date(user.suspendedUntil).getTime();
+            if (Date.now() >= expiry) {
+              await sql`UPDATE ccafp_accounts SET status = 'active', suspended_until = NULL, suspended_reason = NULL WHERE username = ${cleanUsername}`;
+              user.status = 'active';
+              user.suspendedUntil = null;
+              user.suspendedReason = null;
+            } else {
+              openSuspendedCadetModal(user);
+              throw new Error('Account suspended under disciplinary hold. Official notice displayed.');
+            }
+          } else {
+            openSuspendedCadetModal(user);
+            throw new Error('Account suspended indefinitely. Official notice displayed.');
+          }
+        }
+
+        await syncWithCentralDatabase();
+        createSession(user);
+        return user;
+      } catch (err) {
+        if (err.message && (err.message.includes('Invalid numeric') || err.message.includes('suspended'))) {
+          throw err;
+        }
+        console.warn('Neon login error, trying fallback:', err);
+      }
+    }
+
+    // 2. Legacy Server Authentication
     if (centralServerAvailable) {
       try {
         const res = await fetch(authApi('/api/auth/login'), {
@@ -5535,7 +5820,7 @@
       }
     }
 
-    // Fallback if central server is offline
+    // 3. Fallback Local Storage Authentication
     const accounts = getRegisteredAccounts();
     const user = accounts.find(a => a.username === cleanUsername);
     if (!user) {
@@ -5632,7 +5917,22 @@
       return;
     }
 
-    if (centralServerAvailable) {
+    const appealId = 'APP-' + Date.now();
+    const reason = currentSuspendedUser.suspendedReason || 'General disciplinary infraction';
+    const nowIso = new Date().toISOString();
+
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        await sql`
+          INSERT INTO ccafp_appeals (id, username, reason, statement, status, submitted_at)
+          VALUES (${appealId}, ${currentSuspendedUser.username}, ${reason}, ${statement}, 'pending', ${nowIso})
+        `;
+        await syncWithCentralDatabase();
+      } catch (e) {
+        console.warn('Neon submit appeal error:', e);
+      }
+    } else if (centralServerAvailable) {
       try {
         await fetch(authApi('/api/auth/appeals/submit'), {
           method: 'POST',
@@ -5644,11 +5944,11 @@
     } else {
       const appeals = getAppeals();
       const newAppeal = {
-        id: 'APP-' + Date.now(),
+        id: appealId,
         username: currentSuspendedUser.username,
-        reason: currentSuspendedUser.suspendedReason || 'General disciplinary infraction',
+        reason: reason,
         statement: statement,
-        submittedAt: new Date().toISOString(),
+        submittedAt: nowIso,
         status: 'pending'
       };
       appeals.push(newAppeal);
@@ -5711,7 +6011,7 @@
     const regAdminCodeContainer = document.getElementById('regAdminCodeContainer');
     const regPrimaryClaimedNotice = document.getElementById('regPrimaryClaimedNotice');
     const regPrimaryAdminUserDisplay = document.getElementById('regPrimaryAdminUserDisplay');
-    const regOfflineWarningNotice = document.getElementById('regOfflineWarningNotice');
+    const regOfflineWarningNotice = document.getElementById('regNeonNotice') || document.getElementById('regOfflineWarningNotice');
 
     const accounts = getRegisteredAccounts();
     const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
@@ -5730,9 +6030,9 @@
       }
     }
 
-    // Offline warning notice if not connected to server or cloud
+    // Offline / local cache warning notice if Neon is not connected
     if (regOfflineWarningNotice) {
-      regOfflineWarningNotice.classList.toggle('hidden', centralServerAvailable || Boolean(firebaseDbInstance));
+      regOfflineWarningNotice.classList.toggle('hidden', neonConnected || centralServerAvailable);
     }
 
     if (!authState.currentUser) {
@@ -6077,7 +6377,20 @@
       selectedRoleIds.push('viewer');
     }
 
-    if (centralServerAvailable) {
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        await sql`
+          UPDATE ccafp_accounts
+          SET roles = ${JSON.stringify(selectedRoleIds)},
+              role = ${selectedRoleIds[0] || 'viewer'}
+          WHERE username = ${activeMultiRoleTarget}
+        `;
+        await syncWithCentralDatabase();
+      } catch (e) {
+        console.warn('Neon saveMultiRoleAssignment error:', e);
+      }
+    } else if (centralServerAvailable) {
       try {
         await fetch(authApi('/api/auth/roles/assign'), {
           method: 'POST',
@@ -6180,7 +6493,24 @@
       permissions: checkedPerms
     };
 
-    if (centralServerAvailable) {
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        await sql`
+          INSERT INTO ccafp_roles (id, name, short_name, type, description, permissions)
+          VALUES (${newRole.id}, ${newRole.name}, ${newRole.shortName}, ${newRole.type}, ${newRole.description}, ${JSON.stringify(newRole.permissions)})
+          ON CONFLICT (id) DO UPDATE SET
+            name = EXCLUDED.name,
+            short_name = EXCLUDED.short_name,
+            type = EXCLUDED.type,
+            description = EXCLUDED.description,
+            permissions = EXCLUDED.permissions
+        `;
+        await syncWithCentralDatabase();
+      } catch (e) {
+        console.warn('Neon role creation error:', e);
+      }
+    } else if (centralServerAvailable) {
       try {
         await fetch(authApi('/api/auth/roles/create'), {
           method: 'POST',
@@ -6225,7 +6555,33 @@
 
     if (!username) return;
 
-    if (centralServerAvailable) {
+    let suspendedUntil = null;
+    const now = Date.now();
+    if (duration === '24h') {
+      suspendedUntil = new Date(now + 24 * 60 * 60 * 1000).toISOString();
+    } else if (duration === '7d') {
+      suspendedUntil = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString();
+    } else if (duration === '30d') {
+      suspendedUntil = new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString();
+    } else if (duration === 'permanent') {
+      suspendedUntil = 'permanent';
+    }
+
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        await sql`
+          UPDATE ccafp_accounts
+          SET status = 'suspended',
+              suspended_until = ${suspendedUntil},
+              suspended_reason = ${reason}
+          WHERE username = ${username}
+        `;
+        await syncWithCentralDatabase();
+      } catch (e) {
+        console.warn('Neon suspension error:', e);
+      }
+    } else if (centralServerAvailable) {
       try {
         await fetch(authApi('/api/auth/suspend'), {
           method: 'POST',
@@ -6235,18 +6591,6 @@
         await syncWithCentralDatabase();
       } catch (e) {}
     } else {
-      let suspendedUntil = null;
-      const now = Date.now();
-      if (duration === '24h') {
-        suspendedUntil = new Date(now + 24 * 60 * 60 * 1000).toISOString();
-      } else if (duration === '7d') {
-        suspendedUntil = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString();
-      } else if (duration === '30d') {
-        suspendedUntil = new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString();
-      } else if (duration === 'permanent') {
-        suspendedUntil = 'permanent';
-      }
-
       const accounts = getRegisteredAccounts();
       const target = accounts.find(a => a.username === username);
       if (target) {
@@ -6263,7 +6607,26 @@
   }
 
   window.unsuspendCadetAccount = async function(username) {
-    if (centralServerAvailable) {
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        await sql`
+          UPDATE ccafp_accounts
+          SET status = 'active',
+              suspended_until = NULL,
+              suspended_reason = NULL
+          WHERE username = ${username}
+        `;
+        await sql`
+          UPDATE ccafp_appeals
+          SET status = 'approved'
+          WHERE username = ${username} AND status = 'pending'
+        `;
+        await syncWithCentralDatabase();
+      } catch (e) {
+        console.warn('Neon unsuspend error:', e);
+      }
+    } else if (centralServerAvailable) {
       try {
         await fetch(authApi('/api/auth/unsuspend'), {
           method: 'POST',
@@ -6373,6 +6736,23 @@
   }
 
   window.approveCadetAppeal = async function(appealId) {
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        const rows = await sql`SELECT username FROM ccafp_appeals WHERE id = ${appealId} LIMIT 1`;
+        if (rows && rows.length > 0) {
+          const username = rows[0].username;
+          await sql`UPDATE ccafp_appeals SET status = 'approved' WHERE id = ${appealId}`;
+          await sql`UPDATE ccafp_accounts SET status = 'active', suspended_until = NULL, suspended_reason = NULL WHERE username = ${username}`;
+          await syncWithCentralDatabase();
+          showToast(`Appeal approved! Cadet ${username} account restored.`, 'success');
+          return;
+        }
+      } catch (e) {
+        console.warn('Neon appeal approval error:', e);
+      }
+    }
+
     if (centralServerAvailable) {
       try {
         await fetch(authApi('/api/auth/appeals/adjudicate'), {
@@ -6399,6 +6779,18 @@
   };
 
   window.rejectCadetAppeal = async function(appealId) {
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        await sql`UPDATE ccafp_appeals SET status = 'rejected' WHERE id = ${appealId}`;
+        await syncWithCentralDatabase();
+        showToast('Appeal rejected.', 'info');
+        return;
+      } catch (e) {
+        console.warn('Neon appeal rejection error:', e);
+      }
+    }
+
     if (centralServerAvailable) {
       try {
         await fetch(authApi('/api/auth/appeals/adjudicate'), {
@@ -6437,7 +6829,19 @@
       }
     });
 
-    if (centralServerAvailable) {
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        await sql`
+          UPDATE ccafp_roles
+          SET permissions = ${JSON.stringify(newPermissions)}
+          WHERE id = ${authState.selectedRoleId}
+        `;
+        await syncWithCentralDatabase();
+      } catch (e) {
+        console.warn('Neon permissions update error:', e);
+      }
+    } else if (centralServerAvailable) {
       try {
         await fetch(authApi('/api/auth/roles/permissions'), {
           method: 'POST',
@@ -6699,11 +7103,11 @@
     // 4. Start 15-Minute Countdown Timer
     try { startAutoSync15MinTimer(); } catch(e) {}
 
-    // 5. Central multi-device database initialization & real-time sync loop
-    try { initFirebaseDatabase(); } catch(e) {}
+    // 5. Central multi-device Neon Postgres database initialization & real-time sync loop
+    try { initNeonDatabase(); } catch(e) {}
     try {
       syncWithCentralDatabase();
-      setInterval(syncWithCentralDatabase, 2000);
+      setInterval(syncWithCentralDatabase, 3000);
     } catch(e) {
       console.warn('Central DB sync loop init error:', e);
     }

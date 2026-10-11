@@ -84,17 +84,22 @@ const COUNCIL_SHEET_URLS = {
 
 /**
  * =========================================================================
- * 📡 CENTRAL MULTI-DEVICE DATABASE CONFIGURATION
+ * ⚡ NEON SERVERLESS POSTGRES CLOUD DATABASE CONFIGURATION
  * =========================================================================
- * Supports Local Python Server (server.py), Firebase Realtime Database,
- * or custom Cloud API endpoint for real-time synchronization across all devices.
+ * Uses @neondatabase/serverless driver to connect all devices (Mac, iPhone,
+ * Android, PC) directly to a unified cloud PostgreSQL database over HTTPS.
+ * No local server processes (server.py) or network port forwards required.
  */
-const CCAFP_DATABASE_CONFIG = {
-  customEndpoint: (typeof localStorage !== 'undefined' ? localStorage.getItem('CCAFP_CUSTOM_DB_URL') : '') || '',
-  firebaseUrl: (typeof localStorage !== 'undefined' ? localStorage.getItem('CCAFP_FIREBASE_URL') : '') || ''
+const CCAFP_NEON_DEFAULT_URL = 'postgresql://neondb_owner:npg_jU6C4PQTYWKg@ep-fancy-firefly-b323bksf-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+
+const CCAFP_NEON_CONFIG = {
+  // Built-in Centralized Neon Serverless Postgres Cloud Database (Shared across all devices)
+  databaseUrl: (typeof localStorage !== 'undefined' ? (localStorage.getItem('CCAFP_NEON_DB_URL') || localStorage.getItem('CCAFP_CUSTOM_DB_URL')) : '') || CCAFP_NEON_DEFAULT_URL
 };
 if (typeof window !== 'undefined') {
-  window.CCAFP_DATABASE_CONFIG = CCAFP_DATABASE_CONFIG;
+  window.CCAFP_NEON_DEFAULT_URL = CCAFP_NEON_DEFAULT_URL;
+  window.CCAFP_NEON_CONFIG = CCAFP_NEON_CONFIG;
+  window.CCAFP_DATABASE_CONFIG = CCAFP_NEON_CONFIG;
 }
 
 /**
