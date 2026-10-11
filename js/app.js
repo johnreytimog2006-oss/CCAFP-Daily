@@ -4909,6 +4909,83 @@
       });
     }
 
+    // Central Multi-Device Database Settings Modal
+    const authDbStatusBadge = document.getElementById('authDbStatusBadge');
+    const openDbConfigModalBtn = document.getElementById('openDbConfigModalBtn');
+    const closeDbConfigModalBtn = document.getElementById('closeDbConfigModalBtn');
+    const closeDbConfigModalBottomBtn = document.getElementById('closeDbConfigModalBottomBtn');
+    const ccafpDbConfigModal = document.getElementById('ccafpDbConfigModal');
+    const customDbEndpointInput = document.getElementById('customDbEndpointInput');
+    const saveCustomDbEndpointBtn = document.getElementById('saveCustomDbEndpointBtn');
+    const testDbEndpointBtn = document.getElementById('testDbEndpointBtn');
+    const modalLanIpDisplay = document.getElementById('modalLanIpDisplay');
+    const copyLanIpBtn = document.getElementById('copyLanIpBtn');
+
+    function openDbConfigDialog() {
+      if (customDbEndpointInput) {
+        customDbEndpointInput.value = localStorage.getItem('CCAFP_CUSTOM_DB_URL') || localStorage.getItem('CCAFP_FIREBASE_URL') || '';
+      }
+      if (modalLanIpDisplay) {
+        if (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+          modalLanIpDisplay.textContent = window.location.origin;
+        } else {
+          modalLanIpDisplay.textContent = 'http://localhost:8080';
+        }
+      }
+      updateDbConnectionBadge(centralServerAvailable, firebaseDbInstance ? 'firebase' : 'server');
+      if (ccafpDbConfigModal) ccafpDbConfigModal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    if (authDbStatusBadge) authDbStatusBadge.addEventListener('click', openDbConfigDialog);
+    const acDbBadge = document.getElementById('acDbSyncStatusBadge');
+    if (acDbBadge) acDbBadge.addEventListener('click', openDbConfigDialog);
+    if (openDbConfigModalBtn) openDbConfigModalBtn.addEventListener('click', openDbConfigDialog);
+    if (closeDbConfigModalBtn && ccafpDbConfigModal) closeDbConfigModalBtn.addEventListener('click', () => ccafpDbConfigModal.classList.add('hidden'));
+    if (closeDbConfigModalBottomBtn && ccafpDbConfigModal) closeDbConfigModalBottomBtn.addEventListener('click', () => ccafpDbConfigModal.classList.add('hidden'));
+
+    if (copyLanIpBtn && modalLanIpDisplay) {
+      copyLanIpBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(modalLanIpDisplay.textContent.trim()).then(() => {
+          showToast('Network URL copied to clipboard!', 'success');
+        });
+      });
+    }
+
+    if (saveCustomDbEndpointBtn && customDbEndpointInput) {
+      saveCustomDbEndpointBtn.addEventListener('click', async () => {
+        const val = customDbEndpointInput.value.trim();
+        if (val.includes('firebaseio.com') || val.includes('firebasedatabase.app')) {
+          localStorage.setItem('CCAFP_FIREBASE_URL', val);
+          localStorage.removeItem('CCAFP_CUSTOM_DB_URL');
+          initFirebaseDatabase();
+        } else {
+          localStorage.setItem('CCAFP_CUSTOM_DB_URL', val);
+          localStorage.removeItem('CCAFP_FIREBASE_URL');
+        }
+        showToast('Database Endpoint saved. Synchronizing...', 'info');
+        const ok = await syncWithCentralDatabase();
+        if (ok) {
+          showToast('✓ Central Database connected successfully across all devices!', 'success');
+        } else {
+          showToast('Could not reach endpoint. Verify server is running or URL is valid.', 'warning');
+        }
+      });
+    }
+
+    if (testDbEndpointBtn) {
+      testDbEndpointBtn.addEventListener('click', async () => {
+        testDbEndpointBtn.textContent = 'Testing...';
+        const ok = await syncWithCentralDatabase();
+        testDbEndpointBtn.textContent = 'Test Connection';
+        if (ok) {
+          showToast('✓ Central Database is active and syncing in real-time!', 'success');
+        } else {
+          showToast('Endpoint unreachable. Ensure python3 server.py is running or URL is correct.', 'error');
+        }
+      });
+    }
+
     // S2 Submit Concern
     const s2Btn = document.getElementById('s2ConcernSubmitBtn');
     if (s2Btn) s2Btn.addEventListener('click', handleS2ConcernSubmit);
@@ -4926,8 +5003,8 @@
     APPEALS: 'CCAFP_AUTH_APPEALS'
   };
 
-  // Centralized Multi-Device Database Schema & Reset Migration
-  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V3_CENTRALIZED';
+  // Centralized Multi-Device Database Schema & Reset Migration (V4 Force Reset)
+  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V4_RESET_CENTRAL';
   if (localStorage.getItem('CCAFP_AUTH_SCHEMA_VERSION') !== AUTH_SCHEMA_VERSION) {
     // Purge legacy isolated local accounts on this device
     localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
@@ -4969,31 +5046,163 @@
     }
   }
 
-  // --- CENTRAL MULTI-DEVICE DATABASE CLIENT ---
+  // --- UNIVERSAL MULTI-DEVICE DATABASE ADAPTER ---
   let centralServerAvailable = false;
   let centralDbState = null;
+  let firebaseDbInstance = null;
+  let firebaseInitialized = false;
 
-  function updateDbConnectionBadge(isConnected) {
-    const badge = document.getElementById('acDbSyncStatusBadge');
-    if (!badge) return;
-    if (isConnected) {
-      badge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300';
-      badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span><span id="acDbSyncStatusText">CENTRAL MULTI-DEVICE DATABASE CONNECTED</span>';
-    } else {
-      badge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-[10.5px] font-mono font-bold text-amber-300';
-      badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span id="acDbSyncStatusText">STANDALONE (RUN python3 server.py FOR MULTI-DEVICE)</span>';
+  function getApiBaseUrl() {
+    const custom = (localStorage.getItem('CCAFP_CUSTOM_DB_URL') || (window.CCAFP_DATABASE_CONFIG && window.CCAFP_DATABASE_CONFIG.customEndpoint) || '').trim();
+    if (custom) return custom.replace(/\/+$/, '');
+    if (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+      return window.location.origin;
+    }
+    return 'http://localhost:8080';
+  }
+
+  function authApi(path) {
+    const base = getApiBaseUrl();
+    return `${base}${path}`;
+  }
+
+  function initFirebaseDatabase() {
+    if (firebaseInitialized) return firebaseDbInstance;
+    const firebaseUrl = (localStorage.getItem('CCAFP_FIREBASE_URL') || (window.CCAFP_DATABASE_CONFIG && window.CCAFP_DATABASE_CONFIG.firebaseUrl) || '').trim();
+    if (!firebaseUrl || typeof firebase === 'undefined') return null;
+
+    try {
+      if (!firebase.apps || !firebase.apps.length) {
+        firebase.initializeApp({ databaseURL: firebaseUrl });
+      }
+      firebaseDbInstance = firebase.database();
+      firebaseInitialized = true;
+
+      firebaseDbInstance.ref('ccafp_data').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && Array.isArray(data.accounts)) {
+          centralServerAvailable = true;
+          centralDbState = data;
+          updateDbConnectionBadge(true, 'firebase');
+
+          localStorage.setItem(AUTH_STORAGE_KEYS.ACCOUNTS, JSON.stringify(data.accounts || []));
+          if (data.roles && data.roles.length > 0) {
+            localStorage.setItem(AUTH_STORAGE_KEYS.ROLES, JSON.stringify(data.roles));
+          }
+          localStorage.setItem(AUTH_STORAGE_KEYS.APPEALS, JSON.stringify(data.appeals || []));
+
+          if (authState.currentUser) {
+            const freshUser = (data.accounts || []).find(a => a.username === authState.currentUser.username);
+            if (freshUser) {
+              authState.currentUser.roles = freshUser.roles || [freshUser.role];
+              authState.currentUser.role = freshUser.role;
+              authState.currentUser.isMother = freshUser.isMother;
+              authState.currentUser.status = freshUser.status;
+            }
+          }
+
+          syncAuthUI();
+          const acView = document.getElementById('view-access-control');
+          if (acView && !acView.classList.contains('hidden') && authState.currentUser?.isMother) {
+            renderAccessControlView();
+          }
+        }
+      });
+      return firebaseDbInstance;
+    } catch (e) {
+      console.warn('Firebase initialization error:', e);
+      return null;
+    }
+  }
+
+  function saveCentralCloudState(accounts, roles, appeals) {
+    if (firebaseDbInstance) {
+      try {
+        firebaseDbInstance.ref('ccafp_data').set({
+          accounts: accounts || getRegisteredAccounts(),
+          roles: roles || getRoles(),
+          appeals: appeals || getAppeals(),
+          updatedAt: new Date().toISOString()
+        });
+      } catch (e) {}
+    }
+  }
+
+  function updateDbConnectionBadge(isConnected, provider = 'server') {
+    const isOnline = Boolean(isConnected);
+
+    // 1. Access Control Top Badge
+    const acBadge = document.getElementById('acDbSyncStatusBadge');
+    const acText = document.getElementById('acDbSyncStatusText');
+    if (acBadge && acText) {
+      if (isOnline) {
+        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300';
+        acText.textContent = provider === 'firebase' ? 'CENTRAL CLOUD DATABASE CONNECTED (FIREBASE)' : 'CENTRAL MULTI-DEVICE SERVER CONNECTED';
+      } else {
+        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/40 text-[10.5px] font-mono font-bold text-rose-300';
+        acText.textContent = 'STANDALONE / DISCONNECTED (RUN server.py OR SET CLOUD SYNC)';
+      }
+    }
+
+    // 2. Login Screen Status Badge
+    const authBadge = document.getElementById('authDbStatusBadge');
+    const authText = document.getElementById('authDbStatusText');
+    if (authBadge && authText) {
+      if (isOnline) {
+        authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono-clean font-bold text-emerald-300 hover:scale-[1.02] transition-transform cursor-pointer';
+        authBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span><span id="authDbStatusText">${provider === 'firebase' ? 'CENTRAL CLOUD DB CONNECTED' : 'CENTRAL DATABASE CONNECTED'}</span>`;
+      } else {
+        authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/40 text-[10.5px] font-mono-clean font-bold text-rose-300 hover:scale-[1.02] transition-transform cursor-pointer';
+        authBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span><span id="authDbStatusText">STANDALONE / DISCONNECTED</span>`;
+      }
+    }
+
+    // 3. Modal Diagnostic Fields
+    const modalStatus = document.getElementById('modalDbStatusText');
+    const modalIndicator = document.getElementById('modalDbStatusIndicator');
+    const modalMode = document.getElementById('modalDbModeText');
+    const modalCount = document.getElementById('modalDbAccountsCount');
+    const modalPrimary = document.getElementById('modalDbPrimaryAdmin');
+
+    const accounts = getRegisteredAccounts();
+    const motherAcc = accounts.find(a => a.isMother);
+
+    if (modalStatus) {
+      modalStatus.textContent = isOnline ? 'CONNECTED & SYNCING' : 'OFFLINE / DISCONNECTED';
+      modalStatus.className = isOnline ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
+    }
+    if (modalIndicator) {
+      modalIndicator.className = isOnline ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' : 'w-2 h-2 rounded-full bg-rose-500';
+    }
+    if (modalMode) {
+      modalMode.textContent = isOnline
+        ? (provider === 'firebase' ? 'Firebase Realtime Cloud Database' : 'Central Python Server (server.py)')
+        : 'Local Offline Cache';
+    }
+    if (modalCount) {
+      modalCount.textContent = `${accounts.length} registered cadet${accounts.length === 1 ? '' : 's'}`;
+    }
+    if (modalPrimary) {
+      modalPrimary.textContent = motherAcc ? `Established (${motherAcc.username})` : 'Unclaimed';
+      modalPrimary.className = motherAcc ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
     }
   }
 
   async function syncWithCentralDatabase() {
+    if (firebaseDbInstance) {
+      updateDbConnectionBadge(true, 'firebase');
+      syncAuthUI();
+      return true;
+    }
+
     try {
-      const res = await fetch('/api/auth/state', { cache: 'no-store' });
+      const res = await fetch(authApi('/api/auth/state'), { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data && data.success) {
           centralServerAvailable = true;
           centralDbState = data;
-          updateDbConnectionBadge(true);
+          updateDbConnectionBadge(true, 'server');
 
           localStorage.setItem(AUTH_STORAGE_KEYS.ACCOUNTS, JSON.stringify(data.accounts || []));
           if (data.roles && data.roles.length > 0) {
@@ -5021,17 +5230,31 @@
         }
       }
     } catch (e) {
-      centralServerAvailable = false;
-      updateDbConnectionBadge(false);
+      // Server unreachable
     }
+
+    centralServerAvailable = false;
+    updateDbConnectionBadge(false);
+    syncAuthUI();
     return false;
   }
 
   // Reset database across ALL devices
   async function resetCentralDatabaseAcrossDevices() {
+    if (firebaseDbInstance) {
+      try {
+        await firebaseDbInstance.ref('ccafp_data').set({
+          accounts: [],
+          roles: [],
+          appeals: [],
+          updatedAt: new Date().toISOString()
+        });
+      } catch(e) {}
+    }
+
     if (centralServerAvailable) {
       try {
-        const res = await fetch('/api/auth/reset', {
+        const res = await fetch(authApi('/api/auth/reset'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ adminCode: 'Regimental6_CEIS' })
@@ -5132,6 +5355,7 @@
   function saveRegisteredAccounts(accounts) {
     try {
       localStorage.setItem(AUTH_STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
+      saveCentralCloudState(accounts, null, null);
       broadcastAuthUpdate();
     } catch (e) {
       console.error('Failed to save accounts:', e);
@@ -5150,6 +5374,7 @@
   function saveAppeals(appeals) {
     try {
       localStorage.setItem(AUTH_STORAGE_KEYS.APPEALS, JSON.stringify(appeals));
+      saveCentralCloudState(null, null, appeals);
       broadcastAuthUpdate();
     } catch (e) {
       console.error('Failed to save appeals:', e);
@@ -5167,6 +5392,7 @@
   function saveRoles(roles) {
     try {
       localStorage.setItem(AUTH_STORAGE_KEYS.ROLES, JSON.stringify(roles));
+      saveCentralCloudState(null, roles, null);
       broadcastAuthUpdate();
     } catch (e) {
       console.error('Failed to save roles:', e);
@@ -5219,7 +5445,7 @@
     // Server-First Registration (Unified Database Across All Devices)
     if (centralServerAvailable) {
       try {
-        const res = await fetch('/api/auth/register', {
+        const res = await fetch(authApi('/api/auth/register'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: cleanUsername, password, adminCode })
@@ -5286,7 +5512,7 @@
     // Server-First Authentication (Unified Database Across All Devices)
     if (centralServerAvailable) {
       try {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch(authApi('/api/auth/login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: cleanUsername, password })
@@ -5408,7 +5634,7 @@
 
     if (centralServerAvailable) {
       try {
-        await fetch('/api/auth/appeals/submit', {
+        await fetch(authApi('/api/auth/appeals/submit'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: currentSuspendedUser.username, statement })
@@ -5483,13 +5709,31 @@
     const firstNotice = document.getElementById('firstAccountNotice');
     const regMotherNotice = document.getElementById('regMotherNotice');
     const regAdminCodeContainer = document.getElementById('regAdminCodeContainer');
+    const regPrimaryClaimedNotice = document.getElementById('regPrimaryClaimedNotice');
+    const regPrimaryAdminUserDisplay = document.getElementById('regPrimaryAdminUserDisplay');
+    const regOfflineWarningNotice = document.getElementById('regOfflineWarningNotice');
+
     const accounts = getRegisteredAccounts();
     const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
+    const motherAcc = accounts.find(a => a.isMother === true);
 
     // Show primary admin code input & prompt only if unclaimed
     if (firstNotice) firstNotice.classList.toggle('hidden', hasPrimaryAdmin);
     if (regMotherNotice) regMotherNotice.classList.toggle('hidden', hasPrimaryAdmin);
     if (regAdminCodeContainer) regAdminCodeContainer.classList.toggle('hidden', hasPrimaryAdmin);
+
+    // If Primary Admin established (e.g. 28331), show notice to all other devices
+    if (regPrimaryClaimedNotice) {
+      regPrimaryClaimedNotice.classList.toggle('hidden', !hasPrimaryAdmin);
+      if (regPrimaryAdminUserDisplay && motherAcc) {
+        regPrimaryAdminUserDisplay.textContent = motherAcc.username;
+      }
+    }
+
+    // Offline warning notice if not connected to server or cloud
+    if (regOfflineWarningNotice) {
+      regOfflineWarningNotice.classList.toggle('hidden', centralServerAvailable || Boolean(firebaseDbInstance));
+    }
 
     if (!authState.currentUser) {
       if (authScreen) authScreen.classList.remove('hidden');
@@ -5835,7 +6079,7 @@
 
     if (centralServerAvailable) {
       try {
-        await fetch('/api/auth/roles/assign', {
+        await fetch(authApi('/api/auth/roles/assign'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: activeMultiRoleTarget, roles: selectedRoleIds })
@@ -5938,7 +6182,7 @@
 
     if (centralServerAvailable) {
       try {
-        await fetch('/api/auth/roles/create', {
+        await fetch(authApi('/api/auth/roles/create'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: newRole })
@@ -5983,7 +6227,7 @@
 
     if (centralServerAvailable) {
       try {
-        await fetch('/api/auth/suspend', {
+        await fetch(authApi('/api/auth/suspend'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, duration, reason })
@@ -6021,7 +6265,7 @@
   window.unsuspendCadetAccount = async function(username) {
     if (centralServerAvailable) {
       try {
-        await fetch('/api/auth/unsuspend', {
+        await fetch(authApi('/api/auth/unsuspend'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username })
@@ -6131,7 +6375,7 @@
   window.approveCadetAppeal = async function(appealId) {
     if (centralServerAvailable) {
       try {
-        await fetch('/api/auth/appeals/adjudicate', {
+        await fetch(authApi('/api/auth/appeals/adjudicate'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appealId, action: 'approve' })
@@ -6157,7 +6401,7 @@
   window.rejectCadetAppeal = async function(appealId) {
     if (centralServerAvailable) {
       try {
-        await fetch('/api/auth/appeals/adjudicate', {
+        await fetch(authApi('/api/auth/appeals/adjudicate'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appealId, action: 'reject' })
@@ -6195,7 +6439,7 @@
 
     if (centralServerAvailable) {
       try {
-        await fetch('/api/auth/roles/permissions', {
+        await fetch(authApi('/api/auth/roles/permissions'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ roleId: authState.selectedRoleId, permissions: newPermissions })
@@ -6455,10 +6699,11 @@
     // 4. Start 15-Minute Countdown Timer
     try { startAutoSync15MinTimer(); } catch(e) {}
 
-    // 5. Central database sync (polls every 2.5s for real-time multi-device sync)
+    // 5. Central multi-device database initialization & real-time sync loop
+    try { initFirebaseDatabase(); } catch(e) {}
     try {
       syncWithCentralDatabase();
-      setInterval(syncWithCentralDatabase, 2500);
+      setInterval(syncWithCentralDatabase, 2000);
     } catch(e) {
       console.warn('Central DB sync loop init error:', e);
     }

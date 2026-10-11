@@ -41,6 +41,10 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+  <!-- Firebase App & Realtime Database SDKs (Compat v9 for optional global cloud sync) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <!-- Custom Alfacoy Style CSS -->
   <link rel="stylesheet" href="css/styles.css?v=2.2">
 </head>
@@ -151,6 +155,18 @@
         <!-- Right Column: Authentication Form Container -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
           
+          <!-- Central Database Sync Status Pill & Settings Access -->
+          <div class="w-full max-w-md flex items-center justify-between px-2 mb-3">
+            <button type="button" id="authDbStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono-clean font-bold text-emerald-300 hover:scale-[1.02] transition-transform cursor-pointer">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span>
+              <span id="authDbStatusText">CENTRAL DATABASE CONNECTED</span>
+            </button>
+            <button type="button" id="openDbConfigModalBtn" class="text-[10.5px] font-mono-clean text-slate-400 hover:text-amber-400 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/60 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer" title="Configure Central Server or Cloud Database">
+              <i data-lucide="settings" class="w-3 h-3 text-amber-400"></i>
+              <span>Multi-Device Settings</span>
+            </button>
+          </div>
+
           <!-- View 1: Login Card -->
           <div id="authLoginCard" class="auth-card-container rounded-3xl p-7 sm:p-9 w-full max-w-md space-y-5 text-slate-100">
             
@@ -249,6 +265,28 @@
               </div>
               <p class="text-[11.5px] text-amber-200/90 leading-relaxed">
                 The Primary Admin position is currently unclaimed. Enter the designated authorization code below to establish the <strong>ONLY Primary Admin</strong> account.
+              </p>
+            </div>
+
+            <!-- Primary Admin Already Claimed Notice (Visible to all other devices) -->
+            <div id="regPrimaryClaimedNotice" class="hidden p-3.5 rounded-2xl bg-[#0b1320] border border-emerald-500/30 text-slate-300 text-xs space-y-1.5 font-mono-clean">
+              <div class="font-bold flex items-center gap-2 text-emerald-300">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                <span>Primary Admin Established: <span id="regPrimaryAdminUserDisplay" class="text-amber-400 font-bold">28331</span></span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-relaxed">
+                The Primary Admin role is locked. New registrations will be automatically provisioned with standard Viewer privileges and synchronized to the High Command database.
+              </p>
+            </div>
+
+            <!-- Offline / Standalone Notice -->
+            <div id="regOfflineWarningNotice" class="hidden p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs space-y-1 font-mono-clean">
+              <div class="font-bold flex items-center gap-1.5 text-amber-300">
+                <i data-lucide="wifi-off" class="w-4 h-4 text-amber-400"></i>
+                <span>Offline / Standalone Device</span>
+              </div>
+              <p class="text-[11px] text-amber-200/90 leading-relaxed">
+                Not connected to the Central Server. Registrations in this state will NOT sync to other devices. Click <strong>Multi-Device Settings</strong> above to connect.
               </p>
             </div>
 
@@ -2513,6 +2551,108 @@
               Return to Login Screen
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- ================= MODAL: CENTRAL DATABASE MULTI-DEVICE CONFIGURATION ================= -->
+      <div id="ccafpDbConfigModal" class="fixed inset-0 z-[10002] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="auth-card-container rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto sidebar-scroll">
+          
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shadow-lg">
+                <i data-lucide="database" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <span>Central Multi-Device Database</span>
+                  <span id="modalDbStatusIndicator" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                </h3>
+                <p class="text-xs text-slate-400 font-mono-clean">Connect and sync all devices into a single shared database</p>
+              </div>
+            </div>
+            <button type="button" id="closeDbConfigModalBtn" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- Diagnostic Status Box -->
+          <div class="p-4 rounded-2xl bg-[#08101c] border border-slate-800 space-y-2.5 font-mono-clean text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Connection Status:</span>
+              <span id="modalDbStatusText" class="text-emerald-400 font-bold">CONNECTED</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Active Sync Provider:</span>
+              <span id="modalDbModeText" class="text-amber-400 font-bold">Central Server (server.py)</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Accounts in Database:</span>
+              <span id="modalDbAccountsCount" class="text-white font-bold">0 accounts</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Primary Admin:</span>
+              <span id="modalDbPrimaryAdmin" class="text-amber-400 font-bold">Unclaimed</span>
+            </div>
+          </div>
+
+          <!-- Connection Methods Guide -->
+          <div class="space-y-4 text-xs font-mono-clean">
+            
+            <!-- Option 1: Local Network Server -->
+            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                  <i data-lucide="laptop" class="w-4 h-4 text-blue-400"></i>
+                  <span>Method 1: Local Network Server (Mac + Phones on WiFi)</span>
+                </span>
+                <span class="text-[10px] bg-blue-950 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded font-bold">SAME WIFI</span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-relaxed font-sans">
+                Run <code class="text-amber-300 font-bold">python3 server.py</code> on your Mac. Open the portal on your phones or other laptops using your Mac's Network URL:
+              </p>
+              <div class="bg-[#050b14] p-2.5 rounded-xl border border-slate-800 text-slate-300 flex items-center justify-between">
+                <code id="modalLanIpDisplay" class="text-emerald-300 font-bold select-all">http://localhost:8080</code>
+                <button type="button" id="copyLanIpBtn" class="text-[10px] text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800 border border-slate-700 cursor-pointer">Copy URL</button>
+              </div>
+            </div>
+
+            <!-- Option 2: Cloud Sync / Custom Endpoint -->
+            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                  <i data-lucide="cloud" class="w-4 h-4 text-emerald-400"></i>
+                  <span>Method 2: Cloud Sync URL / Remote Server</span>
+                </span>
+                <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">GLOBAL / VERCEL</span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-relaxed font-sans">
+                If accessing across different networks, mobile data, or Vercel, paste a shared Firebase Realtime Database URL or Server URL below:
+              </p>
+              <div class="space-y-1.5">
+                <label class="text-[11px] text-slate-300 font-bold uppercase block">Shared Database / Server Endpoint URL:</label>
+                <input type="text" id="customDbEndpointInput" placeholder="e.g. https://your-app-default-rtdb.firebaseio.com or http://192.168.1.X:8080" class="w-full px-3.5 py-2.5 rounded-xl bg-[#08101c] border border-slate-700 text-white text-xs outline-none focus:border-amber-400 placeholder:text-slate-500 font-mono-clean">
+              </div>
+              <div class="flex items-center gap-2 pt-1">
+                <button type="button" id="saveCustomDbEndpointBtn" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs border border-emerald-400/40 transition-colors cursor-pointer flex items-center justify-center gap-1.5">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                  <span>Save &amp; Connect</span>
+                </button>
+                <button type="button" id="testDbEndpointBtn" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-colors cursor-pointer">
+                  Test Connection
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="pt-2 flex items-center justify-between border-t border-slate-800">
+            <span class="text-[11px] text-slate-500 font-mono-clean">CCAFP Operations Command Grid</span>
+            <button type="button" id="closeDbConfigModalBottomBtn" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono-clean font-bold transition-colors cursor-pointer">
+              Close
+            </button>
+          </div>
+
         </div>
       </div>
 

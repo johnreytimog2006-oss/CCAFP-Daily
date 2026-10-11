@@ -84,6 +84,21 @@ const COUNCIL_SHEET_URLS = {
 
 /**
  * =========================================================================
+ * 📡 CENTRAL MULTI-DEVICE DATABASE CONFIGURATION
+ * =========================================================================
+ * Supports Local Python Server (server.py), Firebase Realtime Database,
+ * or custom Cloud API endpoint for real-time synchronization across all devices.
+ */
+const CCAFP_DATABASE_CONFIG = {
+  customEndpoint: (typeof localStorage !== 'undefined' ? localStorage.getItem('CCAFP_CUSTOM_DB_URL') : '') || '',
+  firebaseUrl: (typeof localStorage !== 'undefined' ? localStorage.getItem('CCAFP_FIREBASE_URL') : '') || ''
+};
+if (typeof window !== 'undefined') {
+  window.CCAFP_DATABASE_CONFIG = CCAFP_DATABASE_CONFIG;
+}
+
+/**
+ * =========================================================================
  * 🎖️ OFFICIAL CORPS UNIFORM DEFINITIONS & ABBREVIATIONS
  * =========================================================================
  */
