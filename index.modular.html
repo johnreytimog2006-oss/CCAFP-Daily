@@ -2090,6 +2090,14 @@
               <span>Access Control & Live Database</span>
               <span class="text-[10px] font-mono font-extrabold px-2.5 py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 uppercase">PRIMARY ADMIN ONLY</span>
             </h2>
+            <!-- Database Connection Status Badge -->
+            <div class="mt-2.5 flex items-center gap-2 flex-wrap">
+              <div id="acDbSyncStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span>
+                <span id="acDbSyncStatusText">CENTRAL MULTI-DEVICE DATABASE CONNECTED</span>
+              </div>
+              <span class="text-[10px] font-mono text-slate-500">Shared across all devices (Mac, phones, tablets)</span>
+            </div>
           </div>
 
           <!-- Active User Info Pill & Sign Out -->
@@ -2104,6 +2112,12 @@
               </div>
               <span id="acRoleBadge" class="text-[10px] font-mono font-extrabold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 ml-1">PRIMARY</span>
             </div>
+
+            <!-- Reset Database Button (Wipes all accounts across all devices) -->
+            <button id="acResetDatabaseBtn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-xs font-mono font-bold text-rose-300 transition-colors cursor-pointer" title="Wipe all accounts and reset database across all devices">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              <span>Reset DB</span>
+            </button>
 
             <button id="acSignOutBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-mono text-slate-200 border border-slate-700/60 transition-colors cursor-pointer">
               <i data-lucide="log-out" class="w-3.5 h-3.5"></i>

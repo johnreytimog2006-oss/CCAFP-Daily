@@ -4900,6 +4900,15 @@
     if (btnSave1) btnSave1.addEventListener('click', saveSelectedRolePermissions);
     if (btnSave2) btnSave2.addEventListener('click', saveSelectedRolePermissions);
 
+    // Reset Central Database Button (Primary Admin Only)
+    const acResetDbBtn = document.getElementById('acResetDatabaseBtn');
+    if (acResetDbBtn) {
+      acResetDbBtn.addEventListener('click', async () => {
+        if (!confirm('CAUTION: Are you sure you want to reset the accounts database across ALL devices? All accounts and appeals will be wiped, and Primary Admin authorization will be reset.')) return;
+        await resetCentralDatabaseAcrossDevices();
+      });
+    }
+
     // S2 Submit Concern
     const s2Btn = document.getElementById('s2ConcernSubmitBtn');
     if (s2Btn) s2Btn.addEventListener('click', handleS2ConcernSubmit);
@@ -4916,6 +4925,17 @@
     S2_CONCERNS: 'CCAFP_S2_CONCERNS',
     APPEALS: 'CCAFP_AUTH_APPEALS'
   };
+
+  // Centralized Multi-Device Database Schema & Reset Migration
+  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V3_CENTRALIZED';
+  if (localStorage.getItem('CCAFP_AUTH_SCHEMA_VERSION') !== AUTH_SCHEMA_VERSION) {
+    // Purge legacy isolated local accounts on this device
+    localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
+    localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
+    localStorage.removeItem(AUTH_STORAGE_KEYS.ROLES);
+    localStorage.removeItem(AUTH_STORAGE_KEYS.APPEALS);
+    localStorage.setItem('CCAFP_AUTH_SCHEMA_VERSION', AUTH_SCHEMA_VERSION);
+  }
 
   // Real-Time Cross-Tab / Cross-Window Synchronization Channel
   const authChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('ccafp_auth_bus') : null;
@@ -4947,6 +4967,97 @@
     if (acView && !acView.classList.contains('hidden') && authState.currentUser?.isMother) {
       renderAccessControlView();
     }
+  }
+
+  // --- CENTRAL MULTI-DEVICE DATABASE CLIENT ---
+  let centralServerAvailable = false;
+  let centralDbState = null;
+
+  function updateDbConnectionBadge(isConnected) {
+    const badge = document.getElementById('acDbSyncStatusBadge');
+    if (!badge) return;
+    if (isConnected) {
+      badge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300';
+      badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span><span id="acDbSyncStatusText">CENTRAL MULTI-DEVICE DATABASE CONNECTED</span>';
+    } else {
+      badge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-[10.5px] font-mono font-bold text-amber-300';
+      badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span id="acDbSyncStatusText">STANDALONE (RUN python3 server.py FOR MULTI-DEVICE)</span>';
+    }
+  }
+
+  async function syncWithCentralDatabase() {
+    try {
+      const res = await fetch('/api/auth/state', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success) {
+          centralServerAvailable = true;
+          centralDbState = data;
+          updateDbConnectionBadge(true);
+
+          localStorage.setItem(AUTH_STORAGE_KEYS.ACCOUNTS, JSON.stringify(data.accounts || []));
+          if (data.roles && data.roles.length > 0) {
+            localStorage.setItem(AUTH_STORAGE_KEYS.ROLES, JSON.stringify(data.roles));
+          }
+          localStorage.setItem(AUTH_STORAGE_KEYS.APPEALS, JSON.stringify(data.appeals || []));
+
+          // Keep current logged-in user in sync
+          if (authState.currentUser) {
+            const freshUser = (data.accounts || []).find(a => a.username === authState.currentUser.username);
+            if (freshUser) {
+              authState.currentUser.roles = freshUser.roles || [freshUser.role];
+              authState.currentUser.role = freshUser.role;
+              authState.currentUser.isMother = freshUser.isMother;
+              authState.currentUser.status = freshUser.status;
+            }
+          }
+
+          syncAuthUI();
+          const acView = document.getElementById('view-access-control');
+          if (acView && !acView.classList.contains('hidden') && authState.currentUser?.isMother) {
+            renderAccessControlView();
+          }
+          return true;
+        }
+      }
+    } catch (e) {
+      centralServerAvailable = false;
+      updateDbConnectionBadge(false);
+    }
+    return false;
+  }
+
+  // Reset database across ALL devices
+  async function resetCentralDatabaseAcrossDevices() {
+    if (centralServerAvailable) {
+      try {
+        const res = await fetch('/api/auth/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminCode: 'Regimental6_CEIS' })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
+          localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
+          localStorage.removeItem(AUTH_STORAGE_KEYS.APPEALS);
+          authState.currentUser = null;
+          await syncWithCentralDatabase();
+          showToast('Central database reset across all devices successfully!', 'success');
+          navigateToTab('home');
+          return;
+        }
+      } catch (e) {}
+    }
+
+    // Fallback local reset
+    localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
+    localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
+    localStorage.removeItem(AUTH_STORAGE_KEYS.APPEALS);
+    authState.currentUser = null;
+    syncAuthUI();
+    showToast('Database reset successfully.', 'success');
+    navigateToTab('home');
   }
 
   function buf2hex(buffer) {
@@ -5063,8 +5174,6 @@
   }
 
   // Permission Check Function
-  // Automatic view access across general modules;
-  // Specific restrictions apply to edit, move, receive/publish messages, and accessing hidden messages (S2)!
   function hasPermission(permissionKey) {
     if (!authState.currentUser) return false;
     // Mother account (Primary Admin) has complete system authority
@@ -5107,15 +5216,34 @@
       throw new Error('Password must be at least 3 characters long.');
     }
 
+    // Server-First Registration (Unified Database Across All Devices)
+    if (centralServerAvailable) {
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: cleanUsername, password, adminCode })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Registration failed on central server.');
+        }
+        await syncWithCentralDatabase();
+        createSession(data.account);
+        return data.account;
+      } catch (err) {
+        if (!err.message.includes('Failed to fetch')) {
+          throw err;
+        }
+      }
+    }
+
+    // Fallback if central server is offline
     const accounts = getRegisteredAccounts();
     if (accounts.some(a => a.username === cleanUsername)) {
       throw new Error(`Username ${cleanUsername} is already registered.`);
     }
 
-    // Primary Admin Authorization Logic:
-    // The very first account to successfully provide the one-time code "Regimental6_CEIS"
-    // becomes the ONLY Primary Admin. If incorrect or not provided, the account is created
-    // as a standard Cadet Viewer, and authorization capability transfers to subsequent registrants.
     const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
     let isMother = false;
     let assignedRole = 'viewer';
@@ -5155,6 +5283,33 @@
       throw new Error('Username must be strictly numeric (digits 0-9 only).');
     }
 
+    // Server-First Authentication (Unified Database Across All Devices)
+    if (centralServerAvailable) {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: cleanUsername, password })
+        });
+        const data = await res.json();
+        if (res.status === 403 && data.isSuspended) {
+          openSuspendedCadetModal(data.account);
+          throw new Error(data.error || 'Account suspended under disciplinary hold.');
+        }
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Invalid numeric username or password.');
+        }
+        await syncWithCentralDatabase();
+        createSession(data.account);
+        return data.account;
+      } catch (err) {
+        if (!err.message.includes('Failed to fetch')) {
+          throw err;
+        }
+      }
+    }
+
+    // Fallback if central server is offline
     const accounts = getRegisteredAccounts();
     const user = accounts.find(a => a.username === cleanUsername);
     if (!user) {
@@ -5242,7 +5397,7 @@
     if (window.lucide) window.lucide.createIcons();
   }
 
-  function submitCadetAppeal() {
+  async function submitCadetAppeal() {
     if (!currentSuspendedUser) return;
     const input = document.getElementById('appealStatementInput');
     const statement = input?.value?.trim();
@@ -5251,18 +5406,28 @@
       return;
     }
 
-    const appeals = getAppeals();
-    const newAppeal = {
-      id: 'APP-' + Date.now(),
-      username: currentSuspendedUser.username,
-      reason: currentSuspendedUser.suspendedReason || 'General disciplinary infraction',
-      statement: statement,
-      submittedAt: new Date().toISOString(),
-      status: 'pending'
-    };
-
-    appeals.push(newAppeal);
-    saveAppeals(appeals);
+    if (centralServerAvailable) {
+      try {
+        await fetch('/api/auth/appeals/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: currentSuspendedUser.username, statement })
+        });
+        await syncWithCentralDatabase();
+      } catch (e) {}
+    } else {
+      const appeals = getAppeals();
+      const newAppeal = {
+        id: 'APP-' + Date.now(),
+        username: currentSuspendedUser.username,
+        reason: currentSuspendedUser.suspendedReason || 'General disciplinary infraction',
+        statement: statement,
+        submittedAt: new Date().toISOString(),
+        status: 'pending'
+      };
+      appeals.push(newAppeal);
+      saveAppeals(appeals);
+    }
 
     const appealPendingNotice = document.getElementById('appealPendingNotice');
     const appealFormSection = document.getElementById('appealFormSection');
@@ -5658,7 +5823,7 @@
     if (window.lucide) window.lucide.createIcons();
   };
 
-  function saveMultiRoleAssignment() {
+  async function saveMultiRoleAssignment() {
     if (!activeMultiRoleTarget) return;
     const modal = document.getElementById('acMultiRoleModal');
     const checkboxes = document.querySelectorAll('.multi-role-checkbox:checked');
@@ -5668,13 +5833,24 @@
       selectedRoleIds.push('viewer');
     }
 
-    const accounts = getRegisteredAccounts();
-    const target = accounts.find(a => a.username === activeMultiRoleTarget);
-    if (!target) return;
-
-    target.roles = selectedRoleIds;
-    target.role = selectedRoleIds[0];
-    saveRegisteredAccounts(accounts);
+    if (centralServerAvailable) {
+      try {
+        await fetch('/api/auth/roles/assign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: activeMultiRoleTarget, roles: selectedRoleIds })
+        });
+        await syncWithCentralDatabase();
+      } catch (e) {}
+    } else {
+      const accounts = getRegisteredAccounts();
+      const target = accounts.find(a => a.username === activeMultiRoleTarget);
+      if (target) {
+        target.roles = selectedRoleIds;
+        target.role = selectedRoleIds[0];
+        saveRegisteredAccounts(accounts);
+      }
+    }
 
     // If currently logged-in user, update session
     if (authState.currentUser && authState.currentUser.username === activeMultiRoleTarget) {
@@ -5729,7 +5905,7 @@
     if (window.lucide) window.lucide.createIcons();
   }
 
-  function saveNewCustomRole() {
+  async function saveNewCustomRole() {
     const name = document.getElementById('createRoleName')?.value?.trim();
     const shortName = document.getElementById('createRoleShortName')?.value?.trim();
     const desc = document.getElementById('createRoleDesc')?.value?.trim();
@@ -5760,10 +5936,21 @@
       permissions: checkedPerms
     };
 
-    roles.push(newRole);
-    saveRoles(roles);
-    authState.selectedRoleId = roleId;
+    if (centralServerAvailable) {
+      try {
+        await fetch('/api/auth/roles/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: newRole })
+        });
+        await syncWithCentralDatabase();
+      } catch (e) {}
+    } else {
+      roles.push(newRole);
+      saveRoles(roles);
+    }
 
+    authState.selectedRoleId = roleId;
     if (modal) modal.classList.add('hidden');
     renderAccessControlView();
     showToast(`Custom role "${name}" created successfully!`, 'success');
@@ -5786,7 +5973,7 @@
     if (window.lucide) window.lucide.createIcons();
   };
 
-  function confirmCadetSuspensionAction() {
+  async function confirmCadetSuspensionAction() {
     const username = document.getElementById('suspendTargetUsername')?.value;
     const duration = document.getElementById('suspendDurationSelect')?.value || '24h';
     const reason = document.getElementById('suspendReasonInput')?.value?.trim() || 'Disciplinary administrative hold';
@@ -5794,52 +5981,74 @@
 
     if (!username) return;
 
-    let suspendedUntil = null;
-    const now = Date.now();
-    if (duration === '24h') {
-      suspendedUntil = new Date(now + 24 * 60 * 60 * 1000).toISOString();
-    } else if (duration === '7d') {
-      suspendedUntil = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString();
-    } else if (duration === '30d') {
-      suspendedUntil = new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString();
-    } else if (duration === 'permanent') {
-      suspendedUntil = 'permanent';
+    if (centralServerAvailable) {
+      try {
+        await fetch('/api/auth/suspend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, duration, reason })
+        });
+        await syncWithCentralDatabase();
+      } catch (e) {}
+    } else {
+      let suspendedUntil = null;
+      const now = Date.now();
+      if (duration === '24h') {
+        suspendedUntil = new Date(now + 24 * 60 * 60 * 1000).toISOString();
+      } else if (duration === '7d') {
+        suspendedUntil = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString();
+      } else if (duration === '30d') {
+        suspendedUntil = new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString();
+      } else if (duration === 'permanent') {
+        suspendedUntil = 'permanent';
+      }
+
+      const accounts = getRegisteredAccounts();
+      const target = accounts.find(a => a.username === username);
+      if (target) {
+        target.status = 'suspended';
+        target.suspendedUntil = suspendedUntil;
+        target.suspendedReason = reason;
+        saveRegisteredAccounts(accounts);
+      }
     }
-
-    const accounts = getRegisteredAccounts();
-    const target = accounts.find(a => a.username === username);
-    if (!target) return;
-
-    target.status = 'suspended';
-    target.suspendedUntil = suspendedUntil;
-    target.suspendedReason = reason;
-    saveRegisteredAccounts(accounts);
 
     if (modal) modal.classList.add('hidden');
     renderAccessControlView();
     showToast(`Cadet ${username} account suspended (${duration.toUpperCase()}).`, 'info');
   }
 
-  window.unsuspendCadetAccount = function(username) {
-    const accounts = getRegisteredAccounts();
-    const target = accounts.find(a => a.username === username);
-    if (!target) return;
-
-    target.status = 'active';
-    target.suspendedUntil = null;
-    target.suspendedReason = null;
-    saveRegisteredAccounts(accounts);
-
-    // If an appeal was pending, mark as approved
-    const appeals = getAppeals();
-    let appealUpdated = false;
-    appeals.forEach(a => {
-      if (a.username === username && a.status === 'pending') {
-        a.status = 'approved';
-        appealUpdated = true;
+  window.unsuspendCadetAccount = async function(username) {
+    if (centralServerAvailable) {
+      try {
+        await fetch('/api/auth/unsuspend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        });
+        await syncWithCentralDatabase();
+      } catch (e) {}
+    } else {
+      const accounts = getRegisteredAccounts();
+      const target = accounts.find(a => a.username === username);
+      if (target) {
+        target.status = 'active';
+        target.suspendedUntil = null;
+        target.suspendedReason = null;
+        saveRegisteredAccounts(accounts);
       }
-    });
-    if (appealUpdated) saveAppeals(appeals);
+
+      // If an appeal was pending, mark as approved
+      const appeals = getAppeals();
+      let appealUpdated = false;
+      appeals.forEach(a => {
+        if (a.username === username && a.status === 'pending') {
+          a.status = 'approved';
+          appealUpdated = true;
+        }
+      });
+      if (appealUpdated) saveAppeals(appeals);
+    }
 
     renderAccessControlView();
     showToast(`Cadet ${username} account unsuspended and restored to active duty!`, 'success');
@@ -5919,7 +6128,20 @@
     if (window.lucide) window.lucide.createIcons();
   }
 
-  window.approveCadetAppeal = function(appealId) {
+  window.approveCadetAppeal = async function(appealId) {
+    if (centralServerAvailable) {
+      try {
+        await fetch('/api/auth/appeals/adjudicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appealId, action: 'approve' })
+        });
+        await syncWithCentralDatabase();
+        showToast('Appeal approved! Cadet account restored.', 'success');
+        return;
+      } catch (e) {}
+    }
+
     const appeals = getAppeals();
     const appeal = appeals.find(a => a.id === appealId);
     if (!appeal) return;
@@ -5932,7 +6154,20 @@
     showToast(`Appeal for Cadet ${appeal.username} approved! Account restored.`, 'success');
   };
 
-  window.rejectCadetAppeal = function(appealId) {
+  window.rejectCadetAppeal = async function(appealId) {
+    if (centralServerAvailable) {
+      try {
+        await fetch('/api/auth/appeals/adjudicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appealId, action: 'reject' })
+        });
+        await syncWithCentralDatabase();
+        showToast('Appeal rejected.', 'info');
+        return;
+      } catch (e) {}
+    }
+
     const appeals = getAppeals();
     const appeal = appeals.find(a => a.id === appealId);
     if (!appeal) return;
@@ -5944,7 +6179,7 @@
     showToast(`Appeal for Cadet ${appeal.username} rejected.`, 'info');
   };
 
-  function saveSelectedRolePermissions() {
+  async function saveSelectedRolePermissions() {
     const roles = getRoles();
     const role = roles.find(r => r.id === authState.selectedRoleId);
     if (!role) return;
@@ -5958,8 +6193,19 @@
       }
     });
 
-    role.permissions = newPermissions;
-    saveRoles(roles);
+    if (centralServerAvailable) {
+      try {
+        await fetch('/api/auth/roles/permissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roleId: authState.selectedRoleId, permissions: newPermissions })
+        });
+        await syncWithCentralDatabase();
+      } catch (e) {}
+    } else {
+      role.permissions = newPermissions;
+      saveRoles(roles);
+    }
 
     const feedback = document.getElementById('acSaveFeedback');
     if (feedback) {
@@ -6209,7 +6455,15 @@
     // 4. Start 15-Minute Countdown Timer
     try { startAutoSync15MinTimer(); } catch(e) {}
 
-    // 5. Perform immediate live check in the background
+    // 5. Central database sync (polls every 2.5s for real-time multi-device sync)
+    try {
+      syncWithCentralDatabase();
+      setInterval(syncWithCentralDatabase, 2500);
+    } catch(e) {
+      console.warn('Central DB sync loop init error:', e);
+    }
+
+    // 6. Perform immediate live check in the background
     try { performAutomated15MinSync(false); } catch(e) {}
 
     try { if (window.lucide) window.lucide.createIcons(); } catch(e) {}
