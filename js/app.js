@@ -489,6 +489,11 @@
     } else if (tabId === 's2') {
       renderS2CouncilView();
     } else if (tabId === 'access-control') {
+      if (!authState.currentUser || !authState.currentUser.isMother) {
+        showToast('Access Restricted: The Access Control & Accounts Database is strictly reserved for the Primary Admin.', 'error');
+        navigateToTab('home');
+        return;
+      }
       renderAccessControlView();
     }
 
@@ -4627,6 +4632,7 @@
     setupPassToggle('toggleLoginPasswordBtn', 'loginPassword');
     setupPassToggle('toggleRegPasswordBtn', 'regPassword');
     setupPassToggle('toggleRegConfirmPasswordBtn', 'regPasswordConfirm');
+    setupPassToggle('toggleRegAdminCodeBtn', 'regAdminCode');
 
     // Smooth Card Redirection (Login <-> Create Account)
     const openRegBtn = document.getElementById('authOpenRegisterBtn');
@@ -4672,6 +4678,7 @@
         const u = document.getElementById('regUsername')?.value?.trim();
         const p = document.getElementById('regPassword')?.value;
         const pc = document.getElementById('regPasswordConfirm')?.value;
+        const adminCode = document.getElementById('regAdminCode')?.value?.trim() || '';
         const fb = document.getElementById('regFeedback');
         if (fb) fb.classList.add('hidden');
 
@@ -4726,9 +4733,21 @@
 
         try {
           regSubmitBtn.disabled = true;
-          const acc = await registerAccount(u, p);
-          showToast(acc.isMother ? 'Mother Account (Primary Admin) successfully initialized!' : `Account created successfully! Welcome, Cadet ${u}.`, 'success');
-          navigateToTab(acc.isMother ? 'access-control' : 'home');
+          const accountsBefore = getRegisteredAccounts();
+          const hadPrimaryAdminBefore = accountsBefore.some(a => a.isMother);
+
+          const acc = await registerAccount(u, p, adminCode);
+          if (acc.isMother) {
+            showToast('Mother Account (Primary Admin) successfully initialized with authorization code!', 'success');
+            navigateToTab('access-control');
+          } else {
+            if (!hadPrimaryAdminBefore && adminCode && adminCode !== 'Regimental6_CEIS') {
+              showToast('Security code incorrect. Account created as Cadet Viewer; Primary Admin code transferred to next account.', 'info');
+            } else {
+              showToast(`Account created successfully! Welcome, Cadet ${u}.`, 'success');
+            }
+            navigateToTab('home');
+          }
         } catch (err) {
           if (fb) {
             fb.textContent = err.message || 'Registration failed.';
@@ -4755,7 +4774,7 @@
       });
     };
     bindEnterKey(['loginUsername', 'loginPassword'], loginSubmitBtn);
-    bindEnterKey(['regUsername', 'regPassword', 'regPasswordConfirm'], regSubmitBtn);
+    bindEnterKey(['regUsername', 'regPassword', 'regPasswordConfirm', 'regAdminCode'], regSubmitBtn);
 
     // Forgot Password Modal
     const forgotBtn = document.getElementById('authForgotPasswordBtn');
@@ -4778,26 +4797,102 @@
     if (topSignOut) topSignOut.addEventListener('click', handleSignOut);
     if (acSignOut) acSignOut.addEventListener('click', handleSignOut);
 
-    // Access Control Subpanes
-    const tabRolesBtn = document.getElementById('acTabRolesBtn');
-    const tabAccountsBtn = document.getElementById('acTabAccountsBtn');
-    const rolesSubpane = document.getElementById('acRolesSubpane');
-    const accountsSubpane = document.getElementById('acAccountsSubpane');
-    if (tabRolesBtn && tabAccountsBtn && rolesSubpane && accountsSubpane) {
-      tabRolesBtn.addEventListener('click', () => {
-        rolesSubpane.classList.remove('hidden');
-        accountsSubpane.classList.add('hidden');
-        tabRolesBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-[#1e293b] text-white transition-all flex items-center gap-2';
-        tabAccountsBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2';
-      });
-      tabAccountsBtn.addEventListener('click', () => {
-        rolesSubpane.classList.add('hidden');
-        accountsSubpane.classList.remove('hidden');
-        tabAccountsBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-[#1e293b] text-white transition-all flex items-center gap-2';
-        tabRolesBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2';
-        renderRegisteredAccountsTable();
+    // Suspended Cadet Modal Buttons
+    const closeSuspendedModalBtn = document.getElementById('closeSuspendedModalBtn');
+    const returnFromSuspendedBtn = document.getElementById('returnFromSuspendedBtn');
+    const authSuspendedModal = document.getElementById('authSuspendedModal');
+    if (closeSuspendedModalBtn && authSuspendedModal) {
+      closeSuspendedModalBtn.addEventListener('click', () => authSuspendedModal.classList.add('hidden'));
+    }
+    if (returnFromSuspendedBtn && authSuspendedModal) {
+      returnFromSuspendedBtn.addEventListener('click', () => {
+        authSuspendedModal.classList.add('hidden');
+        const loginCard = document.getElementById('authLoginCard');
+        const regCard = document.getElementById('authRegisterCard');
+        if (loginCard) loginCard.classList.remove('hidden');
+        if (regCard) regCard.classList.add('hidden');
       });
     }
+    const submitAppealBtn = document.getElementById('submitAppealBtn');
+    if (submitAppealBtn) {
+      submitAppealBtn.addEventListener('click', submitCadetAppeal);
+    }
+
+    // Access Control Subpanes (Database / Roles / Appeals)
+    const tabDatabaseBtn = document.getElementById('acTabDatabaseBtn');
+    const tabRolesBtn = document.getElementById('acTabRolesBtn');
+    const tabAppealsBtn = document.getElementById('acTabAppealsBtn');
+    const databaseSubpane = document.getElementById('acDatabaseSubpane');
+    const rolesSubpane = document.getElementById('acRolesSubpane');
+    const appealsSubpane = document.getElementById('acAppealsSubpane');
+
+    const switchAcSubpane = (activeTab) => {
+      const isDb = activeTab === 'database';
+      const isRoles = activeTab === 'roles';
+      const isAppeals = activeTab === 'appeals';
+
+      if (databaseSubpane) databaseSubpane.classList.toggle('hidden', !isDb);
+      if (rolesSubpane) rolesSubpane.classList.toggle('hidden', !isRoles);
+      if (appealsSubpane) appealsSubpane.classList.toggle('hidden', !isAppeals);
+
+      if (tabDatabaseBtn) {
+        tabDatabaseBtn.className = isDb 
+          ? 'px-4 py-2 rounded-xl text-xs font-bold bg-[#1e293b] text-white transition-all flex items-center gap-2 cursor-pointer'
+          : 'px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2 cursor-pointer';
+      }
+      if (tabRolesBtn) {
+        tabRolesBtn.className = isRoles
+          ? 'px-4 py-2 rounded-xl text-xs font-bold bg-[#1e293b] text-white transition-all flex items-center gap-2 cursor-pointer'
+          : 'px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2 cursor-pointer';
+      }
+      if (tabAppealsBtn) {
+        tabAppealsBtn.className = isAppeals
+          ? 'px-4 py-2 rounded-xl text-xs font-bold bg-[#1e293b] text-white transition-all flex items-center gap-2 cursor-pointer'
+          : 'px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2 cursor-pointer';
+      }
+
+      if (isDb) renderAccountsDatabase();
+      if (isAppeals) renderAppealsQueueTable();
+    };
+
+    if (tabDatabaseBtn) tabDatabaseBtn.addEventListener('click', () => switchAcSubpane('database'));
+    if (tabRolesBtn) tabRolesBtn.addEventListener('click', () => switchAcSubpane('roles'));
+    if (tabAppealsBtn) tabAppealsBtn.addEventListener('click', () => switchAcSubpane('appeals'));
+
+    // Search and Status Filters for Real-time Accounts Database
+    const acSearchInput = document.getElementById('acSearchInput');
+    const acFilterStatus = document.getElementById('acFilterStatus');
+    if (acSearchInput) acSearchInput.addEventListener('input', () => renderAccountsDatabase());
+    if (acFilterStatus) acFilterStatus.addEventListener('change', () => renderAccountsDatabase());
+
+    // Multi-Role Assignment Modal Controls
+    const closeMultiRoleModalBtn = document.getElementById('closeMultiRoleModalBtn');
+    const cancelMultiRoleModalBtn = document.getElementById('cancelMultiRoleModalBtn');
+    const saveMultiRoleModalBtn = document.getElementById('saveMultiRoleModalBtn');
+    const acMultiRoleModal = document.getElementById('acMultiRoleModal');
+    if (closeMultiRoleModalBtn && acMultiRoleModal) closeMultiRoleModalBtn.addEventListener('click', () => acMultiRoleModal.classList.add('hidden'));
+    if (cancelMultiRoleModalBtn && acMultiRoleModal) cancelMultiRoleModalBtn.addEventListener('click', () => acMultiRoleModal.classList.add('hidden'));
+    if (saveMultiRoleModalBtn) saveMultiRoleModalBtn.addEventListener('click', saveMultiRoleAssignment);
+
+    // Create Role Modal Controls
+    const btnOpenCreateRoleModal = document.getElementById('btnOpenCreateRoleModal');
+    const closeCreateRoleModalBtn = document.getElementById('closeCreateRoleModalBtn');
+    const cancelCreateRoleModalBtn = document.getElementById('cancelCreateRoleModalBtn');
+    const saveCreateRoleModalBtn = document.getElementById('saveCreateRoleModalBtn');
+    const acCreateRoleModal = document.getElementById('acCreateRoleModal');
+    if (btnOpenCreateRoleModal) btnOpenCreateRoleModal.addEventListener('click', openCreateRoleDialog);
+    if (closeCreateRoleModalBtn && acCreateRoleModal) closeCreateRoleModalBtn.addEventListener('click', () => acCreateRoleModal.classList.add('hidden'));
+    if (cancelCreateRoleModalBtn && acCreateRoleModal) cancelCreateRoleModalBtn.addEventListener('click', () => acCreateRoleModal.classList.add('hidden'));
+    if (saveCreateRoleModalBtn) saveCreateRoleModalBtn.addEventListener('click', saveNewCustomRole);
+
+    // Suspend Modal Controls
+    const closeSuspendModalBtn = document.getElementById('closeSuspendModalBtn');
+    const cancelSuspendModalBtn = document.getElementById('cancelSuspendModalBtn');
+    const confirmSuspendBtn = document.getElementById('confirmSuspendBtn');
+    const acSuspendModal = document.getElementById('acSuspendModal');
+    if (closeSuspendModalBtn && acSuspendModal) closeSuspendModalBtn.addEventListener('click', () => acSuspendModal.classList.add('hidden'));
+    if (cancelSuspendModalBtn && acSuspendModal) cancelSuspendModalBtn.addEventListener('click', () => acSuspendModal.classList.add('hidden'));
+    if (confirmSuspendBtn) confirmSuspendBtn.addEventListener('click', confirmCadetSuspensionAction);
 
     // Save Permissions
     const btnSave1 = document.getElementById('btnAcSavePermissions');
@@ -4818,8 +4913,41 @@
     ACCOUNTS: 'CCAFP_AUTH_ACCOUNTS',
     ROLES: 'CCAFP_AUTH_ROLES',
     SESSION: 'CCAFP_AUTH_SESSION',
-    S2_CONCERNS: 'CCAFP_S2_CONCERNS'
+    S2_CONCERNS: 'CCAFP_S2_CONCERNS',
+    APPEALS: 'CCAFP_AUTH_APPEALS'
   };
+
+  // Real-Time Cross-Tab / Cross-Window Synchronization Channel
+  const authChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('ccafp_auth_bus') : null;
+  function broadcastAuthUpdate() {
+    if (authChannel) {
+      try {
+        authChannel.postMessage({ type: 'AUTH_UPDATE', timestamp: Date.now() });
+      } catch (e) {}
+    }
+  }
+
+  if (authChannel) {
+    authChannel.onmessage = (ev) => {
+      if (ev.data?.type === 'AUTH_UPDATE') {
+        onRealtimeAuthSync();
+      }
+    };
+  }
+
+  window.addEventListener('storage', (ev) => {
+    if (Object.values(AUTH_STORAGE_KEYS).includes(ev.key)) {
+      onRealtimeAuthSync();
+    }
+  });
+
+  function onRealtimeAuthSync() {
+    syncAuthUI();
+    const acView = document.getElementById('view-access-control');
+    if (acView && !acView.classList.contains('hidden') && authState.currentUser?.isMother) {
+      renderAccessControlView();
+    }
+  }
 
   function buf2hex(buffer) {
     return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -4877,7 +5005,14 @@
   function getRegisteredAccounts() {
     try {
       const raw = localStorage.getItem(AUTH_STORAGE_KEYS.ACCOUNTS);
-      return raw ? JSON.parse(raw) : [];
+      const accounts = raw ? JSON.parse(raw) : [];
+      return accounts.map(a => ({
+        ...a,
+        roles: Array.isArray(a.roles) && a.roles.length > 0 ? a.roles : [a.role || 'viewer'],
+        status: a.status || 'active',
+        suspendedUntil: a.suspendedUntil || null,
+        suspendedReason: a.suspendedReason || null
+      }));
     } catch (e) {
       return [];
     }
@@ -4886,8 +5021,27 @@
   function saveRegisteredAccounts(accounts) {
     try {
       localStorage.setItem(AUTH_STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
+      broadcastAuthUpdate();
     } catch (e) {
       console.error('Failed to save accounts:', e);
+    }
+  }
+
+  function getAppeals() {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEYS.APPEALS);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveAppeals(appeals) {
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEYS.APPEALS, JSON.stringify(appeals));
+      broadcastAuthUpdate();
+    } catch (e) {
+      console.error('Failed to save appeals:', e);
     }
   }
 
@@ -4902,6 +5056,7 @@
   function saveRoles(roles) {
     try {
       localStorage.setItem(AUTH_STORAGE_KEYS.ROLES, JSON.stringify(roles));
+      broadcastAuthUpdate();
     } catch (e) {
       console.error('Failed to save roles:', e);
     }
@@ -4912,8 +5067,13 @@
   // Specific restrictions apply to edit, move, receive/publish messages, and accessing hidden messages (S2)!
   function hasPermission(permissionKey) {
     if (!authState.currentUser) return false;
-    // Mother account has complete system authority
+    // Mother account (Primary Admin) has complete system authority
     if (authState.currentUser.isMother || authState.currentUser.role === 'admin') return true;
+
+    // Access control and account management strictly restricted to Primary Admin
+    if (permissionKey.startsWith('users:') || permissionKey.startsWith('roles:') || permissionKey.startsWith('permissions:')) {
+      return false;
+    }
 
     // Automatic access to view general public modules:
     // Any general :view permission is granted automatically, EXCEPT:
@@ -4924,13 +5084,21 @@
     }
 
     const roles = getRoles();
-    const userRole = roles.find(r => r.id === authState.currentUser.role);
-    if (!userRole) return false;
-    if (userRole.permissions.includes('*') || userRole.permissions.includes('command:override')) return true;
-    return userRole.permissions.includes(permissionKey);
+    const userRoles = Array.isArray(authState.currentUser.roles) && authState.currentUser.roles.length > 0
+      ? authState.currentUser.roles
+      : [authState.currentUser.role || 'viewer'];
+
+    for (const rId of userRoles) {
+      const r = roles.find(x => x.id === rId);
+      if (!r) continue;
+      if (r.permissions.includes('*') || r.permissions.includes('command:override') || r.permissions.includes(permissionKey)) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  async function registerAccount(username, password) {
+  async function registerAccount(username, password, adminCode = '') {
     const cleanUsername = String(username).trim();
     if (!/^[0-9]+$/.test(cleanUsername)) {
       throw new Error('Username must be strictly numeric (digits 0-9 only).');
@@ -4944,10 +5112,22 @@
       throw new Error(`Username ${cleanUsername} is already registered.`);
     }
 
-    // The very first registered account automatically becomes the Mother Account (Primary Admin)
-    const isFirstAccount = accounts.length === 0;
-    const isMother = isFirstAccount;
-    const assignedRole = isMother ? 'admin' : 'viewer';
+    // Primary Admin Authorization Logic:
+    // The very first account to successfully provide the one-time code "Regimental6_CEIS"
+    // becomes the ONLY Primary Admin. If incorrect or not provided, the account is created
+    // as a standard Cadet Viewer, and authorization capability transfers to subsequent registrants.
+    const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
+    let isMother = false;
+    let assignedRole = 'viewer';
+    let assignedRoles = ['viewer'];
+
+    if (!hasPrimaryAdmin) {
+      if (String(adminCode).trim() === 'Regimental6_CEIS') {
+        isMother = true;
+        assignedRole = 'admin';
+        assignedRoles = ['admin'];
+      }
+    }
 
     const { salt, hash } = await hashPasswordWithSalt(password);
     const newAccount = {
@@ -4956,6 +5136,10 @@
       hash,
       isMother,
       role: assignedRole,
+      roles: assignedRoles,
+      status: 'active',
+      suspendedUntil: null,
+      suspendedReason: null,
       createdAt: new Date().toISOString()
     };
 
@@ -4982,8 +5166,110 @@
       throw new Error('Invalid numeric username or password.');
     }
 
+    // Disciplinary Suspension Evaluation
+    if (user.status === 'suspended') {
+      if (user.suspendedUntil && user.suspendedUntil !== 'permanent') {
+        const expiry = new Date(user.suspendedUntil).getTime();
+        if (Date.now() >= expiry) {
+          // Auto-unsuspend after duration has elapsed
+          user.status = 'active';
+          user.suspendedUntil = null;
+          user.suspendedReason = null;
+          saveRegisteredAccounts(accounts);
+        } else {
+          openSuspendedCadetModal(user);
+          throw new Error('Account suspended under disciplinary hold. Official notice displayed.');
+        }
+      } else {
+        openSuspendedCadetModal(user);
+        throw new Error('Account suspended indefinitely. Official notice displayed.');
+      }
+    }
+
     createSession(user);
     return user;
+  }
+
+  let currentSuspendedUser = null;
+  function openSuspendedCadetModal(user) {
+    currentSuspendedUser = user;
+    const modal = document.getElementById('authSuspendedModal');
+    if (!modal) return;
+
+    const usernameEl = document.getElementById('suspendedCadetUsername');
+    const statusBadge = document.getElementById('suspendedStatusBadge');
+    const timeRemainingEl = document.getElementById('suspendedTimeRemaining');
+    const reasonText = document.getElementById('suspendedReasonText');
+    const appealPendingNotice = document.getElementById('appealPendingNotice');
+    const appealFormSection = document.getElementById('appealFormSection');
+    const appealStatementInput = document.getElementById('appealStatementInput');
+
+    if (usernameEl) usernameEl.textContent = user.username;
+    if (reasonText) reasonText.textContent = user.suspendedReason || 'Administrative disciplinary restriction';
+
+    if (user.suspendedUntil === 'permanent' || !user.suspendedUntil) {
+      if (statusBadge) statusBadge.textContent = 'PERMANENT HOLD';
+      if (timeRemainingEl) timeRemainingEl.textContent = 'INDEFINITE / PERMANENT';
+    } else {
+      const expiryTime = new Date(user.suspendedUntil).getTime();
+      const diffMs = Math.max(0, expiryTime - Date.now());
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const days = Math.floor(hours / 24);
+      const remHours = hours % 24;
+
+      if (days > 0) {
+        if (statusBadge) statusBadge.textContent = `TEMPORARY (${days} DAYS)`;
+        if (timeRemainingEl) timeRemainingEl.textContent = `${days}d ${remHours}h remaining`;
+      } else {
+        if (statusBadge) statusBadge.textContent = 'TEMPORARY (24 HOURS)';
+        if (timeRemainingEl) timeRemainingEl.textContent = `${hours}h remaining`;
+      }
+    }
+
+    // Check if cadet already has a pending appeal
+    const appeals = getAppeals();
+    const pending = appeals.find(a => a.username === user.username && a.status === 'pending');
+    if (pending) {
+      if (appealPendingNotice) appealPendingNotice.classList.remove('hidden');
+      if (appealFormSection) appealFormSection.classList.add('hidden');
+    } else {
+      if (appealPendingNotice) appealPendingNotice.classList.add('hidden');
+      if (appealFormSection) appealFormSection.classList.remove('hidden');
+      if (appealStatementInput) appealStatementInput.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function submitCadetAppeal() {
+    if (!currentSuspendedUser) return;
+    const input = document.getElementById('appealStatementInput');
+    const statement = input?.value?.trim();
+    if (!statement) {
+      showToast('Please enter your statement of appeal.', 'error');
+      return;
+    }
+
+    const appeals = getAppeals();
+    const newAppeal = {
+      id: 'APP-' + Date.now(),
+      username: currentSuspendedUser.username,
+      reason: currentSuspendedUser.suspendedReason || 'General disciplinary infraction',
+      statement: statement,
+      submittedAt: new Date().toISOString(),
+      status: 'pending'
+    };
+
+    appeals.push(newAppeal);
+    saveAppeals(appeals);
+
+    const appealPendingNotice = document.getElementById('appealPendingNotice');
+    const appealFormSection = document.getElementById('appealFormSection');
+    if (appealPendingNotice) appealPendingNotice.classList.remove('hidden');
+    if (appealFormSection) appealFormSection.classList.add('hidden');
+
+    showToast('Statement of appeal submitted successfully to the Primary Admin.', 'success');
   }
 
   function createSession(user) {
@@ -5031,10 +5317,14 @@
     const authScreen = document.getElementById('authScreen');
     const firstNotice = document.getElementById('firstAccountNotice');
     const regMotherNotice = document.getElementById('regMotherNotice');
+    const regAdminCodeContainer = document.getElementById('regAdminCodeContainer');
     const accounts = getRegisteredAccounts();
+    const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
 
-    if (firstNotice) firstNotice.classList.toggle('hidden', accounts.length > 0);
-    if (regMotherNotice) regMotherNotice.classList.toggle('hidden', accounts.length > 0);
+    // Show primary admin code input & prompt only if unclaimed
+    if (firstNotice) firstNotice.classList.toggle('hidden', hasPrimaryAdmin);
+    if (regMotherNotice) regMotherNotice.classList.toggle('hidden', hasPrimaryAdmin);
+    if (regAdminCodeContainer) regAdminCodeContainer.classList.toggle('hidden', hasPrimaryAdmin);
 
     if (!authState.currentUser) {
       if (authScreen) authScreen.classList.remove('hidden');
@@ -5063,8 +5353,8 @@
 
       const sidebarAcBtn = document.getElementById('sidebarAccessControlBtn');
       if (sidebarAcBtn) {
-        const canAccess = user.isMother || hasPermission('roles:manage') || hasPermission('permissions:manage') || hasPermission('users:view_accounts');
-        sidebarAcBtn.classList.toggle('hidden', !canAccess);
+        // Exclusively visible to the Primary Admin (Mother Account)
+        sidebarAcBtn.classList.toggle('hidden', !user.isMother);
       }
 
       const exoPublishBtn = document.getElementById('exoPublishDirectiveBtn');
@@ -5075,22 +5365,55 @@
     if (window.lucide) window.lucide.createIcons();
   }
 
-  // --- ACCESS CONTROL VIEW RENDERER ---
+  // --- HELPER: FORMAT REMAINING SUSPENSION TIME ---
+  function formatRemainingTime(isoString) {
+    if (!isoString || isoString === 'permanent') return 'Permanent';
+    const diff = new Date(isoString).getTime() - Date.now();
+    if (diff <= 0) return 'Expired';
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    const remHours = hours % 24;
+    return days > 0 ? `${days}d ${remHours}h` : `${hours}h`;
+  }
+
+  // --- ACCESS CONTROL VIEW RENDERER (PRIMARY ADMIN ONLY) ---
+  let acLivePollingTimer = null;
+
   function renderAccessControlView() {
+    // Strictly verify Primary Admin
+    if (!authState.currentUser || !authState.currentUser.isMother) {
+      return;
+    }
+
     const roles = getRoles();
     const accounts = getRegisteredAccounts();
+    const appeals = getAppeals();
+    const pendingAppeals = appeals.filter(a => a.status === 'pending');
 
+    // Update Top Stat Badges
     const acAccountsCountBadge = document.getElementById('acAccountsCountBadge');
+    const acPendingAppealsBadge = document.getElementById('acPendingAppealsBadge');
     if (acAccountsCountBadge) acAccountsCountBadge.textContent = accounts.length;
+    if (acPendingAppealsBadge) acPendingAppealsBadge.textContent = pendingAppeals.length;
+
+    // Stat Cards in Subpane 1
+    const statTotal = document.getElementById('statTotalAccounts');
+    const statActive = document.getElementById('statActiveAccounts');
+    const statSuspended = document.getElementById('statSuspendedAccounts');
+    const statAppeals = document.getElementById('statPendingAppeals');
+    if (statTotal) statTotal.textContent = accounts.length;
+    if (statActive) statActive.textContent = accounts.filter(a => a.status !== 'suspended').length;
+    if (statSuspended) statSuspended.textContent = accounts.filter(a => a.status === 'suspended').length;
+    if (statAppeals) statAppeals.textContent = pendingAppeals.length;
 
     // Roles List on Left
     const rolesContainer = document.getElementById('acRolesListContainer');
     if (rolesContainer) {
       rolesContainer.innerHTML = roles.map(r => {
         const isActive = r.id === authState.selectedRoleId;
-        const userCount = accounts.filter(a => a.role === r.id).length;
+        const userCount = accounts.filter(a => (a.roles || [a.role]).includes(r.id)).length;
         return `
-          <div class="access-role-item ${isActive ? 'active-role' : ''} flex items-center justify-between" onclick="selectAccessControlRole('${r.id}')">
+          <div class="access-role-item ${isActive ? 'active-role' : ''} flex items-center justify-between cursor-pointer" onclick="window.selectAccessControlRole('${r.id}')">
             <div>
               <div class="font-bold text-xs text-white">${r.shortName || r.name}</div>
               <div class="text-[10px] text-slate-400 font-mono">${r.type || 'Built-in role'}</div>
@@ -5144,27 +5467,43 @@
       }).join('');
     }
 
-    renderRegisteredAccountsTable();
+    renderAccountsDatabase();
+    renderAppealsQueueTable();
+
+    // Start auto-poll timer if not active
+    if (!acLivePollingTimer) {
+      acLivePollingTimer = setInterval(() => {
+        const acPane = document.getElementById('view-access-control');
+        if (acPane && !acPane.classList.contains('hidden') && authState.currentUser?.isMother) {
+          renderAccountsDatabase();
+          renderAppealsQueueTable();
+        } else {
+          clearInterval(acLivePollingTimer);
+          acLivePollingTimer = null;
+        }
+      }, 3000);
+    }
+
     if (window.lucide) window.lucide.createIcons();
   }
+
   window.selectAccessControlRole = function (roleId) {
     authState.selectedRoleId = roleId;
     renderAccessControlView();
   };
 
-  function renderRegisteredAccountsTable() {
+  // --- SUBPANE 1: REAL-TIME ACCOUNTS DATABASE ---
+  function renderAccountsDatabase() {
     const tableBody = document.getElementById('acAccountsTableBody');
     if (!tableBody) return;
 
-    const user = authState.currentUser;
-    const canView = user && (user.isMother || hasPermission('users:view_accounts'));
-    if (!canView) {
+    if (!authState.currentUser || !authState.currentUser.isMother) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="5" class="py-8 text-center text-slate-400">
-            <i data-lucide="lock" class="w-6 h-6 mx-auto mb-2 text-slate-500"></i>
-            <span class="block font-bold">Access Restricted</span>
-            <span class="text-[11px] text-slate-500">The registered accounts roster is visible exclusively to the Mother Account and authorized administrators.</span>
+          <td colspan="6" class="py-8 text-center text-slate-400 font-mono">
+            <i data-lucide="lock" class="w-6 h-6 mx-auto mb-2 text-rose-500"></i>
+            <span class="block font-bold text-white">Access Strictly Restricted</span>
+            <span class="text-xs text-slate-500">The registered accounts database is visible exclusively to the Primary Admin.</span>
           </td>
         </tr>
       `;
@@ -5173,13 +5512,80 @@
 
     const accounts = getRegisteredAccounts();
     const roles = getRoles();
-    const canManageUsers = user.isMother || hasPermission('users:manage');
+    const query = document.getElementById('acSearchInput')?.value?.trim().toLowerCase() || '';
+    const statusFilter = document.getElementById('acFilterStatus')?.value || 'all';
 
-    tableBody.innerHTML = accounts.map(acc => {
-      const isMother = acc.isMother;
-      const roleOptions = roles.map(r => `
-        <option value="${r.id}" ${acc.role === r.id ? 'selected' : ''}>${r.shortName || r.name}</option>
-      `).join('');
+    const filtered = accounts.filter(acc => {
+      if (query && !acc.username.toLowerCase().includes(query)) return false;
+      if (statusFilter === 'active' && acc.status === 'suspended') return false;
+      if (statusFilter === 'suspended' && acc.status !== 'suspended') return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-8 text-center text-slate-500 font-mono text-xs">
+            No accounts matching search criteria.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = filtered.map(acc => {
+      const isMother = Boolean(acc.isMother);
+      const isSuspended = acc.status === 'suspended';
+
+      // Multi-Role Badges
+      const cadetRoles = Array.isArray(acc.roles) && acc.roles.length > 0 ? acc.roles : [acc.role || 'viewer'];
+      const roleBadges = cadetRoles.map(rId => {
+        const rObj = roles.find(r => r.id === rId);
+        const label = rObj?.shortName || rObj?.name || rId.toUpperCase();
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950/80 text-blue-300 border border-blue-700/50 uppercase inline-block">${label}</span>`;
+      }).join(' ');
+
+      // Disciplinary Status Badge
+      let statusHtml = '';
+      if (isSuspended) {
+        const remaining = formatRemainingTime(acc.suspendedUntil);
+        statusHtml = `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold bg-rose-950/80 text-rose-300 border border-rose-700/50" title="${acc.suspendedReason || 'Disciplinary hold'}">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+            <span>Suspended (${remaining})</span>
+          </span>
+        `;
+      } else {
+        statusHtml = `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/50">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span>
+            <span>Active</span>
+          </span>
+        `;
+      }
+
+      // Actions Column
+      let actionsHtml = '';
+      if (isMother) {
+        actionsHtml = `<span class="text-amber-400 font-mono text-[10.5px] font-bold px-2 py-1 rounded bg-amber-950/60 border border-amber-800/40">Primary Protected</span>`;
+      } else {
+        actionsHtml = `
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" class="px-2.5 py-1 rounded-lg bg-blue-950/80 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-[11px] font-bold font-mono transition-colors cursor-pointer" onclick="window.openMultiRoleModal('${acc.username}')">
+              Roles (${cadetRoles.length})
+            </button>
+            ${isSuspended ? `
+              <button type="button" class="px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold font-mono transition-colors cursor-pointer" onclick="window.unsuspendCadetAccount('${acc.username}')">
+                Unsuspend
+              </button>
+            ` : `
+              <button type="button" class="px-2.5 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 text-[11px] font-bold font-mono transition-colors cursor-pointer" onclick="window.openSuspendModal('${acc.username}')">
+                Suspend
+              </button>
+            `}
+          </div>
+        `;
+      }
 
       return `
         <tr class="hover:bg-slate-800/40 transition-colors">
@@ -5189,50 +5595,353 @@
           </td>
           <td class="py-3 px-4">
             ${isMother 
-              ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 text-amber-400 border border-amber-800/50">Mother Account (Primary Admin)</span>' 
-              : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">Cadet Account</span>'}
+              ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50">Mother Account (Primary Admin)</span>' 
+              : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700/50">Cadet Account</span>'}
+          </td>
+          <td class="py-3 px-4 flex flex-wrap gap-1">
+            ${roleBadges}
           </td>
           <td class="py-3 px-4">
-            <select class="ac-role-select bg-[#0b1120] text-slate-200 border border-slate-700 rounded-lg px-2 py-1 text-xs outline-none" data-username="${acc.username}" ${!canManageUsers ? 'disabled' : ''}>
-              ${roleOptions}
-            </select>
+            ${statusHtml}
           </td>
-          <td class="py-3 px-4 text-slate-400 text-[11px]">
+          <td class="py-3 px-4 text-slate-400 text-[11px] font-mono">
             ${new Date(acc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </td>
           <td class="py-3 px-4 text-right">
-            ${canManageUsers ? `
-              <button class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer" onclick="saveUserRoleAssignment('${acc.username}')">
-                Assign Role
-              </button>
-            ` : '<span class="text-slate-500 text-[11px]">Read-only</span>'}
+            ${actionsHtml}
           </td>
         </tr>
       `;
     }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
   }
 
-  window.saveUserRoleAssignment = function(username) {
-    const select = document.querySelector(`.ac-role-select[data-username="${username}"]`);
-    if (!select) return;
-    const newRole = select.value;
+  // --- MULTI-ROLE ASSIGNMENT MODAL LOGIC ---
+  let activeMultiRoleTarget = null;
+
+  window.openMultiRoleModal = function(username) {
+    activeMultiRoleTarget = username;
+    const modal = document.getElementById('acMultiRoleModal');
+    const targetDisp = document.getElementById('multiRoleTargetUsername');
+    const list = document.getElementById('multiRoleCheckboxList');
+    if (!modal || !list) return;
+
+    if (targetDisp) targetDisp.textContent = username;
+
     const accounts = getRegisteredAccounts();
     const target = accounts.find(a => a.username === username);
     if (!target) return;
 
-    target.role = newRole;
+    const roles = getRoles();
+    const assignedRoles = Array.isArray(target.roles) && target.roles.length > 0 ? target.roles : [target.role || 'viewer'];
+
+    list.innerHTML = roles.map(r => {
+      const isChecked = assignedRoles.includes(r.id);
+      return `
+        <label class="flex items-center justify-between p-3 rounded-xl bg-[#08101c] border border-slate-800 hover:border-slate-700 cursor-pointer select-none transition-colors">
+          <div class="flex items-center gap-3">
+            <input type="checkbox" class="multi-role-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" data-role-id="${r.id}" ${isChecked ? 'checked' : ''}>
+            <div>
+              <span class="text-xs font-bold text-white block">${r.shortName || r.name}</span>
+              <span class="text-[10px] text-slate-400 block">${r.name} &bull; ${r.permissions.length} permissions</span>
+            </div>
+          </div>
+          <span class="text-[9.5px] font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60 uppercase">
+            ${r.type || 'ROLE'}
+          </span>
+        </label>
+      `;
+    }).join('');
+
+    modal.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  function saveMultiRoleAssignment() {
+    if (!activeMultiRoleTarget) return;
+    const modal = document.getElementById('acMultiRoleModal');
+    const checkboxes = document.querySelectorAll('.multi-role-checkbox:checked');
+    const selectedRoleIds = Array.from(checkboxes).map(cb => cb.getAttribute('data-role-id')).filter(Boolean);
+
+    if (selectedRoleIds.length === 0) {
+      selectedRoleIds.push('viewer');
+    }
+
+    const accounts = getRegisteredAccounts();
+    const target = accounts.find(a => a.username === activeMultiRoleTarget);
+    if (!target) return;
+
+    target.roles = selectedRoleIds;
+    target.role = selectedRoleIds[0];
     saveRegisteredAccounts(accounts);
 
-    if (authState.currentUser && authState.currentUser.username === username) {
-      authState.currentUser.role = newRole;
+    // If currently logged-in user, update session
+    if (authState.currentUser && authState.currentUser.username === activeMultiRoleTarget) {
+      authState.currentUser.roles = selectedRoleIds;
+      authState.currentUser.role = selectedRoleIds[0];
       const session = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEYS.SESSION) || '{}');
-      session.role = newRole;
+      session.role = selectedRoleIds[0];
       localStorage.setItem(AUTH_STORAGE_KEYS.SESSION, JSON.stringify(session));
       syncAuthUI();
     }
 
+    if (modal) modal.classList.add('hidden');
     renderAccessControlView();
-    showToast(`Role for user ${username} updated to ${newRole.toUpperCase()}!`, 'success');
+    showToast(`Roles updated for Cadet ${activeMultiRoleTarget}! (${selectedRoleIds.length} roles assigned)`, 'success');
+  }
+
+  // --- CREATE CUSTOM ROLE LOGIC ---
+  function openCreateRoleDialog() {
+    const modal = document.getElementById('acCreateRoleModal');
+    if (!modal) return;
+
+    const nameInput = document.getElementById('createRoleName');
+    const shortNameInput = document.getElementById('createRoleShortName');
+    const descInput = document.getElementById('createRoleDesc');
+    const permsList = document.getElementById('createRolePermissionsList');
+
+    if (nameInput) nameInput.value = '';
+    if (shortNameInput) shortNameInput.value = '';
+    if (descInput) descInput.value = '';
+
+    if (permsList) {
+      const taxonomy = (typeof window !== 'undefined' && window.CCAFP_PERMISSIONS_TAXONOMY) ? window.CCAFP_PERMISSIONS_TAXONOMY : [];
+      permsList.innerHTML = taxonomy.map(cat => {
+        const catPerms = cat.permissions.map(p => `
+          <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800/40 cursor-pointer text-xs">
+            <input type="checkbox" class="create-role-perm-cb w-3.5 h-3.5 rounded text-emerald-600" data-perm-key="${p.key}">
+            <span class="text-slate-200">${p.label}</span>
+            <span class="text-[10px] font-mono text-slate-500">(${p.key})</span>
+          </label>
+        `).join('');
+
+        return `
+          <div class="mb-2">
+            <div class="text-[10px] font-mono font-bold text-amber-400 uppercase mb-1">${cat.category}</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">${catPerms}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    modal.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function saveNewCustomRole() {
+    const name = document.getElementById('createRoleName')?.value?.trim();
+    const shortName = document.getElementById('createRoleShortName')?.value?.trim();
+    const desc = document.getElementById('createRoleDesc')?.value?.trim();
+    const modal = document.getElementById('acCreateRoleModal');
+
+    if (!name) {
+      showToast('Please enter a role title.', 'error');
+      return;
+    }
+
+    const roleId = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 32);
+    const roles = getRoles();
+    if (roles.some(r => r.id === roleId)) {
+      showToast('A role with this identifier already exists.', 'error');
+      return;
+    }
+
+    const checkedPerms = Array.from(document.querySelectorAll('.create-role-perm-cb:checked'))
+      .map(cb => cb.getAttribute('data-perm-key'))
+      .filter(Boolean);
+
+    const newRole = {
+      id: roleId,
+      name: name,
+      shortName: shortName || name.toUpperCase().slice(0, 10),
+      type: 'Custom Role',
+      description: desc || 'Custom defined role',
+      permissions: checkedPerms
+    };
+
+    roles.push(newRole);
+    saveRoles(roles);
+    authState.selectedRoleId = roleId;
+
+    if (modal) modal.classList.add('hidden');
+    renderAccessControlView();
+    showToast(`Custom role "${name}" created successfully!`, 'success');
+  }
+
+  // --- ACCOUNT SUSPENSION & UNSUSPENSION LOGIC ---
+  window.openSuspendModal = function(username) {
+    const modal = document.getElementById('acSuspendModal');
+    const targetDisp = document.getElementById('suspendTargetUsernameDisplay');
+    const targetInput = document.getElementById('suspendTargetUsername');
+    const reasonInput = document.getElementById('suspendReasonInput');
+    const durSelect = document.getElementById('suspendDurationSelect');
+
+    if (targetDisp) targetDisp.textContent = username;
+    if (targetInput) targetInput.value = username;
+    if (reasonInput) reasonInput.value = '';
+    if (durSelect) durSelect.value = '24h';
+
+    if (modal) modal.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  function confirmCadetSuspensionAction() {
+    const username = document.getElementById('suspendTargetUsername')?.value;
+    const duration = document.getElementById('suspendDurationSelect')?.value || '24h';
+    const reason = document.getElementById('suspendReasonInput')?.value?.trim() || 'Disciplinary administrative hold';
+    const modal = document.getElementById('acSuspendModal');
+
+    if (!username) return;
+
+    let suspendedUntil = null;
+    const now = Date.now();
+    if (duration === '24h') {
+      suspendedUntil = new Date(now + 24 * 60 * 60 * 1000).toISOString();
+    } else if (duration === '7d') {
+      suspendedUntil = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString();
+    } else if (duration === '30d') {
+      suspendedUntil = new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString();
+    } else if (duration === 'permanent') {
+      suspendedUntil = 'permanent';
+    }
+
+    const accounts = getRegisteredAccounts();
+    const target = accounts.find(a => a.username === username);
+    if (!target) return;
+
+    target.status = 'suspended';
+    target.suspendedUntil = suspendedUntil;
+    target.suspendedReason = reason;
+    saveRegisteredAccounts(accounts);
+
+    if (modal) modal.classList.add('hidden');
+    renderAccessControlView();
+    showToast(`Cadet ${username} account suspended (${duration.toUpperCase()}).`, 'info');
+  }
+
+  window.unsuspendCadetAccount = function(username) {
+    const accounts = getRegisteredAccounts();
+    const target = accounts.find(a => a.username === username);
+    if (!target) return;
+
+    target.status = 'active';
+    target.suspendedUntil = null;
+    target.suspendedReason = null;
+    saveRegisteredAccounts(accounts);
+
+    // If an appeal was pending, mark as approved
+    const appeals = getAppeals();
+    let appealUpdated = false;
+    appeals.forEach(a => {
+      if (a.username === username && a.status === 'pending') {
+        a.status = 'approved';
+        appealUpdated = true;
+      }
+    });
+    if (appealUpdated) saveAppeals(appeals);
+
+    renderAccessControlView();
+    showToast(`Cadet ${username} account unsuspended and restored to active duty!`, 'success');
+  };
+
+  // --- SUBPANE 3: DISCIPLINARY APPEALS QUEUE LOGIC ---
+  function renderAppealsQueueTable() {
+    const tableBody = document.getElementById('acAppealsTableBody');
+    if (!tableBody) return;
+
+    const appeals = getAppeals();
+    if (appeals.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-8 text-center text-slate-500 font-mono text-xs">
+            No disciplinary appeals submitted yet.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    // Sort newest first
+    const sorted = [...appeals].reverse();
+
+    tableBody.innerHTML = sorted.map(app => {
+      let statusBadge = '';
+      if (app.status === 'pending') {
+        statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 text-amber-300 border border-amber-600/50">PENDING REVIEW</span>';
+      } else if (app.status === 'approved') {
+        statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-600/50">APPROVED</span>';
+      } else {
+        statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 text-rose-300 border border-rose-600/50">REJECTED</span>';
+      }
+
+      let actionsHtml = '';
+      if (app.status === 'pending') {
+        actionsHtml = `
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" class="px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-[10.5px] font-bold font-mono transition-colors cursor-pointer" onclick="window.approveCadetAppeal('${app.id}')">
+              Approve &amp; Unsuspend
+            </button>
+            <button type="button" class="px-2.5 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 text-[10.5px] font-bold font-mono transition-colors cursor-pointer" onclick="window.rejectCadetAppeal('${app.id}')">
+              Reject
+            </button>
+          </div>
+        `;
+      } else {
+        actionsHtml = `<span class="text-slate-500 font-mono text-[11px]">Adjudicated</span>`;
+      }
+
+      return `
+        <tr class="hover:bg-slate-800/40 transition-colors">
+          <td class="py-3 px-4 font-bold text-white font-mono flex items-center gap-1.5">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>${app.username}</span>
+          </td>
+          <td class="py-3 px-4 text-rose-300 font-mono text-xs">
+            ${app.reason}
+          </td>
+          <td class="py-3 px-4 max-w-xs text-slate-300 text-xs truncate" title="${app.statement}">
+            ${app.statement}
+          </td>
+          <td class="py-3 px-4 text-slate-400 text-[11px] font-mono">
+            ${new Date(app.submittedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </td>
+          <td class="py-3 px-4">
+            ${statusBadge}
+          </td>
+          <td class="py-3 px-4 text-right">
+            ${actionsHtml}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  window.approveCadetAppeal = function(appealId) {
+    const appeals = getAppeals();
+    const appeal = appeals.find(a => a.id === appealId);
+    if (!appeal) return;
+
+    appeal.status = 'approved';
+    saveAppeals(appeals);
+
+    // Unsuspend target cadet account
+    window.unsuspendCadetAccount(appeal.username);
+    showToast(`Appeal for Cadet ${appeal.username} approved! Account restored.`, 'success');
+  };
+
+  window.rejectCadetAppeal = function(appealId) {
+    const appeals = getAppeals();
+    const appeal = appeals.find(a => a.id === appealId);
+    if (!appeal) return;
+
+    appeal.status = 'rejected';
+    saveAppeals(appeals);
+
+    renderAccessControlView();
+    showToast(`Appeal for Cadet ${appeal.username} rejected.`, 'info');
   };
 
   function saveSelectedRolePermissions() {

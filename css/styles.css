@@ -595,7 +595,11 @@ html.dark .pma-cadet-field {
   z-index: 20;
 }
 
-#authForgotPasswordModal {
+#authForgotPasswordModal,
+#acMultiRoleModal,
+#acCreateRoleModal,
+#acSuspendModal,
+#authSuspendedModal {
   z-index: 10001 !important;
 }
 
