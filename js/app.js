@@ -4614,58 +4614,148 @@
       });
     }
 
-    // Toggle Login Password Visibility
-    const toggleLoginPassBtn = document.getElementById('toggleLoginPasswordBtn');
-    if (toggleLoginPassBtn) {
-      toggleLoginPassBtn.addEventListener('click', () => {
-        const pInput = document.getElementById('loginPassword');
-        if (pInput) {
-          pInput.type = pInput.type === 'password' ? 'text' : 'password';
-        }
-      });
-    }
+    // Toggle Password Visibility
+    const setupPassToggle = (btnId, inputId) => {
+      const btn = document.getElementById(btnId);
+      const input = document.getElementById(inputId);
+      if (btn && input) {
+        btn.addEventListener('click', () => {
+          input.type = input.type === 'password' ? 'text' : 'password';
+        });
+      }
+    };
+    setupPassToggle('toggleLoginPasswordBtn', 'loginPassword');
+    setupPassToggle('toggleRegPasswordBtn', 'regPassword');
+    setupPassToggle('toggleRegConfirmPasswordBtn', 'regPasswordConfirm');
 
-    // Registration Modal
+    // Smooth Card Redirection (Login <-> Create Account)
     const openRegBtn = document.getElementById('authOpenRegisterBtn');
-    const closeRegBtn = document.getElementById('authCloseRegisterBtn');
-    const cancelRegBtn = document.getElementById('regCancelBtn');
-    const regModal = document.getElementById('authRegisterModal');
-    if (openRegBtn && regModal) {
+    const backToLoginBtn = document.getElementById('authBackToLoginBtn');
+    const loginCard = document.getElementById('authLoginCard');
+    const regCard = document.getElementById('authRegisterCard');
+
+    if (openRegBtn && loginCard && regCard) {
       openRegBtn.addEventListener('click', () => {
-        regModal.classList.remove('hidden');
-        document.getElementById('regUsername')?.focus();
+        loginCard.classList.add('hidden');
+        regCard.classList.remove('hidden');
+        const fb = document.getElementById('regFeedback');
+        if (fb) fb.classList.add('hidden');
+        const regU = document.getElementById('regUsername');
+        if (regU) {
+          regU.value = '';
+          regU.focus();
+        }
+        const regP = document.getElementById('regPassword');
+        if (regP) regP.value = '';
+        const regPC = document.getElementById('regPasswordConfirm');
+        if (regPC) regPC.value = '';
+        if (window.lucide) window.lucide.createIcons();
       });
     }
-    if (closeRegBtn && regModal) closeRegBtn.addEventListener('click', () => regModal.classList.add('hidden'));
-    if (cancelRegBtn && regModal) cancelRegBtn.addEventListener('click', () => regModal.classList.add('hidden'));
 
+    if (backToLoginBtn && loginCard && regCard) {
+      backToLoginBtn.addEventListener('click', () => {
+        regCard.classList.add('hidden');
+        loginCard.classList.remove('hidden');
+        const fb = document.getElementById('loginFeedback');
+        if (fb) fb.classList.add('hidden');
+        const loginU = document.getElementById('loginUsername');
+        if (loginU) loginU.focus();
+        if (window.lucide) window.lucide.createIcons();
+      });
+    }
+
+    // Submit Create Account with Strict Matching Verification
     const regSubmitBtn = document.getElementById('regSubmitBtn');
     if (regSubmitBtn) {
       regSubmitBtn.addEventListener('click', async () => {
-        const u = document.getElementById('regUsername')?.value;
+        const u = document.getElementById('regUsername')?.value?.trim();
         const p = document.getElementById('regPassword')?.value;
         const pc = document.getElementById('regPasswordConfirm')?.value;
         const fb = document.getElementById('regFeedback');
-        if (p !== pc) {
+        if (fb) fb.classList.add('hidden');
+
+        if (!u) {
           if (fb) {
-            fb.textContent = 'Passwords do not match.';
+            fb.textContent = 'Please enter your numeric Username ID.';
             fb.classList.remove('hidden');
           }
           return;
         }
+
+        if (!/^[0-9]+$/.test(u)) {
+          if (fb) {
+            fb.textContent = 'Username must be strictly numeric (digits 0-9 only).';
+            fb.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (!p) {
+          if (fb) {
+            fb.textContent = 'Please enter a password.';
+            fb.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (p.length < 3) {
+          if (fb) {
+            fb.textContent = 'Password must be at least 3 characters long.';
+            fb.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (!pc) {
+          if (fb) {
+            fb.textContent = 'Please re-enter your password to confirm.';
+            fb.classList.remove('hidden');
+          }
+          return;
+        }
+
+        // Strict Requirement: Password and Re-enter Password must match
+        if (p !== pc) {
+          if (fb) {
+            fb.textContent = 'Passwords do not match. Please ensure Password and Re-enter Password are the same.';
+            fb.classList.remove('hidden');
+          }
+          return;
+        }
+
         try {
+          regSubmitBtn.disabled = true;
           const acc = await registerAccount(u, p);
-          if (regModal) regModal.classList.add('hidden');
-          showToast(acc.isMother ? 'Mother Account (Primary Admin) successfully initialized!' : 'Account registered successfully!', 'success');
+          showToast(acc.isMother ? 'Mother Account (Primary Admin) successfully initialized!' : `Account created successfully! Welcome, Cadet ${u}.`, 'success');
           navigateToTab(acc.isMother ? 'access-control' : 'home');
         } catch (err) {
           if (fb) {
             fb.textContent = err.message || 'Registration failed.';
             fb.classList.remove('hidden');
           }
+        } finally {
+          regSubmitBtn.disabled = false;
         }
       });
     }
+
+    // Enter Key Submission Helpers
+    const bindEnterKey = (inputs, btn) => {
+      inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && btn) {
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              btn.click();
+            }
+          });
+        }
+      });
+    };
+    bindEnterKey(['loginUsername', 'loginPassword'], loginSubmitBtn);
+    bindEnterKey(['regUsername', 'regPassword', 'regPasswordConfirm'], regSubmitBtn);
 
     // Forgot Password Modal
     const forgotBtn = document.getElementById('authForgotPasswordBtn');
@@ -4930,6 +5020,10 @@
   function logoutAccount() {
     localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
     authState.currentUser = null;
+    const loginCard = document.getElementById('authLoginCard');
+    const regCard = document.getElementById('authRegisterCard');
+    if (loginCard) loginCard.classList.remove('hidden');
+    if (regCard) regCard.classList.add('hidden');
     syncAuthUI();
   }
 
