@@ -46,6 +46,275 @@
 </head>
 <body class="bg-[#f0f4f8] text-slate-800 min-h-screen flex antialiased">
 
+  <!-- ================= SPLIT-SCREEN AUTHENTICATION SCREEN ================= -->
+  <div id="authScreen" class="fixed inset-0 z-[100] bg-[#f0f2f5] overflow-y-auto flex flex-col justify-between hidden">
+    
+    <!-- Split Screen Main Row -->
+    <div class="flex-1 flex items-center justify-center py-8 px-4 sm:px-6 lg:px-12">
+      <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        
+        <!-- Left Column: Branding, Overlapping Photo Collage & PMA Cadetship Headline -->
+        <div class="lg:col-span-7 flex flex-col justify-between py-2 space-y-6">
+          
+          <!-- Brand & PMA Crest -->
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 flex-shrink-0 drop-shadow-md">
+              <img src="assets/pma-crest.png" alt="PMA Crest" class="w-full h-full object-contain">
+            </div>
+            <div>
+              <span class="text-xs font-extrabold tracking-wider text-slate-900 font-mono-clean uppercase">PHILIPPINE MILITARY ACADEMY</span>
+              <p class="text-[10px] text-blue-700 font-bold font-mono-clean uppercase tracking-widest">CADET CORPS ARMED FORCES OF THE PHILIPPINES</p>
+            </div>
+          </div>
+
+          <!-- Overlapping Visual Assets & Cadet Photo Collage (Matching Reference) -->
+          <div class="auth-collage-container relative my-2 h-[380px] w-full max-w-xl">
+            
+            <!-- Floating Laughing Emoji (Top Left) -->
+            <div class="absolute -top-3 left-4 w-12 h-12 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center text-2xl shadow-lg z-30 select-none animate-bounce duration-1000">
+              😆
+            </div>
+
+            <!-- Card 1: Cadet in BDU in the Rain (Field Exercise) - Left Card with Badge -->
+            <div class="auth-photo-card absolute left-2 top-6 w-56 sm:w-64 h-64 sm:h-72 z-10 rotate-[-4deg] shadow-xl">
+              <img src="assets/cadet-field.png" alt="PMA Cadet BDU Tactical Field" class="w-full h-full object-cover">
+              <div class="absolute top-3 left-3 w-8 h-8 rounded-xl bg-slate-950/70 backdrop-blur-xs text-white flex items-center justify-center text-sm shadow">
+                🛡️
+              </div>
+              <div class="absolute bottom-2 left-2 right-2 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-mono-clean px-2.5 py-1 rounded-lg flex items-center justify-between">
+                <span class="font-bold">TACTICAL BDU</span>
+                <span class="text-emerald-400">READY</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Cadets in Dress White (Parade Ground) - Center Dominant Smartphone Card -->
+            <div class="auth-photo-card absolute left-28 sm:left-36 top-0 w-64 sm:w-72 h-80 sm:h-88 z-20 shadow-2xl rotate-[1.5deg]">
+              <img src="assets/cadet-parade.jpg" alt="PMA Cadets Borromeo Field Parade" class="w-full h-full object-cover">
+              
+              <!-- Floating Time Badge (Matching Screenshot '16:45' style) -->
+              <div class="auth-floating-badge top-3 right-3 bg-blue-600/95 text-white shadow-lg">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-white"></i>
+                <span class="font-mono-clean text-xs">18:30 Guard Mounting</span>
+              </div>
+
+              <!-- Bottom Carousel Indicator Dots (Matching Screenshot) -->
+              <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-gradient-to-t from-black/85 via-black/40 to-transparent p-2.5 rounded-xl text-white">
+                <div class="text-[11px] font-bold font-mono-clean tracking-wider">BORROMEO FIELD</div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-5 h-1.5 rounded-full bg-white"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Cadet Officer Gala Shako (Bottom Right Floating Circle Card) -->
+            <div class="auth-photo-card absolute right-4 sm:right-6 bottom-0 w-44 sm:w-52 h-44 sm:h-52 rounded-full overflow-hidden z-30 shadow-2xl border-4 border-blue-500 ring-4 ring-white">
+              <img src="assets/cadet-shako.jpg" alt="PMA Cadet Officer Shako" class="w-full h-full object-cover">
+            </div>
+
+            <!-- Floating 3D Heart Reaction Badge (Matching Screenshot) -->
+            <div class="absolute bottom-8 right-2 sm:right-4 w-12 h-12 rounded-full bg-gradient-to-tr from-rose-600 to-pink-500 text-white flex items-center justify-center text-xl shadow-xl z-40 animate-pulse">
+              ❤️
+            </div>
+
+            <!-- Floating Status Badge -->
+            <div class="auth-floating-badge bottom-2 left-6 z-40 bg-slate-900/90 border border-slate-700 text-white">
+              <span class="text-amber-400 text-xs">★</span>
+              <span class="font-mono-clean text-[11px]">PMA CLASS 2026-2027</span>
+            </div>
+
+          </div>
+
+          <!-- Bold PMA Cadetship Headline (Matching Position of 'Explore the things you love.') -->
+          <div class="space-y-1 pt-2">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.05]">
+              Courage,<br>
+              Integrity,<br>
+              <span class="text-[#1877f2]">Loyalty.</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 font-medium pt-1 max-w-lg font-mono-clean">
+              Official bulletin system of the Cadet Corps Armed Forces of the Philippines &bull; Fort Del Pilar, Baguio City
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Authentication Form Container -->
+        <div class="lg:col-span-5 flex flex-col items-center justify-center">
+          <div class="bg-white rounded-3xl shadow-xl border border-slate-200/90 p-7 sm:p-9 w-full max-w-md space-y-5">
+            
+            <div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight">Log into CCAFP Portal</h2>
+              <p class="text-xs text-slate-500 font-mono-clean mt-0.5">Cadet Authentication & Secure Access Control</p>
+            </div>
+
+            <!-- Mother Account First Initialization Banner -->
+            <div id="firstAccountNotice" class="hidden p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs space-y-1">
+              <div class="font-bold flex items-center gap-1.5 text-amber-800">
+                <i data-lucide="crown" class="w-4 h-4 text-amber-600"></i>
+                <span>First Account Initialization</span>
+              </div>
+              <p class="text-[11.5px] text-amber-700 leading-relaxed">
+                The very first account registered automatically becomes the <strong>Mother Account (Primary Admin)</strong> with complete system authority.
+              </p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="authLoginForm" class="space-y-4" onsubmit="return false;">
+              
+              <!-- Numeric Username -->
+              <div class="space-y-1">
+                <label for="loginUsername" class="text-xs font-bold font-mono-clean text-slate-700 uppercase tracking-wider block">Username (Numeric ID)</label>
+                <div class="relative">
+                  <input type="text" id="loginUsername" inputmode="numeric" pattern="[0-9]+" maxlength="12" placeholder="e.g. 29384 (digits only)" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 font-mono-clean text-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-slate-400">
+                  <div class="absolute right-3 top-3 text-slate-400">
+                    <i data-lucide="hash" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <p id="loginUsernameErr" class="text-[11px] text-red-600 hidden font-mono-clean">Username must contain only digits (0-9).</p>
+              </div>
+
+              <!-- Password -->
+              <div class="space-y-1">
+                <label for="loginPassword" class="text-xs font-bold font-mono-clean text-slate-700 uppercase tracking-wider block">Password</label>
+                <div class="relative">
+                  <input type="password" id="loginPassword" placeholder="Password" class="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 text-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-slate-400">
+                  <button type="button" id="toggleLoginPasswordBtn" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div id="loginFeedback" class="text-xs text-red-600 hidden font-mono-clean p-2 rounded-lg bg-red-50 border border-red-200"></div>
+
+              <!-- Solid Blue Primary Login Button -->
+              <button id="loginSubmitBtn" type="button" class="w-full py-3.5 bg-[#1877f2] hover:bg-[#166fe5] active:scale-[0.99] text-white font-bold text-base rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <span>Log in</span>
+              </button>
+
+              <!-- Centered Forgot Password Link -->
+              <div class="text-center pt-1">
+                <button type="button" id="authForgotPasswordBtn" class="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">
+                  Forgot password?
+                </button>
+              </div>
+
+              <div class="border-t border-slate-200 my-2"></div>
+
+              <!-- Secondary Outlined Create New Account Button -->
+              <button type="button" id="authOpenRegisterBtn" class="w-full py-3 border-2 border-emerald-600 hover:bg-emerald-50 active:scale-[0.99] text-emerald-700 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <span>Create new account</span>
+              </button>
+
+            </form>
+
+            <div class="text-center pt-2">
+              <span class="text-[11px] font-mono-clean text-slate-400">PHILIPPINE MILITARY ACADEMY</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom Footer (Language Selection & System Links) -->
+    <footer class="w-full border-t border-slate-200/80 bg-white/70 backdrop-blur py-5 px-4">
+      <div class="max-w-6xl mx-auto flex flex-col items-center gap-2.5 text-xs text-slate-500 font-mono-clean">
+        <div class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[11.5px]">
+          <span class="text-slate-800 font-semibold cursor-pointer">English (US)</span>
+          <span class="hover:underline cursor-pointer">Filipino</span>
+          <span class="hover:underline cursor-pointer">Bisaya</span>
+          <span class="hover:underline cursor-pointer">Ilokano</span>
+          <span class="hover:underline cursor-pointer">Español</span>
+          <span class="hover:underline cursor-pointer">日本語</span>
+          <span class="hover:underline cursor-pointer">한국어</span>
+          <span class="hover:underline cursor-pointer">More languages...</span>
+        </div>
+        <div class="text-[10.5px] text-slate-400 text-center">
+          Cadet Corps Armed Forces of the Philippines &bull; Fort Del Pilar, Baguio City &bull; CCAFP Daily Portal &copy; 2026-2027
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Registration Modal -->
+  <div id="authRegisterModal" class="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 sm:p-8 space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900">Create New Account</h3>
+          <p class="text-xs text-slate-500 font-mono-clean">PMA Cadetship Portal Registration</p>
+        </div>
+        <button type="button" id="authCloseRegisterBtn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="regMotherNotice" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+        ⭐ <strong>Initialization:</strong> As the first user, your account will be initialized as the <strong>Mother Account (Primary Admin)</strong> with full administrative rights.
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold font-mono-clean text-slate-700 uppercase block mb-1">Username (Strictly Numeric)</label>
+          <input type="text" id="regUsername" inputmode="numeric" pattern="[0-9]+" maxlength="12" placeholder="e.g. 29384 (digits 0-9 only)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 font-mono-clean text-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+          <p id="regUsernameErr" class="text-[11px] text-red-600 hidden font-mono-clean mt-1">Username must only contain digits (0-9).</p>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold font-mono-clean text-slate-700 uppercase block mb-1">Password</label>
+          <input type="password" id="regPassword" placeholder="Enter password (any characters allowed)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+        </div>
+
+        <div>
+          <label class="text-xs font-bold font-mono-clean text-slate-700 uppercase block mb-1">Confirm Password</label>
+          <input type="password" id="regPasswordConfirm" placeholder="Re-enter password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+        </div>
+
+        <div id="regFeedback" class="text-xs text-red-600 hidden font-mono-clean p-2 rounded-lg bg-red-50 border border-red-200"></div>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button type="button" id="regCancelBtn" class="flex-1 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors">
+          Cancel
+        </button>
+        <button type="button" id="regSubmitBtn" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors">
+          Register Account
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="authForgotPasswordModal" class="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 sm:p-8 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+          <i data-lucide="key-round" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Forgot Password</h3>
+          <p class="text-xs text-slate-500 font-mono-clean">Military Credential Recovery</p>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-600 space-y-2 leading-relaxed">
+        <p>Cadet accounts are cryptographically hashed using PBKDF2 with salt. Passwords are never stored in plaintext.</p>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700">
+          <span class="font-bold text-slate-900">How to reset your access:</span>
+          <p class="mt-1">Contact the <strong>Mother Account (Primary Admin)</strong> or the Senior Tactical Officer. They can re-initialize your cadet account credentials directly from the <strong>Access Control</strong> tab.</p>
+        </div>
+      </div>
+
+      <button type="button" id="authCloseForgotBtn" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors">
+        Got it, Return to Login
+      </button>
+    </div>
+  </div>
+
   <!-- Mobile Drawer Backdrop -->
   <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 hidden md:hidden"></div>
 
@@ -147,6 +416,33 @@
           </div>
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
         </button>
+
+        <!-- EXO Council (Interior Guard Detail & Live Guard Mounting Countdown) -->
+        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="exo">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="shield-check" class="w-4 h-4 text-cyan-400"></i>
+            <span>EXO Council</span>
+          </div>
+          <span class="text-[9px] font-mono-clean font-bold text-cyan-400 bg-cyan-950/80 px-1.5 py-0.5 rounded border border-cyan-800/50">18:30H</span>
+        </button>
+
+        <!-- S2 Intelligence (OPSEC & Confidential Concern Triage) -->
+        <button class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-medium" data-tab="s2">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="lock" class="w-4 h-4 text-rose-400"></i>
+            <span>S2 Intelligence</span>
+          </div>
+          <span class="text-[9px] font-mono-clean font-bold text-rose-400 bg-rose-950/80 px-1.5 py-0.5 rounded border border-rose-800/50">SECURE</span>
+        </button>
+
+        <!-- Access Control (Exclusive Admin & Role System) -->
+        <button id="sidebarAccessControlBtn" class="sidebar-link w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-red-400 hover:text-red-300 hidden" data-tab="access-control">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="key-round" class="w-4 h-4 text-red-400"></i>
+            <span>Access Control</span>
+          </div>
+          <span class="text-[9px] font-mono-clean font-extrabold text-white bg-red-600 px-1.5 py-0.5 rounded shadow-xs">ADMIN</span>
+        </button>
       </div>
 
       <!-- 2. COUNCILS DIRECTORY -->
@@ -214,6 +510,22 @@
         <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-mono-clean font-semibold text-emerald-700">
           <span class="w-2 h-2 rounded-full bg-emerald-500 live-beacon"></span>
           <span id="liveFeedStatusText">LIVE FEED</span>
+        </div>
+
+        <!-- Active User Profile & Sign Out -->
+        <div id="topHeaderUserBadge" class="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="flex items-center gap-2 cursor-pointer" onclick="navigateToTab('access-control')">
+            <div class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold font-mono-clean ring-1 ring-slate-300">
+              <span id="topUserInitial">0</span>
+            </div>
+            <div class="hidden md:block text-left">
+              <div id="topUserSerial" class="text-xs font-bold font-mono-clean text-slate-900 leading-tight">00000</div>
+              <div id="topUserRoleName" class="text-[9.5px] font-mono-clean text-slate-500 uppercase leading-none font-semibold">VIEWER</div>
+            </div>
+          </div>
+          <button id="topSignOutBtn" class="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-slate-100 transition-colors" title="Sign Out">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
         </div>
       </div>
 
@@ -1458,6 +1770,371 @@
             <!-- Dynamically populated table or sensitive policy -->
           </div>
         </div>
+      </section>
+
+      <!-- ================= VIEW 10: EXO COUNCIL ================= -->
+      <section id="view-exo" class="tab-pane hidden space-y-6">
+        
+        <!-- EXO Council Hero Banner with Live 1830H Guardmounting Countdown -->
+        <div class="bg-gradient-to-r from-[#0c1a2c] via-[#0f243d] to-[#163558] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-700/50 space-y-5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-cyan-900/40 text-cyan-400 flex items-center justify-center flex-shrink-0 text-xl font-bold border border-cyan-500/30">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold font-mono-clean text-cyan-300 uppercase bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-700/50">EXECUTIVE OFFICERS COUNCIL</span>
+                  <span class="text-[10px] font-bold font-mono-clean text-emerald-400 uppercase bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-700/50 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span>
+                    <span>LIVE GUARD DETAIL</span>
+                  </span>
+                </div>
+                <h2 class="font-bold text-2xl text-white mt-1">EXO Council & Guard Mounting</h2>
+                <p class="text-xs sm:text-sm text-cyan-200 mt-0.5">Corps Administrative Synchronization &bull; Incoming & Outgoing Interior Guards &bull; Daily Directives.</p>
+              </div>
+            </div>
+
+            <!-- Live Guard Mounting Countdown Box -->
+            <div class="bg-[#08121f] border border-cyan-500/40 rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center shadow-lg">
+              <span class="text-[10px] font-bold font-mono-clean text-cyan-300 uppercase tracking-widest flex items-center gap-1">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>GUARD MOUNTING COUNTDOWN</span>
+              </span>
+              <div id="exoGuardMountingCountdown" class="text-2xl sm:text-3xl font-black font-mono-clean text-amber-400 tracking-wider my-1">
+                --h --m --s
+              </div>
+              <span class="text-[9.5px] font-mono-clean text-slate-400">Resets daily at 1830H &bull; Borromeo Field</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Posted Officers & Guard Detail -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Posted Officer of the Day -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-2">
+            <span class="text-[10px] font-bold font-mono-clean text-blue-700 uppercase bg-blue-50 px-2 py-0.5 rounded">POSTED OFFICER OF THE DAY</span>
+            <div class="pt-1">
+              <h4 id="exoODName" class="font-bold text-base text-slate-900">CDT 1CL MAGAYANES</h4>
+              <p class="text-xs text-slate-500 font-mono-clean mt-0.5">SN: 2026-10492 &bull; Alpha Coy &bull; OD Detail</p>
+            </div>
+            <div class="text-[11px] text-emerald-700 font-medium font-mono-clean bg-emerald-50 px-2 py-1 rounded-lg">
+              Duty Hours: 1830H - 1830H (+1)
+            </div>
+          </div>
+
+          <!-- Posted Officer-in-Charge -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-2">
+            <span class="text-[10px] font-bold font-mono-clean text-amber-700 uppercase bg-amber-50 px-2 py-0.5 rounded">OFFICER-IN-CHARGE (OIC)</span>
+            <div class="pt-1">
+              <h4 class="font-bold text-base text-slate-900">CDT MAJ DIZON, J.A.</h4>
+              <p class="text-xs text-slate-500 font-mono-clean mt-0.5">Battalion Commander &bull; OIC Armory & Rounds</p>
+            </div>
+            <div class="text-[11px] text-slate-600 font-medium font-mono-clean bg-slate-50 px-2 py-1 rounded-lg">
+              Supervising Officer of the Day Detail
+            </div>
+          </div>
+
+          <!-- Posted OC & AOC -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-2">
+            <span class="text-[10px] font-bold font-mono-clean text-purple-700 uppercase bg-purple-50 px-2 py-0.5 rounded">POSTED OC & AOC</span>
+            <div class="pt-1">
+              <h4 class="font-bold text-base text-slate-900">CAPT DELA CRUZ, PA</h4>
+              <p class="text-xs text-slate-500 font-mono-clean mt-0.5">AOC: 1LT MENDOZA, PAF &bull; Tactical Cadre</p>
+            </div>
+            <div class="text-[11px] text-purple-700 font-medium font-mono-clean bg-purple-50 px-2 py-1 rounded-lg">
+              Tactical Operations Command Post
+            </div>
+          </div>
+        </div>
+
+        <!-- Interior Guard Schedule & Roster -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="font-bold text-lg text-slate-900">Interior Guard Detail Roster</h3>
+              <p class="text-xs text-slate-500 font-mono-clean">Posted (Outgoing) and Incoming Guard Detail across posts.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono-clean px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold">
+                POSTS 1 - 8
+              </span>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-50 text-slate-600 font-mono-clean uppercase text-[10.5px] border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">Post</th>
+                  <th class="py-3 px-4">Location</th>
+                  <th class="py-3 px-4">Posted Guard (Outgoing)</th>
+                  <th class="py-3 px-4">Incoming Guard</th>
+                  <th class="py-3 px-4">Rifle / S/N</th>
+                  <th class="py-3 px-4">Duty Hours</th>
+                </tr>
+              </thead>
+              <tbody id="exoGuardRosterTableBody" class="divide-y divide-slate-100 font-mono-clean text-slate-700">
+                <!-- Dynamically populated or default interior guard detail -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Daily Directives Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="font-bold text-base text-slate-900">EXO Daily Directives</h3>
+              <p class="text-xs text-slate-500 font-mono-clean">Corps directives published by the Executive Officers Council.</p>
+            </div>
+            <button id="exoPublishDirectiveBtn" class="hidden text-xs font-bold px-3 py-1.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white transition-colors">
+              + Publish Directive
+            </button>
+          </div>
+          <div id="exoDirectivesList" class="space-y-3">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-xs text-slate-900">MANDATORY BARRACKS LIGHTS OUT & CQ PROTOCOL</span>
+                <span class="text-[10px] font-mono-clean text-slate-500">2130H DAILY</span>
+              </div>
+              <p class="text-xs text-slate-600">All Company First Sergeants must muster strength accountability and submit the final roll to the Posted Officer of the Day promptly at 2145H.</p>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-xs text-slate-900">GUARD MOUNTING DRESS CODE & ARMS INSPECTION</span>
+                <span class="text-[10px] font-mono-clean text-slate-500">1800H INSPECTION</span>
+              </div>
+              <p class="text-xs text-slate-600">All incoming guards must report to Melchor Hall steps in Dress White with White Belt and Hop Gloves (DW w/ WB & HG) 30 minutes prior to call.</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= VIEW 11: S2 INTELLIGENCE (PRIVATE REPORTING) ================= -->
+      <section id="view-s2" class="tab-pane hidden space-y-6">
+        
+        <!-- S2 Hero Banner -->
+        <div class="bg-gradient-to-r from-[#170e24] via-[#211235] to-[#2c1747] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-purple-900/40 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-purple-900/40 text-purple-300 flex items-center justify-center flex-shrink-0 text-xl font-bold border border-purple-500/30">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold font-mono-clean text-purple-300 uppercase bg-purple-950/80 px-2 py-0.5 rounded border border-purple-700/50">S2 INTELLIGENCE COUNCIL</span>
+                  <span class="text-[10px] font-bold font-mono-clean text-rose-300 uppercase bg-rose-950/80 px-2 py-0.5 rounded border border-rose-700/50">RESTRICTED ACCESS</span>
+                </div>
+                <h2 class="font-bold text-2xl text-white mt-1">S2 Intelligence & Private Reporting</h2>
+                <p class="text-xs sm:text-sm text-purple-200 mt-0.5">Operational Security (OPSEC), Counter-Intelligence & Encrypted Concern Submission System.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Submit Private Concern Form (For s2:submit_concern users) -->
+        <div id="s2SubmitContainer" class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-5">
+          <div class="border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-lg text-slate-900">Private Reporting Feature</h3>
+            <p class="text-xs text-slate-500 font-mono-clean mt-0.5">
+              Submit confidential security concerns, OPSEC violations, safety hazards, or tactical intelligence. 
+              <strong>These submissions bypass public visibility completely</strong> and are routed exclusively to authorized Intelligence Officers holding <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-700">s2:view_concerns</code> clearance.
+            </p>
+          </div>
+
+          <form id="s2ConcernForm" class="space-y-4" onsubmit="return false;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-bold font-mono-clean text-slate-700 uppercase block mb-1">Incident / Concern Category</label>
+                <select id="s2ConcernCategory" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono-clean bg-white outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-200">
+                  <option value="OPSEC">Operational Security (OPSEC / Social Media)</option>
+                  <option value="SAFETY">Safety Hazard & Barracks Risk</option>
+                  <option value="TACTICAL">Tactical Security & Perimeter Watch</option>
+                  <option value="CONDUCT">Honor & Discipline Concern</option>
+                  <option value="GENERAL">General Intelligence Matter</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="text-xs font-bold font-mono-clean text-slate-700 uppercase block mb-1">Urgency Level</label>
+                <select id="s2ConcernUrgency" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono-clean bg-white outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-200">
+                  <option value="Routine">ROUTINE &bull; Standard Review</option>
+                  <option value="Priority">PRIORITY &bull; Action within 12 Hours</option>
+                  <option value="Flash">IMMEDIATE / FLASH &bull; Critical Threat</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-bold font-mono-clean text-slate-700 uppercase block mb-1">Concern Subject / Headline</label>
+              <input type="text" id="s2ConcernSubject" placeholder="Brief descriptive headline of the concern" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono-clean text-slate-800 outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-200">
+            </div>
+
+            <div>
+              <label class="text-xs font-bold font-mono-clean text-slate-700 uppercase block mb-1">Confidential Narrative / Detailed Report</label>
+              <textarea id="s2ConcernNarrative" rows="4" placeholder="Provide complete facts, locations, times, and involved individuals. Confidentiality is strictly protected." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono-clean text-slate-800 outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-200"></textarea>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" id="s2ConcernAnonymous" class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500">
+                <span class="text-xs font-semibold text-slate-700">Submit Anonymously (Mask Cadet Serial No.)</span>
+              </label>
+
+              <button type="button" id="s2ConcernSubmitBtn" class="px-5 py-2.5 rounded-xl bg-purple-900 hover:bg-purple-800 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-2">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span>Submit Confidential Concern</span>
+              </button>
+            </div>
+
+            <div id="s2ConcernFeedback" class="text-xs font-mono-clean hidden p-3 rounded-xl"></div>
+          </form>
+        </div>
+
+        <!-- Section: Confidential Concerns Inbox / Tracker -->
+        <div id="s2ConcernsInboxContainer" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 id="s2InboxTitle" class="font-bold text-base text-slate-900">Intelligence Concerns Triage Inbox</h3>
+              <p id="s2InboxSubtitle" class="text-xs text-slate-500 font-mono-clean">Accessible exclusively to Intelligence Officers with s2:view_concerns permission.</p>
+            </div>
+            <span id="s2InboxCountBadge" class="text-xs font-mono-clean font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+              0 Concerns
+            </span>
+          </div>
+
+          <div id="s2ConcernsList" class="space-y-3">
+            <!-- Dynamically populated concerns -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= VIEW 12: ACCESS CONTROL (ADMIN & ROLES) ================= -->
+      <section id="view-access-control" class="tab-pane hidden space-y-6 access-control-view -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-8">
+        
+        <!-- Top Access Control Header Bar (Matching Reference Screenshot) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+          <div>
+            <div class="text-[10px] font-mono font-bold tracking-widest uppercase text-slate-400">FOXTROT / COMPANY BOARD</div>
+            <h2 class="text-3xl font-extrabold text-white tracking-tight mt-1">Access control</h2>
+          </div>
+
+          <!-- Active User Info Pill & Sign Out -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5 bg-[#111a2e] border border-slate-800 px-3.5 py-1.5 rounded-full">
+              <div class="w-6 h-6 rounded-full bg-slate-800 text-slate-200 flex items-center justify-center text-xs font-bold font-mono">
+                <span id="acUserInitial">0</span>
+              </div>
+              <div class="text-left font-mono">
+                <div id="acUserSerial" class="text-xs font-bold text-white leading-tight">00000</div>
+                <div id="acUserRoleSubtitle" class="text-[9px] text-slate-400 uppercase leading-none">Admin / Creator &bull; Viewer</div>
+              </div>
+              <span id="acRoleBadge" class="text-[10px] font-mono font-extrabold px-2 py-0.5 rounded bg-slate-800 text-white ml-1">ADMIN</span>
+            </div>
+
+            <button id="acSignOutBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-mono text-slate-200 border border-slate-700/60 transition-colors">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <span>Sign out</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Access Control Subpane Tabs: Roles & Permissions / Registered Accounts -->
+        <div class="flex items-center gap-2 border-b border-slate-800/80 pb-3">
+          <button id="acTabRolesBtn" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#1e293b] text-white transition-all flex items-center gap-2">
+            <i data-lucide="shield" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>Role Permissions</span>
+          </button>
+          <button id="acTabAccountsBtn" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2">
+            <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Registered Accounts Roster</span>
+            <span id="acAccountsCountBadge" class="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300">1</span>
+          </button>
+        </div>
+
+        <!-- ================= SUBPANE 1: ROLES & PERMISSIONS ================= -->
+        <div id="acRolesSubpane" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          <!-- Left Column: Discord-like Roles List -->
+          <div class="lg:col-span-3 space-y-3">
+            <div class="text-xs font-mono font-bold tracking-wider uppercase text-slate-400 px-1">AVAILABLE ROLES</div>
+            <div id="acRolesListContainer" class="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto sidebar-scroll pr-1">
+              <!-- Dynamically populated roles -->
+            </div>
+          </div>
+
+          <!-- Right Column: Granular Permissions Architecture Cards -->
+          <div class="lg:col-span-9 space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <span class="text-[11px] font-mono font-bold tracking-widest uppercase text-slate-400 block">PERMISSIONS</span>
+                <div class="flex items-center gap-2 mt-1">
+                  <h3 id="acSelectedRoleTitle" class="text-xl font-bold text-white">Executive Officer (Exo)</h3>
+                  <span id="acSelectedRoleBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Built-in role</span>
+                </div>
+              </div>
+
+              <!-- Top Save Button Quick Access -->
+              <button id="btnAcSavePermissionsTop" class="btn-save-permissions flex items-center gap-2 text-xs">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                <span>Save permissions</span>
+              </button>
+            </div>
+
+            <!-- Granular Permissions Grid Grouped by Category -->
+            <div id="acPermissionsGridContainer" class="space-y-5">
+              <!-- Dynamically populated permission category cards with custom coral/red checkboxes -->
+            </div>
+
+            <!-- Bottom Save Action Bar -->
+            <div class="pt-4 border-t border-slate-800 flex items-center gap-4">
+              <button id="btnAcSavePermissions" class="btn-save-permissions flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>Save permissions</span>
+              </button>
+              <span id="acSaveFeedback" class="text-xs font-mono text-emerald-400 hidden">Permissions updated and saved to storage!</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= SUBPANE 2: REGISTERED ACCOUNTS ROSTER ================= -->
+        <div id="acAccountsSubpane" class="space-y-6 hidden">
+          <div class="bg-[#111a2e] border border-slate-800 rounded-2xl p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+              <div>
+                <h3 class="text-lg font-bold text-white">Registered Accounts Roster</h3>
+                <p class="text-xs text-slate-400 font-mono mt-0.5">
+                  All accounts registered in the portal. Visible exclusively to the Mother Account (or delegated via <code class="text-blue-400">users:view_accounts</code>).
+                </p>
+              </div>
+              <div class="text-xs font-mono text-amber-400 bg-amber-950/60 border border-amber-800/40 px-3 py-1 rounded-xl">
+                Mother Account Authority: Assign Any Role
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-[#0b1120] text-slate-400 font-mono uppercase text-[10.5px] border-b border-slate-800">
+                  <tr>
+                    <th class="py-3 px-4">Numeric Username</th>
+                    <th class="py-3 px-4">Account Type</th>
+                    <th class="py-3 px-4">Assigned Role</th>
+                    <th class="py-3 px-4">Registered Date</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="acAccountsTableBody" class="divide-y divide-slate-800 font-mono text-slate-300">
+                  <!-- Dynamically populated accounts -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </section>
 
     </main>

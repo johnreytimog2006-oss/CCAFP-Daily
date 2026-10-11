@@ -175,7 +175,7 @@
   // --- Clock & Timestamps ---
   function updateGuardMountingCountdown() {
     const el = dom.guardMountingCountdown || document.getElementById('guardMountingCountdown');
-    if (!el) return;
+    const exoEl = document.getElementById('exoGuardMountingCountdown');
     const now = new Date();
     // Guard Mounting resets daily at 1830H (18:30:00)
     const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 30, 0, 0);
@@ -186,7 +186,9 @@
     const hours = Math.floor(diffMs / 3600000);
     const minutes = Math.floor((diffMs % 3600000) / 60000);
     const seconds = Math.floor((diffMs % 60000) / 1000);
-    el.textContent = `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+    const str = `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+    if (el) el.textContent = str;
+    if (exoEl) exoEl.textContent = str;
   }
 
   function updateTime() {
@@ -417,6 +419,12 @@
         isActive = (target === 'honor' || councilTarget === 'honor');
       } else if (tabId === 'punishments') {
         isActive = (target === 'punishments' || councilTarget === 'ccpb');
+      } else if (tabId === 'exo') {
+        isActive = (target === 'exo');
+      } else if (tabId === 's2') {
+        isActive = (target === 's2');
+      } else if (tabId === 'access-control') {
+        isActive = (target === 'access-control');
       } else {
         isActive = (target === tabId);
       }
@@ -459,6 +467,9 @@
       honor: 'HONOR COMMITTEE',
       punishments: 'CCAFP PUNISHMENT LIST',
       mess: 'MESS COUNCIL',
+      exo: 'EXO COUNCIL',
+      s2: 'S2 INTELLIGENCE',
+      'access-control': 'ACCESS CONTROL',
       council: breadcrumbName || 'COUNCILS DIRECTORY'
     };
     if (dom.activeBreadcrumb) {
@@ -473,6 +484,12 @@
       selectCouncil('mess');
     } else if (tabId === 'duty') {
       renderScheduleOfCallsView();
+    } else if (tabId === 'exo') {
+      renderExoCouncilView();
+    } else if (tabId === 's2') {
+      renderS2CouncilView();
+    } else if (tabId === 'access-control') {
+      renderAccessControlView();
     }
 
     closeMobileSidebar();
@@ -4562,6 +4579,801 @@
     if (dom.manualSyncBtn) {
       dom.manualSyncBtn.addEventListener('click', () => performAutomated15MinSync(true));
     }
+
+    // Numeric Enforcement for Auth
+    const enforceNumericInput = (input) => {
+      if (!input) return;
+      input.addEventListener('input', (e) => {
+        const filtered = e.target.value.replace(/[^0-9]/g, '');
+        if (filtered !== e.target.value) {
+          e.target.value = filtered;
+        }
+      });
+    };
+    enforceNumericInput(document.getElementById('loginUsername'));
+    enforceNumericInput(document.getElementById('regUsername'));
+
+    // Login Submit
+    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+    if (loginSubmitBtn) {
+      loginSubmitBtn.addEventListener('click', async () => {
+        const u = document.getElementById('loginUsername')?.value;
+        const p = document.getElementById('loginPassword')?.value;
+        const fb = document.getElementById('loginFeedback');
+        try {
+          await loginAccount(u, p);
+          if (fb) fb.classList.add('hidden');
+          showToast(`Welcome back, Cadet ${u}!`, 'success');
+          navigateToTab('home');
+        } catch (err) {
+          if (fb) {
+            fb.textContent = err.message || 'Login failed.';
+            fb.classList.remove('hidden');
+          }
+        }
+      });
+    }
+
+    // Toggle Login Password Visibility
+    const toggleLoginPassBtn = document.getElementById('toggleLoginPasswordBtn');
+    if (toggleLoginPassBtn) {
+      toggleLoginPassBtn.addEventListener('click', () => {
+        const pInput = document.getElementById('loginPassword');
+        if (pInput) {
+          pInput.type = pInput.type === 'password' ? 'text' : 'password';
+        }
+      });
+    }
+
+    // Registration Modal
+    const openRegBtn = document.getElementById('authOpenRegisterBtn');
+    const closeRegBtn = document.getElementById('authCloseRegisterBtn');
+    const cancelRegBtn = document.getElementById('regCancelBtn');
+    const regModal = document.getElementById('authRegisterModal');
+    if (openRegBtn && regModal) {
+      openRegBtn.addEventListener('click', () => {
+        regModal.classList.remove('hidden');
+        document.getElementById('regUsername')?.focus();
+      });
+    }
+    if (closeRegBtn && regModal) closeRegBtn.addEventListener('click', () => regModal.classList.add('hidden'));
+    if (cancelRegBtn && regModal) cancelRegBtn.addEventListener('click', () => regModal.classList.add('hidden'));
+
+    const regSubmitBtn = document.getElementById('regSubmitBtn');
+    if (regSubmitBtn) {
+      regSubmitBtn.addEventListener('click', async () => {
+        const u = document.getElementById('regUsername')?.value;
+        const p = document.getElementById('regPassword')?.value;
+        const pc = document.getElementById('regPasswordConfirm')?.value;
+        const fb = document.getElementById('regFeedback');
+        if (p !== pc) {
+          if (fb) {
+            fb.textContent = 'Passwords do not match.';
+            fb.classList.remove('hidden');
+          }
+          return;
+        }
+        try {
+          const acc = await registerAccount(u, p);
+          if (regModal) regModal.classList.add('hidden');
+          showToast(acc.isMother ? 'Mother Account (Primary Admin) successfully initialized!' : 'Account registered successfully!', 'success');
+          navigateToTab(acc.isMother ? 'access-control' : 'home');
+        } catch (err) {
+          if (fb) {
+            fb.textContent = err.message || 'Registration failed.';
+            fb.classList.remove('hidden');
+          }
+        }
+      });
+    }
+
+    // Forgot Password Modal
+    const forgotBtn = document.getElementById('authForgotPasswordBtn');
+    const forgotModal = document.getElementById('authForgotPasswordModal');
+    const closeForgotBtn = document.getElementById('authCloseForgotBtn');
+    if (forgotBtn && forgotModal) {
+      forgotBtn.addEventListener('click', () => forgotModal.classList.remove('hidden'));
+    }
+    if (closeForgotBtn && forgotModal) {
+      closeForgotBtn.addEventListener('click', () => forgotModal.classList.add('hidden'));
+    }
+
+    // Sign Out Buttons
+    const handleSignOut = () => {
+      logoutAccount();
+      showToast('Signed out of CCAFP Portal.', 'info');
+    };
+    const topSignOut = document.getElementById('topSignOutBtn');
+    const acSignOut = document.getElementById('acSignOutBtn');
+    if (topSignOut) topSignOut.addEventListener('click', handleSignOut);
+    if (acSignOut) acSignOut.addEventListener('click', handleSignOut);
+
+    // Access Control Subpanes
+    const tabRolesBtn = document.getElementById('acTabRolesBtn');
+    const tabAccountsBtn = document.getElementById('acTabAccountsBtn');
+    const rolesSubpane = document.getElementById('acRolesSubpane');
+    const accountsSubpane = document.getElementById('acAccountsSubpane');
+    if (tabRolesBtn && tabAccountsBtn && rolesSubpane && accountsSubpane) {
+      tabRolesBtn.addEventListener('click', () => {
+        rolesSubpane.classList.remove('hidden');
+        accountsSubpane.classList.add('hidden');
+        tabRolesBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-[#1e293b] text-white transition-all flex items-center gap-2';
+        tabAccountsBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2';
+      });
+      tabAccountsBtn.addEventListener('click', () => {
+        rolesSubpane.classList.add('hidden');
+        accountsSubpane.classList.remove('hidden');
+        tabAccountsBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-[#1e293b] text-white transition-all flex items-center gap-2';
+        tabRolesBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-2';
+        renderRegisteredAccountsTable();
+      });
+    }
+
+    // Save Permissions
+    const btnSave1 = document.getElementById('btnAcSavePermissions');
+    const btnSave2 = document.getElementById('btnAcSavePermissionsTop');
+    if (btnSave1) btnSave1.addEventListener('click', saveSelectedRolePermissions);
+    if (btnSave2) btnSave2.addEventListener('click', saveSelectedRolePermissions);
+
+    // S2 Submit Concern
+    const s2Btn = document.getElementById('s2ConcernSubmitBtn');
+    if (s2Btn) s2Btn.addEventListener('click', handleS2ConcernSubmit);
+  }
+
+  // ====================================================
+  // CCAFP AUTHENTICATION & ACCESS CONTROL ENGINE
+  // ====================================================
+
+  const AUTH_STORAGE_KEYS = {
+    ACCOUNTS: 'CCAFP_AUTH_ACCOUNTS',
+    ROLES: 'CCAFP_AUTH_ROLES',
+    SESSION: 'CCAFP_AUTH_SESSION',
+    S2_CONCERNS: 'CCAFP_S2_CONCERNS'
+  };
+
+  function buf2hex(buffer) {
+    return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  function hex2buf(hex) {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    }
+    return bytes.buffer;
+  }
+
+  // WebCrypto PBKDF2 SHA-256 Password Hashing with Salt
+  async function hashPasswordWithSalt(password, saltHex = null) {
+    const enc = new TextEncoder();
+    let saltBuf;
+    if (saltHex) {
+      saltBuf = hex2buf(saltHex);
+    } else {
+      const s = new Uint8Array(16);
+      crypto.getRandomValues(s);
+      saltBuf = s.buffer;
+    }
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      enc.encode(password),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveBits', 'deriveKey']
+    );
+    const derivedKey = await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: saltBuf,
+        iterations: 50000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'HMAC', hash: 'SHA-256', length: 256 },
+      true,
+      ['sign']
+    );
+    const rawKey = await crypto.subtle.exportKey('raw', derivedKey);
+    return {
+      salt: buf2hex(saltBuf),
+      hash: buf2hex(rawKey)
+    };
+  }
+
+  const authState = {
+    currentUser: null,
+    selectedRoleId: 'exo'
+  };
+
+  function getRegisteredAccounts() {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEYS.ACCOUNTS);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveRegisteredAccounts(accounts) {
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
+    } catch (e) {
+      console.error('Failed to save accounts:', e);
+    }
+  }
+
+  function getRoles() {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEYS.ROLES);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return (typeof window !== 'undefined' && window.CCAFP_DEFAULT_ROLES) ? window.CCAFP_DEFAULT_ROLES : [];
+  }
+
+  function saveRoles(roles) {
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEYS.ROLES, JSON.stringify(roles));
+    } catch (e) {
+      console.error('Failed to save roles:', e);
+    }
+  }
+
+  // Permission Check Function
+  // Automatic view access across general modules;
+  // Specific restrictions apply to edit, move, receive/publish messages, and accessing hidden messages (S2)!
+  function hasPermission(permissionKey) {
+    if (!authState.currentUser) return false;
+    // Mother account has complete system authority
+    if (authState.currentUser.isMother || authState.currentUser.role === 'admin') return true;
+
+    // Automatic access to view general public modules:
+    // Any general :view permission is granted automatically, EXCEPT:
+    // - 's2:view_concerns' (accessing confidential hidden messages)
+    // - 'users:view_accounts' (accessing registered accounts roster)
+    if (permissionKey.endsWith(':view') && permissionKey !== 's2:view_concerns' && permissionKey !== 'users:view_accounts') {
+      return true;
+    }
+
+    const roles = getRoles();
+    const userRole = roles.find(r => r.id === authState.currentUser.role);
+    if (!userRole) return false;
+    if (userRole.permissions.includes('*') || userRole.permissions.includes('command:override')) return true;
+    return userRole.permissions.includes(permissionKey);
+  }
+
+  async function registerAccount(username, password) {
+    const cleanUsername = String(username).trim();
+    if (!/^[0-9]+$/.test(cleanUsername)) {
+      throw new Error('Username must be strictly numeric (digits 0-9 only).');
+    }
+    if (!password || password.length < 3) {
+      throw new Error('Password must be at least 3 characters long.');
+    }
+
+    const accounts = getRegisteredAccounts();
+    if (accounts.some(a => a.username === cleanUsername)) {
+      throw new Error(`Username ${cleanUsername} is already registered.`);
+    }
+
+    // The very first registered account automatically becomes the Mother Account (Primary Admin)
+    const isFirstAccount = accounts.length === 0;
+    const isMother = isFirstAccount;
+    const assignedRole = isMother ? 'admin' : 'viewer';
+
+    const { salt, hash } = await hashPasswordWithSalt(password);
+    const newAccount = {
+      username: cleanUsername,
+      salt,
+      hash,
+      isMother,
+      role: assignedRole,
+      createdAt: new Date().toISOString()
+    };
+
+    accounts.push(newAccount);
+    saveRegisteredAccounts(accounts);
+    createSession(newAccount);
+    return newAccount;
+  }
+
+  async function loginAccount(username, password) {
+    const cleanUsername = String(username).trim();
+    if (!/^[0-9]+$/.test(cleanUsername)) {
+      throw new Error('Username must be strictly numeric (digits 0-9 only).');
+    }
+
+    const accounts = getRegisteredAccounts();
+    const user = accounts.find(a => a.username === cleanUsername);
+    if (!user) {
+      throw new Error('Invalid numeric username or password.');
+    }
+
+    const { hash } = await hashPasswordWithSalt(password, user.salt);
+    if (hash !== user.hash) {
+      throw new Error('Invalid numeric username or password.');
+    }
+
+    createSession(user);
+    return user;
+  }
+
+  function createSession(user) {
+    const session = {
+      username: user.username,
+      isMother: user.isMother,
+      role: user.role,
+      token: buf2hex(crypto.getRandomValues(new Uint8Array(16))),
+      loggedInAt: new Date().toISOString()
+    };
+    localStorage.setItem(AUTH_STORAGE_KEYS.SESSION, JSON.stringify(session));
+    authState.currentUser = user;
+    syncAuthUI();
+  }
+
+  function restoreSession() {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEYS.SESSION);
+      if (!raw) return false;
+      const session = JSON.parse(raw);
+      if (!session || !session.username) return false;
+
+      const accounts = getRegisteredAccounts();
+      const user = accounts.find(a => a.username === session.username);
+      if (user) {
+        authState.currentUser = user;
+        syncAuthUI();
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function logoutAccount() {
+    localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
+    authState.currentUser = null;
+    syncAuthUI();
+  }
+
+  function syncAuthUI() {
+    const authScreen = document.getElementById('authScreen');
+    const firstNotice = document.getElementById('firstAccountNotice');
+    const regMotherNotice = document.getElementById('regMotherNotice');
+    const accounts = getRegisteredAccounts();
+
+    if (firstNotice) firstNotice.classList.toggle('hidden', accounts.length > 0);
+    if (regMotherNotice) regMotherNotice.classList.toggle('hidden', accounts.length > 0);
+
+    if (!authState.currentUser) {
+      if (authScreen) authScreen.classList.remove('hidden');
+    } else {
+      if (authScreen) authScreen.classList.add('hidden');
+
+      const user = authState.currentUser;
+      const roles = getRoles();
+      const currentRoleObj = roles.find(r => r.id === user.role) || { shortName: user.role.toUpperCase(), name: user.role };
+
+      const topInitial = document.getElementById('topUserInitial');
+      const topSerial = document.getElementById('topUserSerial');
+      const topRoleName = document.getElementById('topUserRoleName');
+      if (topInitial) topInitial.textContent = user.username.charAt(0) || '0';
+      if (topSerial) topSerial.textContent = user.username;
+      if (topRoleName) topRoleName.textContent = user.isMother ? 'MOTHER ADMIN' : (currentRoleObj.shortName || user.role).toUpperCase();
+
+      const acInitial = document.getElementById('acUserInitial');
+      const acSerial = document.getElementById('acUserSerial');
+      const acRoleBadge = document.getElementById('acRoleBadge');
+      const acRoleSub = document.getElementById('acUserRoleSubtitle');
+      if (acInitial) acInitial.textContent = user.username.charAt(0) || '0';
+      if (acSerial) acSerial.textContent = user.username;
+      if (acRoleBadge) acRoleBadge.textContent = user.isMother ? 'ADMIN' : (currentRoleObj.shortName || 'CADET').toUpperCase();
+      if (acRoleSub) acRoleSub.textContent = user.isMother ? 'Admin / Creator • Primary' : `${currentRoleObj.name || 'Cadet'} • User`;
+
+      const sidebarAcBtn = document.getElementById('sidebarAccessControlBtn');
+      if (sidebarAcBtn) {
+        const canAccess = user.isMother || hasPermission('roles:manage') || hasPermission('permissions:manage') || hasPermission('users:view_accounts');
+        sidebarAcBtn.classList.toggle('hidden', !canAccess);
+      }
+
+      const exoPublishBtn = document.getElementById('exoPublishDirectiveBtn');
+      if (exoPublishBtn) {
+        exoPublishBtn.classList.toggle('hidden', !hasPermission('exo:publish_directives'));
+      }
+    }
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // --- ACCESS CONTROL VIEW RENDERER ---
+  function renderAccessControlView() {
+    const roles = getRoles();
+    const accounts = getRegisteredAccounts();
+
+    const acAccountsCountBadge = document.getElementById('acAccountsCountBadge');
+    if (acAccountsCountBadge) acAccountsCountBadge.textContent = accounts.length;
+
+    // Roles List on Left
+    const rolesContainer = document.getElementById('acRolesListContainer');
+    if (rolesContainer) {
+      rolesContainer.innerHTML = roles.map(r => {
+        const isActive = r.id === authState.selectedRoleId;
+        const userCount = accounts.filter(a => a.role === r.id).length;
+        return `
+          <div class="access-role-item ${isActive ? 'active-role' : ''} flex items-center justify-between" onclick="selectAccessControlRole('${r.id}')">
+            <div>
+              <div class="font-bold text-xs text-white">${r.shortName || r.name}</div>
+              <div class="text-[10px] text-slate-400 font-mono">${r.type || 'Built-in role'}</div>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700/50">
+              ${userCount}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Selected Role Title & Badge
+    const selectedRole = roles.find(r => r.id === authState.selectedRoleId) || roles[0];
+    const roleTitleEl = document.getElementById('acSelectedRoleTitle');
+    const roleBadgeEl = document.getElementById('acSelectedRoleBadge');
+    if (roleTitleEl) roleTitleEl.textContent = selectedRole.name;
+    if (roleBadgeEl) roleBadgeEl.textContent = selectedRole.type || 'Built-in role';
+
+    // Permissions Grid
+    const gridContainer = document.getElementById('acPermissionsGridContainer');
+    if (gridContainer) {
+      const taxonomy = (typeof window !== 'undefined' && window.CCAFP_PERMISSIONS_TAXONOMY) ? window.CCAFP_PERMISSIONS_TAXONOMY : [];
+      const rolePerms = selectedRole.permissions || [];
+      const isSuperAdminRole = rolePerms.includes('*');
+
+      gridContainer.innerHTML = taxonomy.map(cat => {
+        const permItems = cat.permissions.map(p => {
+          const isChecked = isSuperAdminRole || rolePerms.includes(p.key);
+          return `
+            <label class="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-800/40 cursor-pointer transition-colors select-none">
+              <input type="checkbox" class="perm-custom-checkbox mt-0.5" data-perm-key="${p.key}" ${isChecked ? 'checked' : ''}>
+              <div class="min-w-0">
+                <span class="text-xs font-semibold text-slate-200 block">${p.label}</span>
+                <span class="text-[10.5px] font-mono text-slate-400 block">${p.key}</span>
+              </div>
+            </label>
+          `;
+        }).join('');
+
+        return `
+          <div class="access-control-card p-4 sm:p-5 space-y-3">
+            <div class="text-[11px] font-mono font-bold tracking-wider uppercase text-slate-400 border-b border-slate-800 pb-2">
+              ${cat.category}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              ${permItems}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderRegisteredAccountsTable();
+    if (window.lucide) window.lucide.createIcons();
+  }
+  window.selectAccessControlRole = function (roleId) {
+    authState.selectedRoleId = roleId;
+    renderAccessControlView();
+  };
+
+  function renderRegisteredAccountsTable() {
+    const tableBody = document.getElementById('acAccountsTableBody');
+    if (!tableBody) return;
+
+    const user = authState.currentUser;
+    const canView = user && (user.isMother || hasPermission('users:view_accounts'));
+    if (!canView) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="py-8 text-center text-slate-400">
+            <i data-lucide="lock" class="w-6 h-6 mx-auto mb-2 text-slate-500"></i>
+            <span class="block font-bold">Access Restricted</span>
+            <span class="text-[11px] text-slate-500">The registered accounts roster is visible exclusively to the Mother Account and authorized administrators.</span>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const accounts = getRegisteredAccounts();
+    const roles = getRoles();
+    const canManageUsers = user.isMother || hasPermission('users:manage');
+
+    tableBody.innerHTML = accounts.map(acc => {
+      const isMother = acc.isMother;
+      const roleOptions = roles.map(r => `
+        <option value="${r.id}" ${acc.role === r.id ? 'selected' : ''}>${r.shortName || r.name}</option>
+      `).join('');
+
+      return `
+        <tr class="hover:bg-slate-800/40 transition-colors">
+          <td class="py-3 px-4 font-bold text-white font-mono flex items-center gap-2">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>${acc.username}</span>
+          </td>
+          <td class="py-3 px-4">
+            ${isMother 
+              ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 text-amber-400 border border-amber-800/50">Mother Account (Primary Admin)</span>' 
+              : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">Cadet Account</span>'}
+          </td>
+          <td class="py-3 px-4">
+            <select class="ac-role-select bg-[#0b1120] text-slate-200 border border-slate-700 rounded-lg px-2 py-1 text-xs outline-none" data-username="${acc.username}" ${!canManageUsers ? 'disabled' : ''}>
+              ${roleOptions}
+            </select>
+          </td>
+          <td class="py-3 px-4 text-slate-400 text-[11px]">
+            ${new Date(acc.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </td>
+          <td class="py-3 px-4 text-right">
+            ${canManageUsers ? `
+              <button class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer" onclick="saveUserRoleAssignment('${acc.username}')">
+                Assign Role
+              </button>
+            ` : '<span class="text-slate-500 text-[11px]">Read-only</span>'}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  window.saveUserRoleAssignment = function(username) {
+    const select = document.querySelector(`.ac-role-select[data-username="${username}"]`);
+    if (!select) return;
+    const newRole = select.value;
+    const accounts = getRegisteredAccounts();
+    const target = accounts.find(a => a.username === username);
+    if (!target) return;
+
+    target.role = newRole;
+    saveRegisteredAccounts(accounts);
+
+    if (authState.currentUser && authState.currentUser.username === username) {
+      authState.currentUser.role = newRole;
+      const session = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEYS.SESSION) || '{}');
+      session.role = newRole;
+      localStorage.setItem(AUTH_STORAGE_KEYS.SESSION, JSON.stringify(session));
+      syncAuthUI();
+    }
+
+    renderAccessControlView();
+    showToast(`Role for user ${username} updated to ${newRole.toUpperCase()}!`, 'success');
+  };
+
+  function saveSelectedRolePermissions() {
+    const roles = getRoles();
+    const role = roles.find(r => r.id === authState.selectedRoleId);
+    if (!role) return;
+
+    const checkboxes = document.querySelectorAll('#acPermissionsGridContainer input[type="checkbox"]');
+    const newPermissions = [];
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        const key = cb.getAttribute('data-perm-key');
+        if (key) newPermissions.push(key);
+      }
+    });
+
+    role.permissions = newPermissions;
+    saveRoles(roles);
+
+    const feedback = document.getElementById('acSaveFeedback');
+    if (feedback) {
+      feedback.classList.remove('hidden');
+      setTimeout(() => feedback.classList.add('hidden'), 3000);
+    }
+    showToast(`Permissions saved for role: ${role.name}`, 'success');
+  }
+
+  // --- EXO COUNCIL VIEW RENDERER ---
+  function renderExoCouncilView() {
+    updateGuardMountingCountdown();
+
+    const tableBody = document.getElementById('exoGuardRosterTableBody');
+    if (tableBody) {
+      const defaultGuards = [
+        { post: "Post 1", location: "Main Gate (Fort Del Pilar)", posted: "Cdt 2CL Ramos, E. (Bravo)", incoming: "Cdt 2CL Santos, J. (Alpha)", rifle: "M16A1 #40192", hours: "1830H - 2230H" },
+        { post: "Post 2", location: "Regimental Headquarters", posted: "Cdt 3CL Garcia, M. (Charlie)", incoming: "Cdt 3CL Flores, R. (Delta)", rifle: "M14 #55102", hours: "1830H - 2230H" },
+        { post: "Post 3", location: "HTG Armory & Stockroom", posted: "Cdt 2CL Gomez, P. (Echo)", incoming: "Cdt 2CL Reyes, D. (Foxtrot)", rifle: "R4A3 #88210", hours: "1830H - 2230H" },
+        { post: "Post 4", location: "Melchor Hall Perimeter", posted: "Cdt 3CL Aquino, L. (Golf)", incoming: "Cdt 3CL Perez, K. (Hawk)", rifle: "M16A1 #40881", hours: "1830H - 2230H" },
+        { post: "Post 5", location: "Cadet Mess Hall Rear", posted: "Cdt 3CL Villanueva, C. (Alpha)", incoming: "Cdt 3CL Navarro, B. (Bravo)", rifle: "M14 #55340", hours: "1830H - 2230H" },
+        { post: "Post 6", location: "Bortles Field Post", posted: "Cdt 2CL Morales, V. (Charlie)", incoming: "Cdt 2CL Cruz, A. (Delta)", rifle: "R4A3 #88349", hours: "1830H - 2230H" },
+        { post: "Post 7", location: "Hospital & Dispensary Gate", posted: "Cdt 3CL Diaz, H. (Echo)", incoming: "Cdt 3CL Santos, T. (Foxtrot)", rifle: "M16A1 #40772", hours: "1830H - 2230H" },
+        { post: "Post 8", location: "Borromeo Field Grandstand", posted: "Cdt 2CL Valdez, N. (Golf)", incoming: "Cdt 2CL Mendoza, S. (Hawk)", rifle: "M14 #55912", hours: "1830H - 2230H" }
+      ];
+
+      tableBody.innerHTML = defaultGuards.map(g => `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="py-3 px-4 font-bold text-slate-900">${g.post}</td>
+          <td class="py-3 px-4">${g.location}</td>
+          <td class="py-3 px-4 text-slate-700 font-semibold">${g.posted}</td>
+          <td class="py-3 px-4 text-blue-900 font-bold">${g.incoming}</td>
+          <td class="py-3 px-4 font-mono text-[11px] text-slate-600">${g.rifle}</td>
+          <td class="py-3 px-4 font-mono text-emerald-700 font-bold">${g.hours}</td>
+        </tr>
+      `).join('');
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // --- S2 INTELLIGENCE PRIVATE REPORTING & INBOX ---
+  function getS2Concerns() {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEYS.S2_CONCERNS);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveS2Concerns(concerns) {
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEYS.S2_CONCERNS, JSON.stringify(concerns));
+    } catch (e) {
+      console.error('Failed to save S2 concerns:', e);
+    }
+  }
+
+  function renderS2CouncilView() {
+    const user = authState.currentUser;
+    const canSubmit = hasPermission('s2:submit_concern');
+    const canViewHiddenMessages = hasPermission('s2:view_concerns');
+    const canViewOwn = Boolean(user);
+
+    const submitContainer = document.getElementById('s2SubmitContainer');
+    if (submitContainer) {
+      submitContainer.classList.toggle('hidden', !canSubmit);
+    }
+
+    const inboxContainer = document.getElementById('s2ConcernsInboxContainer');
+    const concernsList = document.getElementById('s2ConcernsList');
+    const countBadge = document.getElementById('s2InboxCountBadge');
+    const inboxTitle = document.getElementById('s2InboxTitle');
+    const inboxSubtitle = document.getElementById('s2InboxSubtitle');
+
+    if (!canViewHiddenMessages && !canViewOwn) {
+      if (inboxContainer) inboxContainer.classList.add('hidden');
+      return;
+    }
+    if (inboxContainer) inboxContainer.classList.remove('hidden');
+
+    const allConcerns = getS2Concerns();
+    let displayConcerns = [];
+
+    if (canViewHiddenMessages) {
+      displayConcerns = allConcerns;
+      if (inboxTitle) inboxTitle.textContent = 'Confidential Intelligence Triage Inbox (Hidden Messages)';
+      if (inboxSubtitle) inboxSubtitle.textContent = 'Decrypted transmissions routed to authorized S2 Intelligence Officers.';
+    } else {
+      displayConcerns = allConcerns.filter(c => c.reporterUsername === user?.username);
+      if (inboxTitle) inboxTitle.textContent = 'My Submitted Concerns Tracker';
+      if (inboxSubtitle) inboxSubtitle.textContent = 'Tracking status of your confidential reports submitted to S2.';
+    }
+
+    if (countBadge) countBadge.textContent = `${displayConcerns.length} Concerns`;
+
+    if (concernsList) {
+      if (displayConcerns.length === 0) {
+        concernsList.innerHTML = `
+          <div class="py-8 text-center text-slate-400 font-mono-clean">
+            <i data-lucide="shield-check" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+            <span>No confidential reports recorded. All clear.</span>
+          </div>
+        `;
+      } else {
+        concernsList.innerHTML = displayConcerns.map(c => {
+          const urgencyColors = {
+            Routine: 'bg-blue-50 text-blue-700 border-blue-200',
+            Priority: 'bg-amber-50 text-amber-700 border-amber-200',
+            Flash: 'bg-red-50 text-red-700 border-red-200'
+          };
+          const statusColors = {
+            Pending: 'bg-amber-100 text-amber-800',
+            'Under Review': 'bg-blue-100 text-blue-800',
+            Resolved: 'bg-emerald-100 text-emerald-800'
+          };
+
+          return `
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2.5">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold font-mono px-2 py-0.5 rounded border ${urgencyColors[c.urgency] || 'bg-slate-100'}">
+                    ${c.urgency.toUpperCase()}
+                  </span>
+                  <span class="text-xs font-bold font-mono text-purple-900">[${c.category}]</span>
+                  <h4 class="font-bold text-sm text-slate-900">${c.subject}</h4>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${statusColors[c.status] || 'bg-slate-200'}">
+                    ${c.status}
+                  </span>
+                  <span class="text-[10.5px] font-mono text-slate-400">
+                    ${new Date(c.submittedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} &bull; ${new Date(c.submittedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-700 leading-relaxed font-mono">
+                ${c.narrative}
+              </p>
+
+              <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+                <span>Reporter: <strong>${c.isAnonymous ? 'ANONYMOUS (Masked)' : `Cadet S/N ${c.reporterUsername}`}</strong></span>
+                ${canViewHiddenMessages ? `
+                  <div class="flex items-center gap-1.5">
+                    <button class="px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 text-[10.5px] font-bold cursor-pointer" onclick="updateConcernStatus('${c.id}', 'Under Review')">Review</button>
+                    <button class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[10.5px] font-bold cursor-pointer" onclick="updateConcernStatus('${c.id}', 'Resolved')">Resolve</button>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  window.updateConcernStatus = function(concernId, newStatus) {
+    const concerns = getS2Concerns();
+    const target = concerns.find(c => c.id === concernId);
+    if (target) {
+      target.status = newStatus;
+      saveS2Concerns(concerns);
+      renderS2CouncilView();
+      showToast(`Concern status updated to ${newStatus}`, 'success');
+    }
+  };
+
+  function handleS2ConcernSubmit() {
+    const subject = document.getElementById('s2ConcernSubject')?.value?.trim();
+    const narrative = document.getElementById('s2ConcernNarrative')?.value?.trim();
+    const category = document.getElementById('s2ConcernCategory')?.value;
+    const urgency = document.getElementById('s2ConcernUrgency')?.value;
+    const isAnonymous = document.getElementById('s2ConcernAnonymous')?.checked;
+    const feedback = document.getElementById('s2ConcernFeedback');
+
+    if (!subject || !narrative) {
+      if (feedback) {
+        feedback.className = 'text-xs font-mono p-3 rounded-xl bg-red-50 text-red-700 border border-red-200 block';
+        feedback.textContent = 'Please enter both a subject and detailed report narrative.';
+      }
+      return;
+    }
+
+    const newConcern = {
+      id: `S2-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      category: category || 'GENERAL',
+      urgency: urgency || 'Routine',
+      subject,
+      narrative,
+      isAnonymous: Boolean(isAnonymous),
+      reporterUsername: authState.currentUser ? authState.currentUser.username : '00000',
+      status: 'Pending',
+      submittedAt: new Date().toISOString()
+    };
+
+    const concerns = getS2Concerns();
+    concerns.unshift(newConcern);
+    saveS2Concerns(concerns);
+
+    document.getElementById('s2ConcernSubject').value = '';
+    document.getElementById('s2ConcernNarrative').value = '';
+    if (document.getElementById('s2ConcernAnonymous')) {
+      document.getElementById('s2ConcernAnonymous').checked = false;
+    }
+
+    if (feedback) {
+      feedback.className = 'text-xs font-mono p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 block';
+      feedback.textContent = '✓ Confidential concern securely submitted and routed to S2 Intelligence Officers.';
+      setTimeout(() => feedback.classList.add('hidden'), 5000);
+    }
+
+    renderS2CouncilView();
+    showToast('Confidential report transmitted to S2 Intelligence.', 'success');
   }
 
   // --- Bootstrap Initialization ---
@@ -4571,10 +5383,14 @@
     try { updateTime(); } catch(e) {}
     try { setInterval(updateTime, 1000); } catch(e) {}
 
-    // 1. Restore cached state from previous 15-minute sync if available
+    // 1. Restore auth session & sync UI
+    try { restoreSession(); } catch(e) {}
+    try { syncAuthUI(); } catch(e) {}
+
+    // 2. Restore cached state from previous 15-minute sync if available
     try { restoreLiveSnapshotFromStorage(); } catch(e) { console.warn('Cache restore skipped:', e); }
 
-    // 2. Render all initial views with loaded/cached data safely
+    // 3. Render all initial views with loaded/cached data safely
     try { renderSidebarCouncils(); } catch(e) { console.error('renderSidebarCouncils error:', e); }
     try { renderCouncilsDirectoryPills(); } catch(e) { console.error('renderCouncilsDirectoryPills error:', e); }
     try { renderPriorityBulletins(); } catch(e) { console.error('renderPriorityBulletins error:', e); }
@@ -4587,10 +5403,10 @@
     try { renderPunishments(); } catch(e) { console.error('renderPunishments error:', e); }
     try { renderStaffDirectory(); } catch(e) { console.error('renderStaffDirectory error:', e); }
 
-    // 3. Start 15-Minute Countdown Timer
+    // 4. Start 15-Minute Countdown Timer
     try { startAutoSync15MinTimer(); } catch(e) {}
 
-    // 4. Perform immediate live check in the background
+    // 5. Perform immediate live check in the background
     try { performAutomated15MinSync(false); } catch(e) {}
 
     try { if (window.lucide) window.lucide.createIcons(); } catch(e) {}

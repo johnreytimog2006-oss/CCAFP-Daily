@@ -538,3 +538,131 @@ html.dark .pma-cadet-field {
   border-color: #182538 !important;
 }
 
+/* ==================================================== */
+/* AUTHENTICATION & SPLIT-SCREEN LOGIN STYLING          */
+/* ==================================================== */
+
+#authScreen {
+  background-color: #f0f2f5;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  z-index: 9999;
+}
+
+.auth-collage-container {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  height: 480px;
+}
+
+.auth-photo-card {
+  position: absolute;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.25), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 4px solid #ffffff;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.auth-photo-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 25px 45px -10px rgba(15, 23, 42, 0.35);
+}
+
+.auth-floating-badge {
+  position: absolute;
+  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  z-index: 20;
+}
+
+/* ==================================================== */
+/* ACCESS CONTROL DARK-MODE SYSTEM (SCREENSHOT MATCH)   */
+/* ==================================================== */
+
+.access-control-view {
+  background-color: #0b1120;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+.access-control-card {
+  background-color: #111a2e;
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+}
+
+.access-role-item {
+  background-color: #111a2e;
+  border: 1px solid #1e293b;
+  border-radius: 0.875rem;
+  padding: 0.875rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.access-role-item:hover {
+  background-color: #162238;
+  border-color: #334155;
+}
+
+.access-role-item.active-role {
+  background-color: #172642;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6, 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* Custom Coral/Salmon Checkbox (Exact match to Screenshot) */
+.perm-custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid #475569;
+  border-radius: 0.25rem;
+  background-color: #0f172a;
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+}
+
+.perm-custom-checkbox:checked {
+  background-color: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+
+.perm-custom-checkbox:checked::before {
+  content: "";
+  width: 0.65rem;
+  height: 0.4rem;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+.btn-save-permissions {
+  background-color: #f87171;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.btn-save-permissions:hover {
+  background-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+

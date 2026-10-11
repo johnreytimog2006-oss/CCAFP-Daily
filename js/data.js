@@ -4783,8 +4783,372 @@ class SheetSyncManager {
   }
 }
 
+// ==========================================
+// CCAFP AUTHENTICATION & ACCESS CONTROL DATA
+// ==========================================
+
+const CCAFP_PERMISSIONS_TAXONOMY = [
+  {
+    category: "ADMINISTRATION",
+    permissions: [
+      { key: "roles:manage", label: "Create, edit, and delete roles" },
+      { key: "permissions:manage", label: "Define role permissions" },
+      { key: "users:manage", label: "View users and assign roles" },
+      { key: "users:view_accounts", label: "View registered accounts list" }
+    ]
+  },
+  {
+    category: "ATHLETIC MATTERS",
+    permissions: [
+      { key: "athletic:view", label: "View ATHLETIC MATTERS" },
+      { key: "athletic:manage_rosters", label: "Manage athletic rosters and scores" }
+    ]
+  },
+  {
+    category: "EXO MATTERS",
+    permissions: [
+      { key: "exo:edit_guard_assignments", label: "Edit Necessary Detailed Guards" },
+      { key: "exo:view", label: "View EXO MATTERS" },
+      { key: "exo:publish_directives", label: "Publish daily directives" }
+    ]
+  },
+  {
+    category: "MESS MATTERS",
+    permissions: [
+      { key: "mess:manage_diets", label: "Add and edit special diet records" },
+      { key: "mess:view", label: "View MESS MATTERS" },
+      { key: "mess:manage_menus", label: "Manage daily menus" }
+    ]
+  },
+  {
+    category: "REACH",
+    permissions: [
+      { key: "reach:create_announcement", label: "Publish announcements" },
+      { key: "reach:view", label: "View REACH" }
+    ]
+  },
+  {
+    category: "S1 MATTERS",
+    permissions: [
+      { key: "s1:add_personnel", label: "Add cadets to S1" },
+      { key: "s1:edit_own_status", label: "Edit own status and signify for Priv" },
+      { key: "s1:view", label: "View S1 MATTERS" },
+      { key: "s1:manage_leaves", label: "Manage leaves and passes" }
+    ]
+  },
+  {
+    category: "S10 MATTERS",
+    permissions: [
+      { key: "s10:view", label: "View S10 MATTERS" },
+      { key: "s10:manage_funds", label: "Manage budget and expenditures" }
+    ]
+  },
+  {
+    category: "S2 MATTERS",
+    permissions: [
+      { key: "s2:submit_concern", label: "Submit S2 concerns" },
+      { key: "s2:view_concerns", label: "View all S2 concerns" },
+      { key: "s2:view", label: "View own S2 concerns" },
+      { key: "s2:manage_clearance", label: "Manage security clearances" }
+    ]
+  },
+  {
+    category: "S3 MATTERS",
+    permissions: [
+      { key: "s3:view", label: "View S3 MATTERS" },
+      { key: "s3:post_orders", label: "Post operational orders" },
+      { key: "s3:manage_schedules", label: "Manage training schedules" }
+    ]
+  },
+  {
+    category: "S4 MATTERS",
+    permissions: [
+      { key: "s4:view", label: "View S4 MATTERS" },
+      { key: "s4:manage_inventory", label: "Manage supply inventory" },
+      { key: "s4:approve_requests", label: "Approve equipment requests" }
+    ]
+  },
+  {
+    category: "S5 MATTERS",
+    permissions: [
+      { key: "s5:view", label: "View S5 MATTERS" },
+      { key: "s5:manage_projects", label: "Create and manage project plans" }
+    ]
+  },
+  {
+    category: "S6 MATTERS",
+    permissions: [
+      { key: "s6:view", label: "View S6 MATTERS" },
+      { key: "s6:manage_tech", label: "Manage IT/communication assets" }
+    ]
+  },
+  {
+    category: "S7 MATTERS",
+    permissions: [
+      { key: "s7:view", label: "View S7 MATTERS" },
+      { key: "s7:manage_events", label: "Manage civic/community events" }
+    ]
+  },
+  {
+    category: "S8 MATTERS",
+    permissions: [
+      { key: "s8:view", label: "View S8 MATTERS" },
+      { key: "s8:manage_records", label: "Input and manage training grades/records" }
+    ]
+  },
+  {
+    category: "VESO MATTERS",
+    permissions: [
+      { key: "veso:view", label: "View VESO MATTERS" },
+      { key: "veso:manage", label: "Manage VESO events and records" }
+    ]
+  },
+  {
+    category: "ACADEMIC MATTERS",
+    permissions: [
+      { key: "acad:view", label: "View academic records" },
+      { key: "acad:manage_records", label: "Manage class schedules and scores" }
+    ]
+  },
+  {
+    category: "MILITARY TRAINING / SAFETY / RELIGIOUS / GAD",
+    permissions: [
+      { key: "training:view", label: "View Military Training" },
+      { key: "training:manage", label: "Manage Military Training" },
+      { key: "safety:view", label: "View Safety Matters" },
+      { key: "safety:manage", label: "Manage Safety Matters" },
+      { key: "religious:view", label: "View Religious Matters" },
+      { key: "religious:manage", label: "Manage Religious Matters" },
+      { key: "gad:view", label: "View GAD Matters" },
+      { key: "gad:manage", label: "Manage GAD Matters" }
+    ]
+  },
+  {
+    category: "CONDUCT AND HONOR (CCPB / HONOR COMM)",
+    permissions: [
+      { key: "conduct:view", label: "View conduct reports" },
+      { key: "ccpb:manage_demerits", label: "Process demerits/delinquencies" },
+      { key: "honor:manage_cases", label: "Manage highly restricted honor cases" }
+    ]
+  },
+  {
+    category: "COMMAND OVERSIGHT (STO / BARON)",
+    permissions: [
+      { key: "command:global_view", label: "Global command view across all non-restricted tabs" },
+      { key: "command:override", label: "Override lower-level permissions" }
+    ]
+  }
+];
+
+const CCAFP_DEFAULT_ROLES = [
+  {
+    id: "admin",
+    name: "Admin / Mother Account",
+    shortName: "ADMIN",
+    type: "Built-in role",
+    description: "Primary Administrator with full unrestricted system control.",
+    permissions: ["*"]
+  },
+  {
+    id: "exo",
+    name: "Executive Officer (Exo)",
+    shortName: "EXO",
+    type: "Built-in role",
+    description: "Guard detail coordination, barracks management, and corps routine oversight.",
+    permissions: [
+      "exo:view", "exo:edit_guard_assignments", "exo:publish_directives",
+      "s1:view", "s3:view", "s4:view", "mess:view", "reach:view", "s2:submit_concern"
+    ]
+  },
+  {
+    id: "intelligence",
+    name: "Intelligence officer",
+    shortName: "Intelligence",
+    type: "Built-in role",
+    description: "OPSEC, sensitive counter-intelligence, and triage of private concerns.",
+    permissions: [
+      "s2:view", "s2:submit_concern", "s2:view_concerns", "s2:manage_clearance",
+      "s1:view", "exo:view", "s3:view", "reach:view"
+    ]
+  },
+  {
+    id: "personnel",
+    name: "Personnel officer",
+    shortName: "Personnel",
+    type: "Built-in role",
+    description: "Cadet strength, expanded roll, squad matrix, leaves, and personnel records.",
+    permissions: [
+      "s1:view", "s1:add_personnel", "s1:edit_own_status", "s1:manage_leaves",
+      "exo:view", "reach:view", "s2:submit_concern"
+    ]
+  },
+  {
+    id: "operations",
+    name: "Operations officer",
+    shortName: "Operations",
+    type: "Built-in role",
+    description: "Corps operational orders, training schedules, and drill exercises.",
+    permissions: [
+      "s3:view", "s3:post_orders", "s3:manage_schedules",
+      "exo:view", "s1:view", "reach:view", "s2:submit_concern"
+    ]
+  },
+  {
+    id: "logistics",
+    name: "Logistics officer",
+    shortName: "Logistics",
+    type: "Built-in role",
+    description: "Supply depot, uniform requisitions, and equipment maintenance.",
+    permissions: [
+      "s4:view", "s4:manage_inventory", "s4:approve_requests",
+      "exo:view", "s1:view", "reach:view", "s2:submit_concern"
+    ]
+  },
+  {
+    id: "plans",
+    name: "Plans and Programs officer",
+    shortName: "Plans & Programs",
+    type: "Built-in role",
+    description: "Strategic academy programs, project plans, and milestones.",
+    permissions: ["s5:view", "s5:manage_projects", "reach:view", "s2:submit_concern"]
+  },
+  {
+    id: "ceis",
+    name: "CEIS officer",
+    shortName: "CEIS",
+    type: "Built-in role",
+    description: "Information systems, radio frequencies, PA network, and tech infrastructure.",
+    permissions: ["s6:view", "s6:manage_tech", "reach:view", "s2:submit_concern"]
+  },
+  {
+    id: "cmo",
+    name: "CMO officer",
+    shortName: "CMO",
+    type: "Built-in role",
+    description: "Civic-military operations, community relations, and outreach.",
+    permissions: ["s7:view", "s7:manage_events", "reach:view", "s2:submit_concern"]
+  },
+  {
+    id: "training_edu",
+    name: "Training and Education officer",
+    shortName: "Training & Edu",
+    type: "Built-in role",
+    description: "Cadet training evaluation, grades, and instructional records.",
+    permissions: ["s8:view", "s8:manage_records", "training:view", "training:manage", "s2:submit_concern"]
+  },
+  {
+    id: "finance",
+    name: "Finance officer",
+    shortName: "Finance",
+    type: "Built-in role",
+    description: "Corps treasury, battalion budget allocation, and expenditures.",
+    permissions: ["s10:view", "s10:manage_funds", "s2:submit_concern"]
+  },
+  {
+    id: "athletic",
+    name: "Athletic officer",
+    shortName: "Athletic",
+    type: "Built-in role",
+    description: "Sports competitions, physical fitness tests, and athletic rosters.",
+    permissions: ["athletic:view", "athletic:manage_rosters", "s2:submit_concern"]
+  },
+  {
+    id: "academic",
+    name: "Academic officer",
+    shortName: "Academic",
+    type: "Built-in role",
+    description: "Academic classes, term exams, and scholastic standing.",
+    permissions: ["acad:view", "acad:manage_records", "s2:submit_concern"]
+  },
+  {
+    id: "military_training",
+    name: "Military Training officer",
+    shortName: "Mil Training",
+    type: "Built-in role",
+    description: "Field tactics, marksmanship, weapons handling, and tactical field exercises.",
+    permissions: ["training:view", "training:manage", "s2:submit_concern"]
+  },
+  {
+    id: "mess",
+    name: "Mess officer",
+    shortName: "Mess Officer",
+    type: "Built-in role",
+    description: "Mess hall supervision, diet restrictions, and cooking shares rotation.",
+    permissions: ["mess:view", "mess:manage_diets", "mess:manage_menus", "s2:submit_concern"]
+  },
+  {
+    id: "religious",
+    name: "Religious officer",
+    shortName: "Religious",
+    type: "Built-in role",
+    description: "Spiritual development, worship schedules, and faith community coordination.",
+    permissions: ["religious:view", "religious:manage", "s2:submit_concern"]
+  },
+  {
+    id: "safety",
+    name: "Safety officer",
+    shortName: "Safety",
+    type: "Built-in role",
+    description: "Operational risk management, medical evacuation protocols, and physical safety.",
+    permissions: ["safety:view", "safety:manage", "s2:submit_concern"]
+  },
+  {
+    id: "gad",
+    name: "GAD officer",
+    shortName: "GAD",
+    type: "Built-in role",
+    description: "Gender and development programs, inclusivity, and welfare policies.",
+    permissions: ["gad:view", "gad:manage", "s2:submit_concern"]
+  },
+  {
+    id: "ccpb",
+    name: "CCPB representative",
+    shortName: "CCPB",
+    type: "Built-in role",
+    description: "Cadet conduct, delinquency reporting, and punishment tour administration.",
+    permissions: ["conduct:view", "ccpb:manage_demerits", "s2:submit_concern"]
+  },
+  {
+    id: "honor",
+    name: "Honor Comm representative",
+    shortName: "Honor Comm",
+    type: "Built-in role",
+    description: "Honor system investigations, hearing dockets, and honor code enforcement.",
+    permissions: ["honor:manage_cases", "conduct:view", "s2:submit_concern"]
+  },
+  {
+    id: "sto",
+    name: "Senior Tactical Officer",
+    shortName: "STO",
+    type: "Built-in role",
+    description: "Tactical officer oversight, commanding supervision, and regimental guidance.",
+    permissions: ["command:global_view", "command:override", "users:view_accounts", "s2:view_concerns"]
+  },
+  {
+    id: "baron",
+    name: "Baron/Regiment Commander",
+    shortName: "Baron",
+    type: "Built-in role",
+    description: "Regimental Commander commanding all cadet corps units and councils.",
+    permissions: ["command:global_view", "command:override", "users:view_accounts", "s2:view_concerns"]
+  },
+  {
+    id: "viewer",
+    name: "Viewer",
+    shortName: "Viewer",
+    type: "Built-in role",
+    description: "General cadet read-only access with concern submission capabilities.",
+    permissions: [
+      "s1:view", "exo:view", "s3:view", "s4:view", "mess:view", "reach:view", "athletic:view", "acad:view", "s2:submit_concern"
+    ]
+  }
+];
+
 if (typeof window !== "undefined") {
   window.CCAFP_CONFIG = CCAFP_CONFIG;
   window.COUNCIL_SHEET_URLS = COUNCIL_SHEET_URLS;
   window.SheetSyncManager = SheetSyncManager;
+  window.CCAFP_PERMISSIONS_TAXONOMY = CCAFP_PERMISSIONS_TAXONOMY;
+  window.CCAFP_DEFAULT_ROLES = CCAFP_DEFAULT_ROLES;
 }
+
