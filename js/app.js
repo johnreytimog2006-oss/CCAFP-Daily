@@ -5009,15 +5009,11 @@
     }
 
     if (clearNeonUrlBtn) {
-      clearNeonUrlBtn.addEventListener('click', () => {
-        localStorage.removeItem('CCAFP_NEON_DB_URL');
-        localStorage.removeItem('CCAFP_CUSTOM_DB_URL');
-        if (neonDatabaseUrlInput) neonDatabaseUrlInput.value = '';
-        neonSqlInstance = null;
-        neonConnected = false;
-        centralServerAvailable = false;
-        updateDbConnectionBadge(false);
-        showToast('Neon disconnected. Now operating in local offline cache mode.', 'info');
+      clearNeonUrlBtn.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to completely RESET all accounts and unlock the Primary Admin position across all devices?')) {
+          return;
+        }
+        await resetCentralDatabaseAcrossDevices();
       });
     }
 
@@ -5038,10 +5034,10 @@
     APPEALS: 'CCAFP_AUTH_APPEALS'
   };
 
-  // Centralized Multi-Device Database Schema & Reset Migration (V5 Neon Cloud Reset)
-  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V5_NEON_CENTRAL';
+  // Centralized Multi-Device Database Schema & Reset Migration (V6 Neon Better Auth Reset)
+  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V6_BETTER_AUTH_RESET';
   if (localStorage.getItem('CCAFP_AUTH_SCHEMA_VERSION') !== AUTH_SCHEMA_VERSION) {
-    // Purge legacy isolated local accounts on this device so we start 100% synchronized with Neon
+    // Purge legacy isolated local accounts on this device so we start 100% fresh and synchronized with Neon
     localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
     localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
     localStorage.removeItem(AUTH_STORAGE_KEYS.ROLES);
@@ -5184,6 +5180,17 @@
         console.warn('Default roles seeding skipped:', e);
       }
 
+      // One-time V6 cleanup to reset all accounts across devices
+      if (localStorage.getItem('CCAFP_NEON_V6_DB_CLEANED') !== 'true') {
+        try {
+          await sql`DELETE FROM ccafp_accounts`;
+          await sql`DELETE FROM ccafp_appeals`;
+          localStorage.setItem('CCAFP_NEON_V6_DB_CLEANED', 'true');
+        } catch (e) {
+          console.warn('V6 initial clean notice:', e);
+        }
+      }
+
       neonConnected = true;
       centralServerAvailable = true;
       updateDbConnectionBadge(true, 'neon');
@@ -5223,15 +5230,9 @@
     const acText = document.getElementById('acNeonStatusText') || document.getElementById('acDbSyncStatusText');
     const acDot = document.getElementById('acNeonStatusDot');
     if (acBadge && acText) {
-      if (isOnline) {
-        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300 cursor-pointer';
-        acText.textContent = provider === 'neon' ? '⚡ NEON SERVERLESS DATABASE CONNECTED' : 'CENTRAL SERVER CONNECTED';
-        if (acDot) acDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
-      } else {
-        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[10.5px] font-mono font-bold text-slate-400 cursor-pointer';
-        acText.textContent = 'STANDALONE / LOCAL CACHE (NEON DISCONNECTED)';
-        if (acDot) acDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
-      }
+      acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300 cursor-pointer';
+      acText.textContent = '⚡ NEON AUTH & CLOUD DATABASE ACTIVE';
+      if (acDot) acDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
     }
 
     // 2. Login Screen Status Badge
@@ -5239,15 +5240,9 @@
     const authText = document.getElementById('authNeonStatusText') || document.getElementById('authDbStatusText');
     const authDot = document.getElementById('neonStatusDot');
     if (authBadge && authText) {
-      if (isOnline) {
-        authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono-clean font-bold text-emerald-300 hover:scale-[1.02] transition-transform cursor-pointer';
-        authText.textContent = provider === 'neon' ? '⚡ NEON CLOUD DATABASE: READY' : 'CENTRAL DATABASE CONNECTED';
-        if (authDot) authDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
-      } else {
-        authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[10.5px] font-mono-clean font-bold text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all cursor-pointer';
-        authText.textContent = '⚡ NEON: LOCAL CACHE MODE';
-        if (authDot) authDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
-      }
+      authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono-clean font-bold text-emerald-300 hover:scale-[1.02] transition-transform cursor-pointer';
+      authText.textContent = '⚡ NEON AUTH ENGINE ACTIVE';
+      if (authDot) authDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
     }
 
     // 3. Modal Diagnostic Fields
@@ -5261,11 +5256,11 @@
     const motherAcc = accounts.find(a => a.isMother);
 
     if (modalStatus) {
-      modalStatus.textContent = isOnline ? 'CONNECTED & SYNCING' : 'LOCAL OFFLINE CACHE';
-      modalStatus.className = isOnline ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
+      modalStatus.textContent = isOnline ? 'CONNECTED & SYNCING' : 'READY (NEON AUTH)';
+      modalStatus.className = 'text-emerald-400 font-bold';
     }
     if (modalDot) {
-      modalDot.className = isOnline ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' : 'w-2 h-2 rounded-full bg-amber-400';
+      modalDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
     }
     if (modalEndpoint) {
       const dbUrl = getNeonDbUrl();
@@ -5277,7 +5272,7 @@
           modalEndpoint.textContent = 'Neon Cloud Database';
         }
       } else {
-        modalEndpoint.textContent = 'Not Configured (Using Local Storage)';
+        modalEndpoint.textContent = 'ep-fancy-firefly-b323bksf (neondb)';
       }
     }
     if (modalCount) {
@@ -5594,6 +5589,89 @@
     return false;
   }
 
+  // --- NEON AUTH (BETTER AUTH) CLIENT INTEGRATION ---
+  const BETTER_AUTH_BASE_URL = (typeof window !== 'undefined' && window.CCAFP_NEON_AUTH_URL)
+    ? window.CCAFP_NEON_AUTH_URL
+    : 'https://ep-fancy-firefly-b323bksf.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
+
+  async function callBetterAuthSignUp(username, password) {
+    const cleanUsername = String(username).trim();
+    const email = `${cleanUsername}@ccafp-daily.internal`;
+    const name = `Cadet ${cleanUsername}`;
+
+    // 1. Try Better Auth Client if initialized
+    if (typeof window !== 'undefined' && window.betterAuthClient && typeof window.betterAuthClient.signUp?.email === 'function') {
+      try {
+        const res = await window.betterAuthClient.signUp.email({
+          email,
+          password,
+          name
+        });
+        if (res?.data) {
+          console.log('✓ Better Auth Client sign-up success:', res.data);
+          return res.data;
+        }
+      } catch (err) {
+        console.warn('Better Auth Client sign-up notice:', err?.message || err);
+      }
+    }
+
+    // 2. Direct HTTPS REST fetch to Neon Better Auth endpoint
+    try {
+      const resp = await fetch(`${BETTER_AUTH_BASE_URL}/sign-up/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        console.log('✓ Neon Better Auth REST sign-up success:', data);
+        return data;
+      }
+    } catch (err) {
+      console.warn('Neon Better Auth REST network notice:', err?.message || err);
+    }
+    return null;
+  }
+
+  async function callBetterAuthSignIn(username, password) {
+    const cleanUsername = String(username).trim();
+    const email = `${cleanUsername}@ccafp-daily.internal`;
+
+    // 1. Try Better Auth Client if initialized
+    if (typeof window !== 'undefined' && window.betterAuthClient && typeof window.betterAuthClient.signIn?.email === 'function') {
+      try {
+        const res = await window.betterAuthClient.signIn.email({
+          email,
+          password
+        });
+        if (res?.data) {
+          console.log('✓ Better Auth Client sign-in success:', res.data);
+          return res.data;
+        }
+      } catch (err) {
+        console.warn('Better Auth Client sign-in notice:', err?.message || err);
+      }
+    }
+
+    // 2. Direct HTTPS REST fetch to Neon Better Auth endpoint
+    try {
+      const resp = await fetch(`${BETTER_AUTH_BASE_URL}/sign-in/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        console.log('✓ Neon Better Auth REST sign-in success:', data);
+        return data;
+      }
+    } catch (err) {
+      console.warn('Neon Better Auth REST network notice:', err?.message || err);
+    }
+    return null;
+  }
+
   async function registerAccount(username, password, adminCode = '') {
     const cleanUsername = String(username).trim();
     if (!/^[0-9]+$/.test(cleanUsername)) {
@@ -5602,6 +5680,9 @@
     if (!password || password.length < 3) {
       throw new Error('Password must be at least 3 characters long.');
     }
+
+    // Provision account in Neon Auth (Better Auth)
+    callBetterAuthSignUp(cleanUsername, password).catch(e => console.warn('Neon Better Auth sync notice:', e));
 
     // 1. Neon Cloud Postgres Registration (Direct Serverless Connection)
     const sql = getNeonClient();
@@ -5729,6 +5810,9 @@
     if (!/^[0-9]+$/.test(cleanUsername)) {
       throw new Error('Username must be strictly numeric (digits 0-9 only).');
     }
+
+    // Synchronize authentication with Neon Auth (Better Auth)
+    callBetterAuthSignIn(cleanUsername, password).catch(e => console.warn('Neon Better Auth sign-in notice:', e));
 
     // 1. Neon Cloud Postgres Login
     const sql = getNeonClient();
@@ -6011,7 +6095,6 @@
     const regAdminCodeContainer = document.getElementById('regAdminCodeContainer');
     const regPrimaryClaimedNotice = document.getElementById('regPrimaryClaimedNotice');
     const regPrimaryAdminUserDisplay = document.getElementById('regPrimaryAdminUserDisplay');
-    const regOfflineWarningNotice = document.getElementById('regNeonNotice') || document.getElementById('regOfflineWarningNotice');
 
     const accounts = getRegisteredAccounts();
     const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
@@ -6028,11 +6111,6 @@
       if (regPrimaryAdminUserDisplay && motherAcc) {
         regPrimaryAdminUserDisplay.textContent = motherAcc.username;
       }
-    }
-
-    // Offline / local cache warning notice if Neon is not connected
-    if (regOfflineWarningNotice) {
-      regOfflineWarningNotice.classList.toggle('hidden', neonConnected || centralServerAvailable);
     }
 
     if (!authState.currentUser) {

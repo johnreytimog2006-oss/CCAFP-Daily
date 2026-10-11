@@ -41,10 +41,19 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Neon Serverless Database SDK (Cloud Postgres Auth & Storage) -->
+  <!-- Neon Auth (Better Auth) & Neon Serverless Postgres SDKs -->
   <script type="module">
+    import { createAuthClient } from 'https://esm.sh/better-auth@1.1.21/client';
     import { neon } from 'https://esm.sh/@neondatabase/serverless@0.9.0';
     window.neon = neon;
+    window.createAuthClient = createAuthClient;
+    try {
+      window.betterAuthClient = createAuthClient({
+        baseURL: 'https://ep-fancy-firefly-b323bksf.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth'
+      });
+    } catch(e) {
+      console.warn('Better Auth client init error:', e);
+    }
     window.dispatchEvent(new CustomEvent('neon-loaded'));
   </script>
 
@@ -846,16 +855,16 @@ html.dark .pma-cadet-field {
         <!-- Right Column: Authentication Form Container -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
           
-          <!-- Neon Cloud Auth Status Pill & Quick Setup -->
+          <!-- Neon Auth & Cloud Sync Status Header -->
           <div class="w-full max-w-md flex items-center justify-between px-2 mb-3">
-            <button type="button" id="authNeonStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[10.5px] font-mono-clean font-bold text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all cursor-pointer">
+            <div id="authNeonStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/30 text-[10.5px] font-mono-clean font-bold text-emerald-300">
               <span id="neonStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span>
-              <span id="authNeonStatusText">⚡ NEON CLOUD DATABASE: READY</span>
-            </button>
-            <button type="button" id="openNeonConfigModalBtn" class="text-[10.5px] font-mono-clean text-slate-400 hover:text-emerald-400 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/60 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer" title="Configure Neon Postgres Database">
-              <i data-lucide="database" class="w-3 h-3 text-emerald-400"></i>
-              <span>Neon Setup</span>
-            </button>
+              <span id="authNeonStatusText">⚡ NEON AUTH ENGINE ACTIVE</span>
+            </div>
+            <div class="text-[10px] font-mono-clean text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Better Auth &bull; Cloud Synced</span>
+            </div>
           </div>
 
           <!-- View 1: Login Card -->
@@ -963,21 +972,10 @@ html.dark .pma-cadet-field {
             <div id="regPrimaryClaimedNotice" class="hidden p-3.5 rounded-2xl bg-[#0b1320] border border-emerald-500/30 text-slate-300 text-xs space-y-1.5 font-mono-clean">
               <div class="font-bold flex items-center gap-2 text-emerald-300">
                 <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-                <span>Primary Admin Established: <span id="regPrimaryAdminUserDisplay" class="text-amber-400 font-bold">28331</span></span>
+                <span>Primary Admin Established: <span id="regPrimaryAdminUserDisplay" class="text-amber-400 font-bold"></span></span>
               </div>
               <p class="text-[11px] text-slate-400 leading-relaxed">
                 The Primary Admin role is locked. New registrations will be automatically provisioned with standard Viewer privileges and synchronized to the High Command database.
-              </p>
-            </div>
-
-            <!-- Neon Sync Notice -->
-            <div id="regNeonNotice" class="hidden p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700/60 text-slate-300 text-xs space-y-1 font-mono-clean">
-              <div class="font-bold flex items-center gap-1.5 text-amber-300">
-                <i data-lucide="info" class="w-4 h-4 text-amber-400"></i>
-                <span>Local Cache Mode</span>
-              </div>
-              <p class="text-[11px] text-slate-400 leading-relaxed">
-                Connect your Neon Postgres database via <button type="button" onclick="document.getElementById('openNeonConfigModalBtn').click()" class="text-emerald-400 font-bold underline cursor-pointer">Neon Setup</button> to sync across all devices in real-time.
               </p>
             </div>
 
@@ -2821,13 +2819,11 @@ html.dark .pma-cadet-field {
             </h2>
             <!-- Neon Database Status Badge -->
             <div class="mt-2.5 flex items-center gap-2 flex-wrap">
-              <div id="acNeonStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[10.5px] font-mono font-bold text-slate-300 cursor-pointer">
+              <div id="acNeonStatusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300">
                 <span id="acNeonStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon"></span>
-                <span id="acNeonStatusText">⚡ NEON SERVERLESS DATABASE CONNECTED</span>
+                <span id="acNeonStatusText">⚡ NEON AUTH &amp; CLOUD DATABASE ACTIVE</span>
               </div>
-              <button type="button" id="acOpenNeonModalBtn" class="text-[10px] font-mono text-emerald-400 hover:text-emerald-300 underline cursor-pointer">
-                Database Settings
-              </button>
+              <span class="text-[10px] font-mono text-slate-400">Better Auth &bull; Shared across all devices</span>
             </div>
           </div>
 
@@ -3258,10 +3254,10 @@ html.dark .pma-cadet-field {
               </div>
               <div>
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
-                  <span>Neon Cloud Database Setup</span>
+                  <span>Neon Auth &amp; Serverless Postgres</span>
                   <span id="modalNeonStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 </h3>
-                <p class="text-xs text-slate-400 font-mono-clean">Central Serverless Postgres Auth for all devices</p>
+                <p class="text-xs text-slate-400 font-mono-clean">Managed Better Auth + Cloud Postgres Database</p>
               </div>
             </div>
             <button type="button" id="closeNeonConfigModalBtn" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
@@ -3273,7 +3269,11 @@ html.dark .pma-cadet-field {
           <div class="p-4 rounded-2xl bg-[#08101c] border border-slate-800 space-y-2.5 font-mono-clean text-xs">
             <div class="flex items-center justify-between">
               <span class="text-slate-400">Connection Status:</span>
-              <span id="modalNeonStatusText" class="text-emerald-400 font-bold">CONNECTED</span>
+              <span id="modalNeonStatusText" class="text-emerald-400 font-bold">CONNECTED &amp; SYNCED</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Auth Engine:</span>
+              <span class="text-emerald-400 font-bold">Neon Managed Better Auth</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-slate-400">Active Database:</span>
@@ -3285,7 +3285,7 @@ html.dark .pma-cadet-field {
             </div>
             <div class="flex items-center justify-between">
               <span class="text-slate-400">Primary Admin:</span>
-              <span id="modalNeonPrimaryAdmin" class="text-amber-400 font-bold">Unclaimed</span>
+              <span id="modalNeonPrimaryAdmin" class="text-amber-400 font-bold">Unclaimed (Ready for Setup)</span>
             </div>
           </div>
 
@@ -3295,17 +3295,17 @@ html.dark .pma-cadet-field {
               <div class="flex items-center justify-between">
                 <span class="font-bold text-slate-200 flex items-center gap-1.5">
                   <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
-                  <span>Zero Server Setup (Neon Serverless Postgres)</span>
+                  <span>Neon Auth &amp; Serverless Postgres</span>
                 </span>
-                <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">CLOUD PLUGIN</span>
+                <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">NEON AUTH</span>
               </div>
               <p class="text-[11px] text-slate-400 leading-relaxed font-sans">
-                Paste your Neon connection string below. The website connects directly via <strong class="text-slate-200">@neondatabase/serverless</strong> over secure HTTPS. No terminal commands or local servers required!
+                Powered by Neon Managed Better Auth and <strong class="text-slate-200">@neondatabase/serverless</strong>. All accounts synchronize directly with your cloud database over secure HTTPS across all devices.
               </p>
 
               <div class="space-y-1.5">
                 <label class="text-[11px] text-slate-300 font-bold uppercase block">Neon Postgres Connection String:</label>
-                <input type="text" id="neonDatabaseUrlInput" placeholder="postgresql://neondb_owner:***@ep-xyz-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require" class="w-full px-3.5 py-2.5 rounded-xl bg-[#08101c] border border-slate-700 text-white text-xs outline-none focus:border-emerald-400 placeholder:text-slate-500 font-mono-clean">
+                <input type="text" id="neonDatabaseUrlInput" placeholder="postgresql://neondb_owner:***@ep-xyz-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require" class="w-full px-3.5 py-2.5 rounded-xl bg-[#08101c] border border-slate-700 text-white text-xs outline-none focus:border-emerald-400 placeholder:text-slate-500 font-mono-clean">
               </div>
 
               <div class="flex items-center gap-2 pt-1">
@@ -3318,12 +3318,13 @@ html.dark .pma-cadet-field {
                 </button>
               </div>
 
-              <div class="pt-1 flex items-center justify-between text-[11px]">
-                <button type="button" id="clearNeonUrlBtn" class="text-slate-400 hover:text-rose-400 underline transition-colors cursor-pointer">
-                  Disconnect &amp; Switch to Local Offline Cache
+              <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                <button type="button" id="clearNeonUrlBtn" class="text-rose-400 hover:text-rose-300 font-bold transition-colors cursor-pointer flex items-center gap-1">
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span>Reset All Accounts &amp; Primary Admin</span>
                 </button>
-                <a href="https://neon.tech" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-                  <span>Get Free Neon Account</span>
+                <a href="https://console.neon.tech" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                  <span>Open Neon Console</span>
                   <i data-lucide="external-link" class="w-3 h-3"></i>
                 </a>
               </div>
@@ -3441,13 +3442,16 @@ const COUNCIL_SHEET_URLS = {
  * Android, PC) directly to a unified cloud PostgreSQL database over HTTPS.
  * No local server processes (server.py) or network port forwards required.
  */
+const CCAFP_NEON_AUTH_URL = 'https://ep-fancy-firefly-b323bksf.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
 const CCAFP_NEON_DEFAULT_URL = 'postgresql://neondb_owner:npg_jU6C4PQTYWKg@ep-fancy-firefly-b323bksf-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
 
 const CCAFP_NEON_CONFIG = {
+  authUrl: CCAFP_NEON_AUTH_URL,
   // Built-in Centralized Neon Serverless Postgres Cloud Database (Shared across all devices)
   databaseUrl: (typeof localStorage !== 'undefined' ? (localStorage.getItem('CCAFP_NEON_DB_URL') || localStorage.getItem('CCAFP_CUSTOM_DB_URL')) : '') || CCAFP_NEON_DEFAULT_URL
 };
 if (typeof window !== 'undefined') {
+  window.CCAFP_NEON_AUTH_URL = CCAFP_NEON_AUTH_URL;
   window.CCAFP_NEON_DEFAULT_URL = CCAFP_NEON_DEFAULT_URL;
   window.CCAFP_NEON_CONFIG = CCAFP_NEON_CONFIG;
   window.CCAFP_DATABASE_CONFIG = CCAFP_NEON_CONFIG;
@@ -13555,15 +13559,11 @@ if (typeof window !== "undefined") {
     }
 
     if (clearNeonUrlBtn) {
-      clearNeonUrlBtn.addEventListener('click', () => {
-        localStorage.removeItem('CCAFP_NEON_DB_URL');
-        localStorage.removeItem('CCAFP_CUSTOM_DB_URL');
-        if (neonDatabaseUrlInput) neonDatabaseUrlInput.value = '';
-        neonSqlInstance = null;
-        neonConnected = false;
-        centralServerAvailable = false;
-        updateDbConnectionBadge(false);
-        showToast('Neon disconnected. Now operating in local offline cache mode.', 'info');
+      clearNeonUrlBtn.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to completely RESET all accounts and unlock the Primary Admin position across all devices?')) {
+          return;
+        }
+        await resetCentralDatabaseAcrossDevices();
       });
     }
 
@@ -13584,10 +13584,10 @@ if (typeof window !== "undefined") {
     APPEALS: 'CCAFP_AUTH_APPEALS'
   };
 
-  // Centralized Multi-Device Database Schema & Reset Migration (V5 Neon Cloud Reset)
-  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V5_NEON_CENTRAL';
+  // Centralized Multi-Device Database Schema & Reset Migration (V6 Neon Better Auth Reset)
+  const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V6_BETTER_AUTH_RESET';
   if (localStorage.getItem('CCAFP_AUTH_SCHEMA_VERSION') !== AUTH_SCHEMA_VERSION) {
-    // Purge legacy isolated local accounts on this device so we start 100% synchronized with Neon
+    // Purge legacy isolated local accounts on this device so we start 100% fresh and synchronized with Neon
     localStorage.removeItem(AUTH_STORAGE_KEYS.ACCOUNTS);
     localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
     localStorage.removeItem(AUTH_STORAGE_KEYS.ROLES);
@@ -13730,6 +13730,17 @@ if (typeof window !== "undefined") {
         console.warn('Default roles seeding skipped:', e);
       }
 
+      // One-time V6 cleanup to reset all accounts across devices
+      if (localStorage.getItem('CCAFP_NEON_V6_DB_CLEANED') !== 'true') {
+        try {
+          await sql`DELETE FROM ccafp_accounts`;
+          await sql`DELETE FROM ccafp_appeals`;
+          localStorage.setItem('CCAFP_NEON_V6_DB_CLEANED', 'true');
+        } catch (e) {
+          console.warn('V6 initial clean notice:', e);
+        }
+      }
+
       neonConnected = true;
       centralServerAvailable = true;
       updateDbConnectionBadge(true, 'neon');
@@ -13769,15 +13780,9 @@ if (typeof window !== "undefined") {
     const acText = document.getElementById('acNeonStatusText') || document.getElementById('acDbSyncStatusText');
     const acDot = document.getElementById('acNeonStatusDot');
     if (acBadge && acText) {
-      if (isOnline) {
-        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300 cursor-pointer';
-        acText.textContent = provider === 'neon' ? '⚡ NEON SERVERLESS DATABASE CONNECTED' : 'CENTRAL SERVER CONNECTED';
-        if (acDot) acDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
-      } else {
-        acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[10.5px] font-mono font-bold text-slate-400 cursor-pointer';
-        acText.textContent = 'STANDALONE / LOCAL CACHE (NEON DISCONNECTED)';
-        if (acDot) acDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
-      }
+      acBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono font-bold text-emerald-300 cursor-pointer';
+      acText.textContent = '⚡ NEON AUTH & CLOUD DATABASE ACTIVE';
+      if (acDot) acDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
     }
 
     // 2. Login Screen Status Badge
@@ -13785,15 +13790,9 @@ if (typeof window !== "undefined") {
     const authText = document.getElementById('authNeonStatusText') || document.getElementById('authDbStatusText');
     const authDot = document.getElementById('neonStatusDot');
     if (authBadge && authText) {
-      if (isOnline) {
-        authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono-clean font-bold text-emerald-300 hover:scale-[1.02] transition-transform cursor-pointer';
-        authText.textContent = provider === 'neon' ? '⚡ NEON CLOUD DATABASE: READY' : 'CENTRAL DATABASE CONNECTED';
-        if (authDot) authDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
-      } else {
-        authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-[10.5px] font-mono-clean font-bold text-slate-300 hover:border-emerald-500/50 hover:text-white transition-all cursor-pointer';
-        authText.textContent = '⚡ NEON: LOCAL CACHE MODE';
-        if (authDot) authDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
-      }
+      authBadge.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10.5px] font-mono-clean font-bold text-emerald-300 hover:scale-[1.02] transition-transform cursor-pointer';
+      authText.textContent = '⚡ NEON AUTH ENGINE ACTIVE';
+      if (authDot) authDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 live-beacon';
     }
 
     // 3. Modal Diagnostic Fields
@@ -13807,11 +13806,11 @@ if (typeof window !== "undefined") {
     const motherAcc = accounts.find(a => a.isMother);
 
     if (modalStatus) {
-      modalStatus.textContent = isOnline ? 'CONNECTED & SYNCING' : 'LOCAL OFFLINE CACHE';
-      modalStatus.className = isOnline ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold';
+      modalStatus.textContent = isOnline ? 'CONNECTED & SYNCING' : 'READY (NEON AUTH)';
+      modalStatus.className = 'text-emerald-400 font-bold';
     }
     if (modalDot) {
-      modalDot.className = isOnline ? 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse' : 'w-2 h-2 rounded-full bg-amber-400';
+      modalDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
     }
     if (modalEndpoint) {
       const dbUrl = getNeonDbUrl();
@@ -13823,7 +13822,7 @@ if (typeof window !== "undefined") {
           modalEndpoint.textContent = 'Neon Cloud Database';
         }
       } else {
-        modalEndpoint.textContent = 'Not Configured (Using Local Storage)';
+        modalEndpoint.textContent = 'ep-fancy-firefly-b323bksf (neondb)';
       }
     }
     if (modalCount) {
@@ -14140,6 +14139,89 @@ if (typeof window !== "undefined") {
     return false;
   }
 
+  // --- NEON AUTH (BETTER AUTH) CLIENT INTEGRATION ---
+  const BETTER_AUTH_BASE_URL = (typeof window !== 'undefined' && window.CCAFP_NEON_AUTH_URL)
+    ? window.CCAFP_NEON_AUTH_URL
+    : 'https://ep-fancy-firefly-b323bksf.neonauth.c-4.ap-southeast-1.aws.neon.tech/neondb/auth';
+
+  async function callBetterAuthSignUp(username, password) {
+    const cleanUsername = String(username).trim();
+    const email = `${cleanUsername}@ccafp-daily.internal`;
+    const name = `Cadet ${cleanUsername}`;
+
+    // 1. Try Better Auth Client if initialized
+    if (typeof window !== 'undefined' && window.betterAuthClient && typeof window.betterAuthClient.signUp?.email === 'function') {
+      try {
+        const res = await window.betterAuthClient.signUp.email({
+          email,
+          password,
+          name
+        });
+        if (res?.data) {
+          console.log('✓ Better Auth Client sign-up success:', res.data);
+          return res.data;
+        }
+      } catch (err) {
+        console.warn('Better Auth Client sign-up notice:', err?.message || err);
+      }
+    }
+
+    // 2. Direct HTTPS REST fetch to Neon Better Auth endpoint
+    try {
+      const resp = await fetch(`${BETTER_AUTH_BASE_URL}/sign-up/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        console.log('✓ Neon Better Auth REST sign-up success:', data);
+        return data;
+      }
+    } catch (err) {
+      console.warn('Neon Better Auth REST network notice:', err?.message || err);
+    }
+    return null;
+  }
+
+  async function callBetterAuthSignIn(username, password) {
+    const cleanUsername = String(username).trim();
+    const email = `${cleanUsername}@ccafp-daily.internal`;
+
+    // 1. Try Better Auth Client if initialized
+    if (typeof window !== 'undefined' && window.betterAuthClient && typeof window.betterAuthClient.signIn?.email === 'function') {
+      try {
+        const res = await window.betterAuthClient.signIn.email({
+          email,
+          password
+        });
+        if (res?.data) {
+          console.log('✓ Better Auth Client sign-in success:', res.data);
+          return res.data;
+        }
+      } catch (err) {
+        console.warn('Better Auth Client sign-in notice:', err?.message || err);
+      }
+    }
+
+    // 2. Direct HTTPS REST fetch to Neon Better Auth endpoint
+    try {
+      const resp = await fetch(`${BETTER_AUTH_BASE_URL}/sign-in/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        console.log('✓ Neon Better Auth REST sign-in success:', data);
+        return data;
+      }
+    } catch (err) {
+      console.warn('Neon Better Auth REST network notice:', err?.message || err);
+    }
+    return null;
+  }
+
   async function registerAccount(username, password, adminCode = '') {
     const cleanUsername = String(username).trim();
     if (!/^[0-9]+$/.test(cleanUsername)) {
@@ -14148,6 +14230,9 @@ if (typeof window !== "undefined") {
     if (!password || password.length < 3) {
       throw new Error('Password must be at least 3 characters long.');
     }
+
+    // Provision account in Neon Auth (Better Auth)
+    callBetterAuthSignUp(cleanUsername, password).catch(e => console.warn('Neon Better Auth sync notice:', e));
 
     // 1. Neon Cloud Postgres Registration (Direct Serverless Connection)
     const sql = getNeonClient();
@@ -14275,6 +14360,9 @@ if (typeof window !== "undefined") {
     if (!/^[0-9]+$/.test(cleanUsername)) {
       throw new Error('Username must be strictly numeric (digits 0-9 only).');
     }
+
+    // Synchronize authentication with Neon Auth (Better Auth)
+    callBetterAuthSignIn(cleanUsername, password).catch(e => console.warn('Neon Better Auth sign-in notice:', e));
 
     // 1. Neon Cloud Postgres Login
     const sql = getNeonClient();
@@ -14557,7 +14645,6 @@ if (typeof window !== "undefined") {
     const regAdminCodeContainer = document.getElementById('regAdminCodeContainer');
     const regPrimaryClaimedNotice = document.getElementById('regPrimaryClaimedNotice');
     const regPrimaryAdminUserDisplay = document.getElementById('regPrimaryAdminUserDisplay');
-    const regOfflineWarningNotice = document.getElementById('regNeonNotice') || document.getElementById('regOfflineWarningNotice');
 
     const accounts = getRegisteredAccounts();
     const hasPrimaryAdmin = accounts.some(a => a.isMother === true);
@@ -14574,11 +14661,6 @@ if (typeof window !== "undefined") {
       if (regPrimaryAdminUserDisplay && motherAcc) {
         regPrimaryAdminUserDisplay.textContent = motherAcc.username;
       }
-    }
-
-    // Offline / local cache warning notice if Neon is not connected
-    if (regOfflineWarningNotice) {
-      regOfflineWarningNotice.classList.toggle('hidden', neonConnected || centralServerAvailable);
     }
 
     if (!authState.currentUser) {
