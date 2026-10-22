@@ -538,6 +538,64 @@ html.dark .pma-cadet-field {
   border-color: #182538 !important;
 }
 
+/* Daily Bible Verse Featured Card (High Contrast Legibility in Light & Dark Mode) */
+.daily-bible-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 55%, #f5f3ff 100%) !important;
+  border: 1px solid #fde68a !important;
+}
+.daily-bible-card .verse-quote {
+  color: #0f172a !important;
+}
+.daily-bible-card .verse-ref {
+  color: #78350f !important;
+}
+.daily-bible-card .verse-btn {
+  background-color: #ffffff !important;
+  color: #451a03 !important;
+  border: 1px solid #fcd34d !important;
+}
+html.dark .daily-bible-card {
+  background: linear-gradient(135deg, #182235 0%, #0d1524 55%, #1a1630 100%) !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+html.dark .daily-bible-card .verse-quote {
+  color: #f8fafc !important;
+}
+html.dark .daily-bible-card .verse-ref {
+  color: #fde68a !important;
+}
+html.dark .daily-bible-card .verse-btn {
+  background-color: #1e293b !important;
+  color: #fde68a !important;
+  border: 1px solid #475569 !important;
+}
+html.dark .daily-bible-card .verse-btn:hover {
+  background-color: #334155 !important;
+}
+html.dark .daily-bible-card .verse-header-border {
+  border-color: #1e293b !important;
+}
+html.dark .daily-bible-card .verse-subtitle {
+  color: #cbd5e1 !important;
+}
+html.dark .daily-bible-card .verse-reflection {
+  color: #94a3b8 !important;
+}
+
+/* SOC Standardized Uniform Badges (Uniform Military Theme) */
+.soc-uniform-badge {
+  background-color: #eff6ff !important;
+  color: #1e3a8a !important;
+  border: 1px solid #bfdbfe !important;
+  font-weight: 700;
+}
+html.dark .soc-uniform-badge {
+  background-color: #0c1b30 !important;
+  color: #93c5fd !important;
+  border-color: #1e3a8a !important;
+}
+
 /* ==================================================== */
 /* CCAFP ACADEMY DARK AUTHENTICATION STYLING            */
 /* ==================================================== */

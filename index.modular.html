@@ -824,7 +824,7 @@
             <div>
               <div class="flex items-center gap-2">
                 <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-900 font-mono-clean text-[10px] font-bold uppercase">PERSONNEL ROLL</span>
-                <span id="s1ExpandedTotalBadge" class="text-xs text-slate-400 font-mono-clean">1,235 REGISTERED CADETS (ALL CLASSES)</span>
+                <span id="s1ExpandedTotalBadge" class="text-xs text-slate-400 font-mono-clean">1,255 REGISTERED CADETS (ALL CLASSES & ATTACHED)</span>
               </div>
               <h3 class="font-bold text-lg text-slate-900 mt-1">Master Expanded Roll 2026-2027</h3>
               <p class="text-xs text-slate-500 font-mono-clean">Complete Corps Roster: 1CL Mandaraig '27, 2CL Siglab Kasilag '28, 3CL Madasilak '29, and 4CL '30 across all 8 Companies</p>
@@ -1342,19 +1342,30 @@
           </div>
 
           <!-- Armory Floor-by-Floor Table -->
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
             <table class="w-full text-left text-xs font-mono-clean">
               <thead>
-                <tr class="font-bold text-slate-500 border-b border-slate-200 pb-2 uppercase tracking-wider text-[11px] bg-slate-50/50">
-                  <th class="py-3 px-3">Location / Barracks Floor</th>
-                  <th class="py-3 px-2 text-center">M14 (In/Mag)</th>
-                  <th class="py-3 px-2 text-center">M16 In</th>
-                  <th class="py-3 px-2 text-center">R4/M4 In</th>
-                  <th class="py-3 px-2 text-center">Garand</th>
-                  <th class="py-3 px-2 text-center">Pistol</th>
-                  <th class="py-3 px-2 text-center">Swords</th>
-                  <th class="py-3 px-2 text-center">Bayonets</th>
-                  <th class="py-3 px-3">Accountability Notes</th>
+                <tr class="font-bold text-slate-700 border-b border-slate-200 uppercase tracking-wider text-[11px] bg-slate-100/80">
+                  <th rowspan="2" class="py-3 px-3 align-middle bg-slate-100">Location / Barracks Floor</th>
+                  <th colspan="3" class="py-2 px-2 text-center border-l border-slate-200 bg-blue-50/60 text-blue-950 font-bold">M14 Rifle</th>
+                  <th colspan="2" class="py-2 px-2 text-center border-l border-slate-200 bg-slate-50 text-slate-800 font-bold">M16 Rifle</th>
+                  <th colspan="2" class="py-2 px-2 text-center border-l border-slate-200 bg-slate-50 text-slate-800 font-bold">R4 / M4</th>
+                  <th colspan="2" class="py-2 px-2 text-center border-l border-slate-200 bg-amber-50/50 text-amber-950 font-bold">Special Weapons</th>
+                  <th colspan="2" class="py-2 px-2 text-center border-l border-slate-200 bg-amber-50/50 text-amber-950 font-bold">HTG Items</th>
+                  <th rowspan="2" class="py-3 px-3 align-middle border-l border-slate-200 bg-slate-100">Accountability Notes</th>
+                </tr>
+                <tr class="font-bold text-slate-500 border-b border-slate-200 uppercase tracking-wider text-[10px] bg-slate-50">
+                  <th class="py-1.5 px-2 text-center border-l border-slate-200 text-blue-900 font-bold">IN</th>
+                  <th class="py-1.5 px-2 text-center text-amber-600 font-bold">OUT</th>
+                  <th class="py-1.5 px-2 text-center text-slate-500 font-bold">MAG</th>
+                  <th class="py-1.5 px-2 text-center border-l border-slate-200 text-slate-900 font-bold">IN</th>
+                  <th class="py-1.5 px-2 text-center text-amber-600 font-bold">OUT</th>
+                  <th class="py-1.5 px-2 text-center border-l border-slate-200 text-slate-900 font-bold">IN</th>
+                  <th class="py-1.5 px-2 text-center text-amber-600 font-bold">OUT</th>
+                  <th class="py-1.5 px-2 text-center border-l border-slate-200">Garand</th>
+                  <th class="py-1.5 px-2 text-center">Pistol</th>
+                  <th class="py-1.5 px-2 text-center border-l border-slate-200">Swords</th>
+                  <th class="py-1.5 px-2 text-center">Bayonets</th>
                 </tr>
               </thead>
               <tbody id="s1ArmoryTableBody" class="divide-y divide-slate-100">

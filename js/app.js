@@ -626,26 +626,34 @@
     dom.s1ArmoryTableBody.innerHTML = rows.map(r => `
       <tr class="hover:bg-slate-50/70 transition-colors">
         <td class="py-2.5 px-3 font-bold text-slate-900 font-sans">${r.loc}</td>
-        <td class="py-2.5 px-2 text-center text-blue-950 font-bold">${r.m14} <span class="text-slate-400 font-normal">(${r.mag14})</span></td>
-        <td class="py-2.5 px-2 text-center text-slate-700">${r.m16 || '-'}</td>
-        <td class="py-2.5 px-2 text-center text-slate-700">${r.r4 || '-'}</td>
-        <td class="py-2.5 px-2 text-center ${r.garand ? 'text-amber-700 font-bold' : 'text-slate-400'}">${r.garand || '-'}</td>
+        <td class="py-2.5 px-2 text-center text-blue-950 font-bold border-l border-slate-100">${r.m14 || 0}</td>
+        <td class="py-2.5 px-2 text-center ${r.m14Out ? 'text-amber-600 font-bold' : 'text-slate-400'}">${r.m14Out || 0}</td>
+        <td class="py-2.5 px-2 text-center text-slate-600">${r.mag14 || 0}</td>
+        <td class="py-2.5 px-2 text-center text-slate-800 font-medium border-l border-slate-100">${r.m16 || 0}</td>
+        <td class="py-2.5 px-2 text-center ${r.m16Out ? 'text-amber-600 font-bold' : 'text-slate-400'}">${r.m16Out || 0}</td>
+        <td class="py-2.5 px-2 text-center text-slate-800 font-medium border-l border-slate-100">${r.r4 || 0}</td>
+        <td class="py-2.5 px-2 text-center ${r.r4Out ? 'text-amber-600 font-bold' : 'text-slate-400'}">${r.r4Out || 0}</td>
+        <td class="py-2.5 px-2 text-center border-l border-slate-100 ${r.garand ? 'text-amber-700 font-bold' : 'text-slate-400'}">${r.garand || '-'}</td>
         <td class="py-2.5 px-2 text-center ${r.pistol ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${r.pistol || '-'}</td>
-        <td class="py-2.5 px-2 text-center ${r.swords ? 'text-amber-800 font-bold' : 'text-slate-400'}">${r.swords || '-'}</td>
+        <td class="py-2.5 px-2 text-center border-l border-slate-100 ${r.swords ? 'text-amber-800 font-bold' : 'text-slate-400'}">${r.swords || '-'}</td>
         <td class="py-2.5 px-2 text-center ${r.bayonets ? 'text-amber-800 font-bold' : 'text-slate-400'}">${r.bayonets || '-'}</td>
-        <td class="py-2.5 px-3 text-slate-500 font-sans text-[11px]">${r.notes || '-'}</td>
+        <td class="py-2.5 px-3 text-slate-600 font-sans text-[11px] border-l border-slate-100">${r.notes || '-'}</td>
       </tr>
     `).join('') + `
-      <tr class="bg-slate-50 font-bold border-t-2 border-slate-300 text-slate-900">
-        <td class="py-2.5 px-3 font-mono-clean uppercase text-[11px]">TOTAL INVENTORY</td>
-        <td class="py-2.5 px-2 text-center text-blue-900 font-bold">${arm.totals?.m14In || 831} <span class="text-blue-700 font-normal">(${arm.totals?.m14Mag || 818})</span></td>
-        <td class="py-2.5 px-2 text-center">${arm.totals?.m16In || 342}</td>
-        <td class="py-2.5 px-2 text-center">${arm.totals?.r4In || 130}</td>
-        <td class="py-2.5 px-2 text-center text-amber-700">${arm.totals?.m1GarandIn || 21}</td>
-        <td class="py-2.5 px-2 text-center text-emerald-700">${arm.totals?.pistol9mmIn || 13}</td>
-        <td class="py-2.5 px-2 text-center text-amber-800">${arm.totals?.swordsIn || 38}</td>
-        <td class="py-2.5 px-2 text-center text-amber-800">${arm.totals?.bayonetsIn || 51}</td>
-        <td class="py-2.5 px-3 text-slate-600 text-[11px]">Full Inspection Verified by RSO</td>
+      <tr class="bg-slate-100 font-bold border-t-2 border-slate-300 text-slate-900">
+        <td class="py-2.5 px-3 font-mono-clean uppercase text-[11px] bg-slate-100">TOTAL INVENTORY</td>
+        <td class="py-2.5 px-2 text-center text-blue-900 font-bold border-l border-slate-200">${arm.totals?.m14In || 831}</td>
+        <td class="py-2.5 px-2 text-center text-amber-700 font-bold">${arm.totals?.m14Out || 0}</td>
+        <td class="py-2.5 px-2 text-center text-slate-600 font-bold">${arm.totals?.m14Mag || 818}</td>
+        <td class="py-2.5 px-2 text-center text-slate-900 font-bold border-l border-slate-200">${arm.totals?.m16In || 342}</td>
+        <td class="py-2.5 px-2 text-center text-amber-700 font-bold">${arm.totals?.m16Out || 0}</td>
+        <td class="py-2.5 px-2 text-center text-slate-900 font-bold border-l border-slate-200">${arm.totals?.r4In || 130}</td>
+        <td class="py-2.5 px-2 text-center text-amber-700 font-bold">${arm.totals?.r4Out || 0}</td>
+        <td class="py-2.5 px-2 text-center text-amber-700 font-bold border-l border-slate-200">${arm.totals?.m1GarandIn || 21}</td>
+        <td class="py-2.5 px-2 text-center text-emerald-700 font-bold">${arm.totals?.pistol9mmIn || 13}</td>
+        <td class="py-2.5 px-2 text-center text-amber-800 font-bold border-l border-slate-200">${arm.totals?.swordsIn || 38}</td>
+        <td class="py-2.5 px-2 text-center text-amber-800 font-bold">${arm.totals?.bayonetsIn || 51}</td>
+        <td class="py-2.5 px-3 text-slate-700 text-[11px] border-l border-slate-200">Full Inspection Verified by RSO</td>
       </tr>
     `;
 
@@ -659,7 +667,7 @@
     const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     if (arm.totals) {
       setVal('armoryM14Tot', arm.totals.m14In || 831);
-      setVal('armoryM14MagTot', `${arm.totals.m14Mag || 818} MAG`);
+      setVal('armoryM14MagTot', `${arm.totals.m14Mag || 818} MAG • ${arm.totals.m14Out || 0} OUT`);
       setVal('armoryM16Tot', arm.totals.m16In || 342);
       setVal('armoryR4Tot', arm.totals.r4In || 130);
       setVal('armoryPistolTot', arm.totals.pistol9mmIn || 13);
@@ -673,17 +681,24 @@
       setVal('rsoReportDateBadge', arm.reportDate);
     }
 
-    // Dynamic Verification Signatures (Always Real-Time & Live from SOC)
-    const sched = CCAFP_CONFIG.scheduleOfCalls || {};
+    // Dynamic Verification Signatures (Always Real-Time & Live from SOC and Armory Sheet)
+    const sched = CCAFP_CONFIG.s1Data?.scheduleOfCalls || CCAFP_CONFIG.scheduleOfCalls || {};
     const odEntry = (sched.guardRoster || []).find(g => g.postCode === 'OD' || (g.post && g.post.startsWith('OD')));
-    let odName = (odEntry && odEntry.posted) ? odEntry.posted : "JHOPRILYN S MANGAGOM C-27151 'D' CO";
+    let odName = (odEntry && odEntry.posted) ? odEntry.posted : (arm.signatures?.preparedBy || arm.signOff?.preparedBy || "CDT LT 1CL JHOPRILYN S MANGAGOM C-27151 'D' CO");
     if (!odName.toUpperCase().includes('CDT')) odName = `CDT LT ${odName}`;
-    const prep = `${odName} (Officer-of-the-Day)`;
+    if (!odName.toUpperCase().includes('OFFICER') && !odName.toUpperCase().includes('OD')) {
+      odName = `${odName} (Officer-of-the-Day)`;
+    }
+    const prep = odName;
 
-    const chk = "CDT 1CL CARLO JOSEPH G MAGAYANES C-26226 (AC of RS for Supply / RSO)";
+    const chk = arm.signatures?.checkedBy || arm.signOff?.checkedBy || "CDT 1CL CARLO JOSEPH G MAGAYANES C-26226 (AC of RS for Supply / RSO)";
 
-    const ocName = sched.officers?.oc || "MAJ JAMES A MARTINEZ PA";
-    const noted = `${ocName} (Officer-in-Charge)`;
+    let ocName = sched.officers?.oc || arm.signatures?.notedBy || arm.signOff?.notedBy || "MAJ JAMES A MARTINEZ PA";
+    if (Array.isArray(ocName)) ocName = ocName.join(' • ');
+    if (!ocName.toUpperCase().includes('OFFICER') && !ocName.toUpperCase().includes('OC') && !ocName.toUpperCase().includes('CHARGE')) {
+      ocName = `${ocName} (Officer-in-Charge)`;
+    }
+    const noted = ocName;
 
     const prepEl = document.getElementById('armoryPreparedBy');
     if (prepEl) prepEl.textContent = prep;
@@ -911,6 +926,11 @@
              (item.class || '').toLowerCase().includes(q) ||
              (item.contact || '').toLowerCase().includes(q);
     });
+
+    const badgeEl = document.getElementById('s1ExpandedTotalBadge');
+    if (badgeEl) {
+      badgeEl.textContent = `${list.length.toLocaleString()} REGISTERED CADETS (ALL CLASSES & ATTACHED)`;
+    }
 
     // Update active class pills UI
     document.querySelectorAll('.s1-expanded-class-pill').forEach(pill => {
@@ -1573,8 +1593,8 @@
     dom.councilDynamicContainer.innerHTML = `
       <div class="space-y-6">
         <!-- Daily Bible Verse Featured Card (Synced with Laptop Bible Study App) -->
-        <div class="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-amber-50 via-white to-purple-50/50 border border-amber-200/90 shadow-xs space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/60 pb-3">
+        <div class="daily-bible-card relative overflow-hidden p-6 rounded-3xl shadow-xs space-y-4">
+          <div class="verse-header-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/60 pb-3">
             <div class="flex items-center gap-2.5">
               <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold border border-amber-300/40">
                 <i data-lucide="book-open" class="w-4 h-4 text-amber-700"></i>
@@ -1588,24 +1608,24 @@
                   </span>
                   <span class="text-xs text-slate-400 font-mono-clean ml-1">${todayStr}</span>
                 </div>
-                <h4 class="font-bold text-sm text-slate-900 mt-0.5 font-mono-clean">Scripture Meditation of the Day</h4>
+                <h4 class="verse-subtitle font-bold text-sm text-slate-900 mt-0.5 font-mono-clean">Scripture Meditation of the Day</h4>
               </div>
             </div>
-            <button id="syncBibleVerseBtn" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-amber-50 text-amber-950 font-mono-clean text-xs font-semibold border border-amber-300 shadow-2xs transition-colors self-start sm:self-auto" title="Update scripture from Bible Study app">
+            <button id="syncBibleVerseBtn" class="verse-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-mono-clean text-xs font-semibold shadow-2xs transition-colors self-start sm:self-auto cursor-pointer" title="Update scripture from Bible Study app">
               <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-700"></i>
               <span>Sync with Bible Study App</span>
             </button>
           </div>
           <div class="space-y-2.5">
-            <blockquote class="text-base sm:text-lg font-serif italic text-slate-900 leading-relaxed font-medium">
+            <blockquote class="verse-quote text-base sm:text-lg font-serif italic leading-relaxed font-semibold">
               “${dailyVerse.text}”
             </blockquote>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 font-mono-clean">
-              <span class="text-xs sm:text-sm font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="verse-ref text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                 <span>${dailyVerse.reference}</span>
               </span>
-              <span class="text-[11px] text-slate-500 italic">
+              <span class="verse-reflection text-[11px] italic">
                 ${dailyVerse.reflection || 'Source: Bible Study App'}
               </span>
             </div>
@@ -3367,14 +3387,7 @@
         dom.dutyCallsTableBody.innerHTML = calls.map(c => {
           const timeDisplay = c.time ? (c.time.endsWith('H') ? c.time : `${c.time}H`) : '-';
 
-          let uBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
-          const uUpper = (c.uniform || '').toUpperCase();
-          if (uUpper.includes('DA')) uBadgeClass = 'bg-blue-50 text-blue-900 border-blue-200 font-bold';
-          else if (uUpper.includes('BDU')) uBadgeClass = 'bg-emerald-50 text-emerald-900 border-emerald-200 font-bold';
-          else if (uUpper.includes('SDPU') || uUpper.includes('SDU')) uBadgeClass = 'bg-purple-50 text-purple-900 border-purple-200 font-bold';
-          else if (uUpper.includes('AU')) uBadgeClass = 'bg-amber-50 text-amber-900 border-amber-200 font-bold';
-          else if (uUpper.includes('RU')) uBadgeClass = 'bg-rose-50 text-rose-900 border-rose-200 font-bold';
-          else if (uUpper.includes('GAU')) uBadgeClass = 'bg-slate-100 text-slate-800 border-slate-300 font-bold';
+          const uBadgeClass = 'soc-uniform-badge';
 
           return `
             <tr class="hover:bg-slate-50/70 transition-colors border-b border-slate-100 last:border-0">
@@ -3382,7 +3395,7 @@
               <td class="py-3 px-4 font-medium text-slate-900 text-xs">${c.activity}</td>
               <td class="py-3 px-3 font-mono-clean text-xs">
                 ${c.uniform && c.uniform !== '-' ? `
-                  <span class="px-2 py-0.5 rounded text-[11px] border ${uBadgeClass}">
+                  <span class="px-2 py-0.5 rounded text-[11px] ${uBadgeClass}">
                     ${c.uniform}
                   </span>
                 ` : '<span class="text-slate-400">-</span>'}
@@ -3530,9 +3543,8 @@
   // --- Punishments ---
   function renderPunishments() {
     if (!dom.punishmentTableBody) return;
-
-    const list = CCAFP_CONFIG.punishmentList || [];
-    const totals = CCAFP_CONFIG.punishmentTotals || { touring: 239, confined: 74, totalActive: list.length };
+    const list = CCAFP_CONFIG.punishmentList || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.punishments) || [];
+    const totals = CCAFP_CONFIG.punishmentTotals || { touring: 239, confined: 74, totalActive: list.length || 877 };
     const meta = CCAFP_CONFIG.punishmentMeta || {
       chairman: "CDT CPT 1CL APRIL JOY C GEROLA C-27112 'A' Co CCAFP",
       notedBy: "CDT SGT MAJ 2CL RASHEED SHANE C ABBAS 'A' Co CCAFP",
@@ -3935,7 +3947,23 @@
         const totalRows = (punishTotalsRes.status === 'fulfilled' && punishTotalsRes.value) ? punishTotalsRes.value : null;
         const parsedPunish = syncManager.parsePunishments(punishConductRes.value, totalRows);
         if (parsedPunish) {
-          CCAFP_CONFIG.punishmentList = parsedPunish.list;
+          const currentList = CCAFP_CONFIG.punishmentList || (window.S1_SPIRITUAL_DATA && window.S1_SPIRITUAL_DATA.punishments) || [];
+          if (parsedPunish.list && parsedPunish.list.length >= 200) {
+            CCAFP_CONFIG.punishmentList = parsedPunish.list;
+          } else if (currentList.length > 200 && parsedPunish.list) {
+            const merged = [...currentList];
+            parsedPunish.list.forEach(upd => {
+              const target = merged.find(x => x.lastName === upd.lastName && x.company === upd.company);
+              if (target) {
+                target.status = upd.status;
+                target.toursRem = upd.toursRem;
+                target.served = upd.served;
+              }
+            });
+            CCAFP_CONFIG.punishmentList = merged;
+          } else if (parsedPunish.list && parsedPunish.list.length > 0) {
+            CCAFP_CONFIG.punishmentList = parsedPunish.list;
+          }
           CCAFP_CONFIG.punishmentTotals = parsedPunish.totals;
           CCAFP_CONFIG.punishmentMeta = {
             chairman: parsedPunish.chairman,
@@ -5173,6 +5201,21 @@
         )
       `;
 
+      // 4. Create ccafp_s2_concerns table for centralized S2 intelligence reporting
+      await sql`
+        CREATE TABLE IF NOT EXISTS ccafp_s2_concerns (
+          id VARCHAR(50) PRIMARY KEY,
+          category TEXT NOT NULL,
+          urgency TEXT DEFAULT 'Routine',
+          subject TEXT NOT NULL,
+          narrative TEXT NOT NULL,
+          is_anonymous BOOLEAN DEFAULT FALSE,
+          reporter_username VARCHAR(50) NOT NULL,
+          status TEXT DEFAULT 'Pending',
+          submitted_at TIMESTAMPTZ DEFAULT NOW()
+        )
+      `;
+
       // 4. Seed default roles if roles table is empty
       try {
         const existingRoles = await sql`SELECT count(*) as count FROM ccafp_roles`;
@@ -5358,6 +5401,23 @@
           submittedAt: r.submitted_at
         }));
 
+        let concernRows = [];
+        try {
+          concernRows = await sql`SELECT * FROM ccafp_s2_concerns ORDER BY submitted_at DESC`;
+        } catch (e) {}
+
+        const concerns = (concernRows || []).map(r => ({
+          id: r.id,
+          category: r.category,
+          urgency: r.urgency || 'Routine',
+          subject: r.subject,
+          narrative: r.narrative,
+          isAnonymous: Boolean(r.is_anonymous),
+          reporterUsername: r.reporter_username,
+          status: r.status || 'Pending',
+          submittedAt: r.submitted_at
+        }));
+
         neonConnected = true;
         centralServerAvailable = true;
         updateDbConnectionBadge(true, 'neon');
@@ -5367,6 +5427,9 @@
           localStorage.setItem(AUTH_STORAGE_KEYS.ROLES, JSON.stringify(roles));
         }
         localStorage.setItem(AUTH_STORAGE_KEYS.APPEALS, JSON.stringify(appeals));
+        if (concernRows && concernRows.length > 0) {
+          localStorage.setItem(AUTH_STORAGE_KEYS.S2_CONCERNS, JSON.stringify(concerns));
+        }
 
         // Keep current logged-in user in sync
         if (authState.currentUser) {
@@ -5383,6 +5446,10 @@
         const acView = document.getElementById('view-access-control');
         if (acView && !acView.classList.contains('hidden') && authState.currentUser?.isMother) {
           renderAccessControlView();
+        }
+        const s2View = document.getElementById('view-s2');
+        if (s2View && !s2View.classList.contains('hidden')) {
+          renderS2CouncilView();
         }
         return true;
       } catch (e) {
@@ -5440,6 +5507,7 @@
       try {
         await sql`DELETE FROM ccafp_accounts WHERE username != ${PRIMARY_MOTHER_ACCOUNT.username}`;
         await sql`DELETE FROM ccafp_appeals`;
+        await sql`DELETE FROM ccafp_s2_concerns`;
         await sql`
           INSERT INTO ccafp_accounts (
             username, salt, hash, is_mother, role, roles, status, suspended_until, suspended_reason, created_at
@@ -7076,8 +7144,14 @@
 
   function renderS2CouncilView() {
     const user = authState.currentUser;
-    const canSubmit = hasPermission('s2:submit_concern');
-    const canViewHiddenMessages = hasPermission('s2:view_concerns');
+    const canSubmit = Boolean(user) || hasPermission('s2:submit_concern');
+    const canViewHiddenMessages = Boolean(
+      user?.isMother ||
+      user?.role === 'admin' ||
+      hasPermission('s2:view_concerns') ||
+      (user?.roles || []).includes('s2') ||
+      (user?.roles || []).includes('admin')
+    );
     const canViewOwn = Boolean(user);
 
     const submitContainer = document.getElementById('s2SubmitContainer');
@@ -7102,8 +7176,8 @@
 
     if (canViewHiddenMessages) {
       displayConcerns = allConcerns;
-      if (inboxTitle) inboxTitle.textContent = 'Confidential Intelligence Triage Inbox (Hidden Messages)';
-      if (inboxSubtitle) inboxSubtitle.textContent = 'Decrypted transmissions routed to authorized S2 Intelligence Officers.';
+      if (inboxTitle) inboxTitle.textContent = 'Confidential Intelligence Triage Inbox (All Devices Centralized)';
+      if (inboxSubtitle) inboxSubtitle.textContent = 'Live transmissions from all cadet devices routed to Primary Admin and S2 Intelligence Officers.';
     } else {
       displayConcerns = allConcerns.filter(c => c.reporterUsername === user?.username);
       if (inboxTitle) inboxTitle.textContent = 'My Submitted Concerns Tracker';
@@ -7138,14 +7212,14 @@
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/60 pb-2">
                 <div class="flex items-center gap-2">
                   <span class="text-[10px] font-bold font-mono px-2 py-0.5 rounded border ${urgencyColors[c.urgency] || 'bg-slate-100'}">
-                    ${c.urgency.toUpperCase()}
+                    ${(c.urgency || 'Routine').toUpperCase()}
                   </span>
                   <span class="text-xs font-bold font-mono text-purple-900">[${c.category}]</span>
                   <h4 class="font-bold text-sm text-slate-900">${c.subject}</h4>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${statusColors[c.status] || 'bg-slate-200'}">
-                    ${c.status}
+                    ${c.status || 'Pending'}
                   </span>
                   <span class="text-[10.5px] font-mono text-slate-400">
                     ${new Date(c.submittedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} &bull; ${new Date(c.submittedAt).toLocaleDateString()}
@@ -7158,7 +7232,13 @@
               </p>
 
               <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
-                <span>Reporter: <strong>${c.isAnonymous ? 'ANONYMOUS (Masked)' : `Cadet S/N ${c.reporterUsername}`}</strong></span>
+                <span>
+                  Reporter: ${canViewHiddenMessages
+                    ? (c.isAnonymous
+                        ? `<span class="text-amber-800 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">ANONYMOUS (Masked) &bull; Origin Cadet: ${c.reporterUsername}</span>`
+                        : `Cadet S/N <strong>${c.reporterUsername}</strong>`)
+                    : (c.isAnonymous ? 'ANONYMOUS (Masked)' : `Cadet S/N ${c.reporterUsername}`)}
+                </span>
                 ${canViewHiddenMessages ? `
                   <div class="flex items-center gap-1.5">
                     <button class="px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 text-[10.5px] font-bold cursor-pointer" onclick="updateConcernStatus('${c.id}', 'Under Review')">Review</button>
@@ -7175,18 +7255,29 @@
     if (window.lucide) window.lucide.createIcons();
   }
 
-  window.updateConcernStatus = function(concernId, newStatus) {
+  window.updateConcernStatus = async function(concernId, newStatus) {
     const concerns = getS2Concerns();
     const target = concerns.find(c => c.id === concernId);
     if (target) {
       target.status = newStatus;
       saveS2Concerns(concerns);
+
+      const sql = getNeonClient();
+      if (sql) {
+        try {
+          await sql`UPDATE ccafp_s2_concerns SET status = ${newStatus} WHERE id = ${concernId}`;
+        } catch (e) {
+          console.warn('Neon S2 status update notice:', e);
+        }
+      }
+
+      broadcastAuthUpdate();
       renderS2CouncilView();
       showToast(`Concern status updated to ${newStatus}`, 'success');
     }
   };
 
-  function handleS2ConcernSubmit() {
+  async function handleS2ConcernSubmit() {
     const subject = document.getElementById('s2ConcernSubject')?.value?.trim();
     const narrative = document.getElementById('s2ConcernNarrative')?.value?.trim();
     const category = document.getElementById('s2ConcernCategory')?.value;
@@ -7209,14 +7300,32 @@
       subject,
       narrative,
       isAnonymous: Boolean(isAnonymous),
-      reporterUsername: authState.currentUser ? authState.currentUser.username : '00000',
+      reporterUsername: authState.currentUser ? authState.currentUser.username : 'Guest',
       status: 'Pending',
       submittedAt: new Date().toISOString()
     };
 
+    const sql = getNeonClient();
+    if (sql) {
+      try {
+        await sql`
+          INSERT INTO ccafp_s2_concerns (
+            id, category, urgency, subject, narrative, is_anonymous, reporter_username, status, submitted_at
+          ) VALUES (
+            ${newConcern.id}, ${newConcern.category}, ${newConcern.urgency},
+            ${newConcern.subject}, ${newConcern.narrative}, ${newConcern.isAnonymous},
+            ${newConcern.reporterUsername}, ${newConcern.status}, ${newConcern.submittedAt}
+          )
+        `;
+      } catch (err) {
+        console.warn('Neon S2 concern insert notice:', err);
+      }
+    }
+
     const concerns = getS2Concerns();
     concerns.unshift(newConcern);
     saveS2Concerns(concerns);
+    broadcastAuthUpdate();
 
     document.getElementById('s2ConcernSubject').value = '';
     document.getElementById('s2ConcernNarrative').value = '';

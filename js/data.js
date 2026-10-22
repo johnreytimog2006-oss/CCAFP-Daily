@@ -1882,10 +1882,10 @@ const CCAFP_CONFIG = {
     chairman: "CDT CPT 1CL APRIL JOY C GEROLA C-27112 'A' Co CCAFP",
     updatedDate: "25 AUGUST 2026",
     notedBy: "CDT SGT MAJ 2CL RASHEED SHANE C ABBAS 'A' Co CCAFP",
-    totals: { touring: 239, confined: 74, totalActive: 93 }
+    totals: { touring: 239, confined: 74, totalActive: 877 }
   },
 
-  punishmentList: [
+  punishmentList: (typeof S1_SPIRITUAL_DATA !== 'undefined' && Array.isArray(S1_SPIRITUAL_DATA.punishments)) ? S1_SPIRITUAL_DATA.punishments : [
     {
         "id": 1,
         "cadetName": "Cdt 1CL LOBETE",
@@ -4249,14 +4249,22 @@ class SheetSyncManager {
       armoryRows.push({
         loc: r[0].trim(),
         m14: toNum(r[1]),
+        m14Out: toNum(r[2]),
         mag14: toNum(r[4]),
         m16: toNum(r[5]),
+        m16Out: toNum(r[6]),
         r4: toNum(r[9]),
+        r4Out: toNum(r[10]),
         k3: toNum(r[13]),
+        k3Out: toNum(r[14]),
         garand: toNum(r[16]),
+        garandOut: toNum(r[17]),
         pistol: toNum(r[19]),
+        pistolOut: toNum(r[20]),
         swords: toNum(r[24]),
+        swordsOut: toNum(r[25]),
         bayonets: toNum(r[26]),
+        bayonetsOut: toNum(r[27]),
         notes: r[28]?.trim() || "Complete count verified"
       });
     }
@@ -4470,6 +4478,8 @@ class SheetSyncManager {
       });
     }
 
+    const completeBase = (typeof S1_SPIRITUAL_DATA !== 'undefined' && Array.isArray(S1_SPIRITUAL_DATA.punishments)) ? S1_SPIRITUAL_DATA.punishments : (CCAFP_CONFIG.punishmentList || []);
+
     return {
       chairman,
       updatedDate,
@@ -4477,22 +4487,26 @@ class SheetSyncManager {
       totals: {
         touring: touringCount,
         confined: confinedCount,
-        totalActive: list.length
+        totalActive: completeBase.length || 877
       },
-      list: list.length > 0 ? list : (CCAFP_CONFIG.punishmentList || [])
+      list: list.length >= completeBase.length ? list : completeBase
     };
   }
 
   parseExpanded(rows) {
     if (!rows || rows.length < 2) return null;
-    const list = [];
+    const baseList = (typeof S1_SPIRITUAL_DATA !== 'undefined' && Array.isArray(S1_SPIRITUAL_DATA.expanded))
+      ? S1_SPIRITUAL_DATA.expanded
+      : (CCAFP_CONFIG.s1Data?.expanded || []);
+
+    const incoming = [];
     for (let i = 1; i < rows.length; i++) {
       const r = rows[i];
       if (!r || r.length < 5) continue;
       const fName = r[1]?.trim() || '';
       const lName = r[3]?.trim() || '';
       if (!fName && !lName) continue;
-      list.push({
+      incoming.push({
         no: r[0]?.trim() || '',
         name: `${lName}, ${fName} ${r[2]?.trim() || ''} ${r[4]?.trim() || ''}`.trim().replace(/\s+,/g, ',').replace(/,\s*$/, ''),
         sn: r[5]?.trim() || '',
@@ -4508,7 +4522,30 @@ class SheetSyncManager {
         contact: r[21]?.trim() || ''
       });
     }
-    return list;
+
+    if (incoming.length >= 1000) {
+      return incoming;
+    }
+
+    // Merge incoming partial class sheet into base master roll
+    if (baseList.length > 0) {
+      const map = new Map();
+      baseList.forEach(c => {
+        const key = (c.sn || c.name || '').toUpperCase();
+        if (key) map.set(key, { ...c });
+      });
+      incoming.forEach(c => {
+        const key = (c.sn || c.name || '').toUpperCase();
+        if (key && map.has(key)) {
+          map.set(key, { ...map.get(key), ...c });
+        } else if (key) {
+          map.set(key, c);
+        }
+      });
+      return Array.from(map.values());
+    }
+
+    return incoming;
   }
 
   parseRoster(rows) {
