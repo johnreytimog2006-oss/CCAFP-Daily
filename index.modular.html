@@ -65,13 +65,28 @@
     window.dispatchEvent(new CustomEvent('neon-loaded'));
   </script>
 
+  <!-- Flash-Prevention Script: Synchronously Hide Auth Screen if Valid Session Exists -->
+  <script>
+    try {
+      var rawSess = localStorage.getItem('ccafp_active_session');
+      if (rawSess && JSON.parse(rawSess).username) {
+        document.documentElement.classList.add('has-auth-session');
+      }
+    } catch(e) {}
+  </script>
+  <style>
+    html.has-auth-session #authScreen {
+      display: none !important;
+    }
+  </style>
+
   <!-- Custom Alfacoy Style CSS -->
   <link rel="stylesheet" href="css/styles.css?v=2.2">
 </head>
 <body class="bg-[#f0f4f8] text-slate-800 min-h-screen flex antialiased">
 
   <!-- ================= SPLIT-SCREEN AUTHENTICATION SCREEN ================= -->
-  <div id="authScreen" class="fixed inset-0 z-[100] bg-[#060b13] overflow-y-auto flex flex-col justify-between hidden">
+  <div id="authScreen" class="fixed inset-0 z-[100] bg-[#060b13] overflow-y-auto flex flex-col justify-between">
     
     <!-- Split Screen Main Row -->
     <div class="flex-1 flex items-center justify-center py-8 px-4 sm:px-6 lg:px-12">
@@ -189,16 +204,16 @@
             <!-- Login Form -->
             <form id="authLoginForm" class="space-y-4" onsubmit="return false;">
               
-              <!-- Numeric Username -->
+              <!-- Numeric Username or Serial Number -->
               <div class="space-y-1.5">
-                <label for="loginUsername" class="text-xs font-bold font-mono-clean text-slate-300 uppercase tracking-wider block">Username (Numeric ID)</label>
+                <label for="loginUsername" class="text-xs font-bold font-mono-clean text-slate-300 uppercase tracking-wider block">Username / Serial Number</label>
                 <div class="relative">
-                  <input type="text" id="loginUsername" inputmode="numeric" pattern="[0-9]+" maxlength="12" placeholder="e.g. 29384 (digits only)" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-[#1d2d44] text-white font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
+                  <input type="text" id="loginUsername" maxlength="20" placeholder="e.g. 28331 or Serial Number" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-[#1d2d44] text-white font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
                   <div class="absolute right-3.5 top-3.5 text-slate-500">
                     <i data-lucide="hash" class="w-4 h-4"></i>
                   </div>
                 </div>
-                <p id="loginUsernameErr" class="text-[11px] text-rose-400 hidden font-mono-clean">Username must contain only digits (0-9).</p>
+                <p id="loginUsernameErr" class="text-[11px] text-rose-400 hidden font-mono-clean">Please enter your authorized Serial Number or account ID.</p>
               </div>
 
               <!-- Password -->
@@ -257,16 +272,16 @@
             <!-- Create Account Form -->
             <form id="authRegisterForm" class="space-y-4" onsubmit="return false;">
               
-              <!-- Numeric Username -->
+              <!-- Serial Number / Numeric Username -->
               <div class="space-y-1.5">
-                <label for="regUsername" class="text-xs font-bold font-mono-clean text-slate-300 uppercase tracking-wider block">Username (Numeric ID)</label>
+                <label for="regUsername" class="text-xs font-bold font-mono-clean text-slate-300 uppercase tracking-wider block">Serial Number / Username</label>
                 <div class="relative">
-                  <input type="text" id="regUsername" inputmode="numeric" pattern="[0-9]+" maxlength="12" placeholder="e.g. 29384 (digits only)" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-[#1d2d44] text-white font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
+                  <input type="text" id="regUsername" maxlength="20" placeholder="e.g. 27002 (Authorized SN or 0000X)" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-[#1d2d44] text-white font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
                   <div class="absolute right-3.5 top-3.5 text-slate-500">
                     <i data-lucide="hash" class="w-4 h-4"></i>
                   </div>
                 </div>
-                <p id="regUsernameErr" class="text-[11px] text-rose-400 hidden font-mono-clean">Username must contain only digits (0-9).</p>
+                <p id="regUsernameErr" class="text-[11px] text-rose-400 hidden font-mono-clean">Username must be an authorized Serial Number (e.g. 27002) or 0000X account.</p>
               </div>
 
               <!-- Password -->
@@ -2200,6 +2215,7 @@
                 <thead class="bg-[#0b1120] text-slate-400 font-mono uppercase text-[10.5px] border-b border-slate-800">
                   <tr>
                     <th class="py-3 px-4">Numeric ID</th>
+                    <th class="py-3 px-4 text-amber-400">Surname / Cadet</th>
                     <th class="py-3 px-4">Account Authority</th>
                     <th class="py-3 px-4">Assigned Roles</th>
                     <th class="py-3 px-4">Disciplinary Status</th>

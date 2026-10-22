@@ -65,6 +65,21 @@
     window.dispatchEvent(new CustomEvent('neon-loaded'));
   </script>
 
+  <!-- Flash-Prevention Script: Synchronously Hide Auth Screen if Valid Session Exists -->
+  <script>
+    try {
+      var rawSess = localStorage.getItem('ccafp_active_session');
+      if (rawSess && JSON.parse(rawSess).username) {
+        document.documentElement.classList.add('has-auth-session');
+      }
+    } catch(e) {}
+  </script>
+  <style>
+    html.has-auth-session #authScreen {
+      display: none !important;
+    }
+  </style>
+
   <!-- Custom Alfacoy Style CSS -->
   <style>
 /* CCAFP Daily - Alfacoy Military Portal Aesthetic */
@@ -817,7 +832,7 @@ html.dark .soc-uniform-badge {
 <body class="bg-[#f0f4f8] text-slate-800 min-h-screen flex antialiased">
 
   <!-- ================= SPLIT-SCREEN AUTHENTICATION SCREEN ================= -->
-  <div id="authScreen" class="fixed inset-0 z-[100] bg-[#060b13] overflow-y-auto flex flex-col justify-between hidden">
+  <div id="authScreen" class="fixed inset-0 z-[100] bg-[#060b13] overflow-y-auto flex flex-col justify-between">
     
     <!-- Split Screen Main Row -->
     <div class="flex-1 flex items-center justify-center py-8 px-4 sm:px-6 lg:px-12">
@@ -935,16 +950,16 @@ html.dark .soc-uniform-badge {
             <!-- Login Form -->
             <form id="authLoginForm" class="space-y-4" onsubmit="return false;">
               
-              <!-- Numeric Username -->
+              <!-- Numeric Username or Serial Number -->
               <div class="space-y-1.5">
-                <label for="loginUsername" class="text-xs font-bold font-mono-clean text-slate-300 uppercase tracking-wider block">Username (Numeric ID)</label>
+                <label for="loginUsername" class="text-xs font-bold font-mono-clean text-slate-300 uppercase tracking-wider block">Username / Serial Number</label>
                 <div class="relative">
-                  <input type="text" id="loginUsername" inputmode="numeric" pattern="[0-9]+" maxlength="12" placeholder="e.g. 29384 (digits only)" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-[#1d2d44] text-white font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
+                  <input type="text" id="loginUsername" maxlength="20" placeholder="e.g. 28331 or Serial Number" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-[#1d2d44] text-white font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
                   <div class="absolute right-3.5 top-3.5 text-slate-500">
                     <i data-lucide="hash" class="w-4 h-4"></i>
                   </div>
                 </div>
-                <p id="loginUsernameErr" class="text-[11px] text-rose-400 hidden font-mono-clean">Username must contain only digits (0-9).</p>
+                <p id="loginUsernameErr" class="text-[11px] text-rose-400 hidden font-mono-clean">Please enter your authorized Serial Number or account ID.</p>
               </div>
 
               <!-- Password -->
@@ -1003,16 +1018,16 @@ html.dark .soc-uniform-badge {
             <!-- Create Account Form -->
             <form id="authRegisterForm" class="space-y-4" onsubmit="return false;">
               
-              <!-- Numeric Username -->
+              <!-- Serial Number / Numeric Username -->
               <div class="space-y-1.5">
-                <label for="regUsername" class="text-xs font-bold font-mono-clean text-slate-300 uppercase tracking-wider block">Username (Numeric ID)</label>
+                <label for="regUsername" class="text-xs font-bold font-mono-clean text-slate-300 uppercase tracking-wider block">Serial Number / Username</label>
                 <div class="relative">
-                  <input type="text" id="regUsername" inputmode="numeric" pattern="[0-9]+" maxlength="12" placeholder="e.g. 29384 (digits only)" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-[#1d2d44] text-white font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
+                  <input type="text" id="regUsername" maxlength="20" placeholder="e.g. 27002 (Authorized SN or 0000X)" class="w-full px-4 py-3 rounded-xl bg-[#08101c] border border-[#1d2d44] text-white font-mono-clean text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all placeholder:text-slate-500">
                   <div class="absolute right-3.5 top-3.5 text-slate-500">
                     <i data-lucide="hash" class="w-4 h-4"></i>
                   </div>
                 </div>
-                <p id="regUsernameErr" class="text-[11px] text-rose-400 hidden font-mono-clean">Username must contain only digits (0-9).</p>
+                <p id="regUsernameErr" class="text-[11px] text-rose-400 hidden font-mono-clean">Username must be an authorized Serial Number (e.g. 27002) or 0000X account.</p>
               </div>
 
               <!-- Password -->
@@ -2946,6 +2961,7 @@ html.dark .soc-uniform-badge {
                 <thead class="bg-[#0b1120] text-slate-400 font-mono uppercase text-[10.5px] border-b border-slate-800">
                   <tr>
                     <th class="py-3 px-4">Numeric ID</th>
+                    <th class="py-3 px-4 text-amber-400">Surname / Cadet</th>
                     <th class="py-3 px-4">Account Authority</th>
                     <th class="py-3 px-4">Assigned Roles</th>
                     <th class="py-3 px-4">Disciplinary Status</th>
@@ -3363,6 +3379,1211 @@ html.dark .soc-uniform-badge {
   <!-- Scripts (Inlined Standalone Bundle) -->
   <script>
 // CCAFP Daily - Master Data Store & Alfacoy-Style Bulletin Engine
+
+/**
+ * =========================================================================
+ * 📋 AUTHORIZED CADET REGISTRATION ROSTER (OFFICIAL SERIAL NUMBER WHITELIST)
+ * =========================================================================
+ */
+const AUTHORIZED_CADETS = {
+  "25020": "AMANGAN",
+  "25030": "ARIP",
+  "25035": "ARUMPAC",
+  "25068": "BOLINGET",
+  "25139": "GADO",
+  "25154": "GRATIL",
+  "25169": "LAMBINO",
+  "25207": "MANCE",
+  "25210": "MARCELINO",
+  "25282": "RICARDE",
+  "25330": "TY",
+  "26001": "ABBAS",
+  "26003": "ABELLON",
+  "26007": "ACOSTA",
+  "26009": "ADORACION",
+  "26014": "ALMELOR",
+  "26020": "ANTOLIN",
+  "26023": "ASIS",
+  "26027": "ATIWEN",
+  "26041": "BALDEMOR",
+  "26056": "BERTE",
+  "26057": "BIADO",
+  "26058": "BIADO",
+  "26062": "BONITA",
+  "26063": "BOTIGAN",
+  "26066": "BUENO",
+  "26067": "CAASI",
+  "26070": "CABANAYAN",
+  "26072": "CABIGO",
+  "26075": "CAGASAN",
+  "26076": "CAJELES",
+  "26086": "CARO",
+  "26087": "CASTILLO",
+  "26091": "CATALAN",
+  "26094": "CELAJES",
+  "26097": "CERVANTES",
+  "26101": "COLUMNA",
+  "26104": "CORPUZ",
+  "26106": "CRUZ",
+  "26107": "CUBERO",
+  "26112": "DACWAG",
+  "26113": "DAEZ",
+  "26121": "DAYLUSAN",
+  "26123": "DE GUZMAN",
+  "26125": "DE JESUS",
+  "26127": "DE LEON",
+  "26145": "ESPAÑO",
+  "26147": "ESTRADA",
+  "26151": "FELIPE",
+  "26155": "FIDER",
+  "26158": "FOCASAN",
+  "26159": "FORBES",
+  "26162": "GAMOS",
+  "26173": "GOC-ONG",
+  "26178": "GOROSPE",
+  "26179": "GOZON",
+  "26180": "GRAFE",
+  "26204": "LABADOR",
+  "26209": "LAMBOLOTO",
+  "26214": "LATORRE",
+  "26215": "LAYONES",
+  "26221": "LOBETE",
+  "26222": "LOCADING",
+  "26223": "MACANLALAY",
+  "26226": "MAGAYANES",
+  "26233": "MANDAC",
+  "26242": "MINA",
+  "26243": "MITRA",
+  "26244": "MOLANO",
+  "26246": "MOLO",
+  "26247": "MORATO",
+  "26253": "NUENA",
+  "26259": "OLALO",
+  "26260": "OLIVA",
+  "26262": "ORSOLINO",
+  "26269": "PALALIO",
+  "26271": "PASION",
+  "26274": "PEDROSO",
+  "26276": "PEÑARUBIA",
+  "26284": "PULIDO",
+  "26286": "QUINAL",
+  "26288": "RAMBAUD",
+  "26296": "ROSARIO",
+  "26297": "ROYO",
+  "26301": "SABILLA",
+  "26304": "SALVE",
+  "26309": "FABRO",
+  "26315": "SIBAL",
+  "26317": "SORIANO",
+  "26331": "TOQUERO",
+  "26332": "TORRES",
+  "26334": "TUMITIT",
+  "26337": "UNDANG",
+  "26338": "UNDANG",
+  "26339": "UNILONGO",
+  "26341": "VASQUEZ",
+  "26344": "VILELA",
+  "26345": "VILLANUEVA",
+  "26348": "VISARIO",
+  "26351": "AGUSTIN",
+  "26352": "BEDAÑA",
+  "26357": "RAMOS",
+  "27002": "ADTOON",
+  "27003": "AGUSTIN",
+  "27004": "ALBURO",
+  "27006": "ALCUBILLA",
+  "27007": "ALEJANDRE",
+  "27008": "ALEJO",
+  "27009": "ALIPIS",
+  "27011": "ANCHETA",
+  "27012": "ANDRADA",
+  "27013": "APIL",
+  "27014": "APOLONIO",
+  "27015": "AQUINO",
+  "27016": "AQUINO",
+  "27018": "ATUN",
+  "27019": "BACCAY",
+  "27022": "BALQUIN",
+  "27023": "BALTAZAR",
+  "27024": "BANAN",
+  "27025": "BARLAS",
+  "27027": "BAROY",
+  "27028": "BAUTISTA",
+  "27029": "BELIGAN",
+  "27031": "BERNARDO",
+  "27032": "BETITA",
+  "27033": "BLANCO",
+  "27034": "BOGADOR",
+  "27035": "BOGNALBAL",
+  "27036": "BOLAÑOS",
+  "27037": "BORRES",
+  "27038": "BUENO",
+  "27039": "BUSTILLO",
+  "27040": "CABUNOC",
+  "27041": "CABUTAJE",
+  "27042": "CALINISAN",
+  "27044": "CANADA",
+  "27047": "CANSINO",
+  "27048": "CASTRO",
+  "27049": "CASTRO",
+  "27050": "CASTRO",
+  "27051": "CASTRO",
+  "27052": "CATACUTAN",
+  "27053": "CATACUTAN",
+  "27054": "CAYAGO",
+  "27055": "CELESTIAL",
+  "27056": "COCOY",
+  "27057": "COLETO",
+  "27059": "COROZA",
+  "27060": "CORPUZ",
+  "27061": "CORSAME",
+  "27064": "CUEVA / DE GUZMAN",
+  "27065": "CUNTAPAY",
+  "27066": "CUTOR",
+  "27067": "DACARA",
+  "27069": "DAQUIOAG",
+  "27070": "DARVIN",
+  "27073": "DE JESUS",
+  "27075": "DE MESA",
+  "27076": "DE VENANCIO",
+  "27077": "DEANG",
+  "27078": "DECIERDO",
+  "27080": "DELA PENA",
+  "27081": "DELOS REYES",
+  "27082": "DEMARAYE",
+  "27083": "DERAMA",
+  "27084": "DIRAS",
+  "27085": "DOMINGUEZ",
+  "27086": "DUQUE",
+  "27088": "EBON",
+  "27089": "ENAGE",
+  "27090": "ENCARNACION",
+  "27091": "ENDINO",
+  "27092": "ESCALONA",
+  "27093": "ESTEBAN",
+  "27094": "ESTOPIN",
+  "27095": "EVANGELISTA",
+  "27096": "FARNACIO",
+  "27097": "FERRER",
+  "27098": "FRIAS",
+  "27100": "FUGGAN",
+  "27101": "GABAS",
+  "27102": "GALLAZA",
+  "27103": "GAMEO",
+  "27104": "GARAY",
+  "27105": "GARCIA",
+  "27108": "GAYYAMAN",
+  "27109": "GENTOLEO",
+  "27110": "GEPOLANI",
+  "27112": "GEROLA",
+  "27115": "GONZALES",
+  "27117": "GONZALES",
+  "27119": "GORGOD",
+  "27120": "GUMARU",
+  "27121": "GUPAAL",
+  "27122": "GUTIERREZ",
+  "27123": "IDULSA",
+  "27124": "INTING",
+  "27125": "ISRAEL",
+  "27126": "JANDULONG",
+  "27128": "JORNALES",
+  "27129": "KIAT-ONG",
+  "27130": "KOZIEJ",
+  "27131": "KULI",
+  "27132": "LADIONG",
+  "27133": "LADJAN",
+  "27134": "LAGADAN",
+  "27135": "LAO-ING",
+  "27136": "LELINA",
+  "27137": "LEONOR",
+  "27138": "LEVISTE",
+  "27139": "LIBATIQUE",
+  "27142": "LUCENA",
+  "27143": "LUCERO",
+  "27144": "MACALINTAL",
+  "27145": "MACARAYA",
+  "27146": "MAESTRO",
+  "27147": "MALANOT",
+  "27148": "MALIWANG",
+  "27149": "MAMA",
+  "27150": "MAMAUAG",
+  "27151": "MANGAGOM",
+  "27152": "MANGILOG",
+  "27153": "MANLANGIT",
+  "27154": "MARAMBA",
+  "27155": "MARDICAS",
+  "27156": "MARIBAO",
+  "27157": "MARTINEZ",
+  "27158": "MASCULINO",
+  "27160": "MELISA",
+  "27161": "MENDOZA / PAGA",
+  "27162": "MIGUEL",
+  "27163": "MINGLANA",
+  "27164": "MIRO",
+  "27165": "MOJICA",
+  "27166": "MOLINA",
+  "27167": "MONTEFALCON",
+  "27168": "MONTENEGRO",
+  "27169": "MONTINOLA",
+  "27171": "NABABLIT",
+  "27172": "NANALE",
+  "27174": "NULUD",
+  "27175": "OCOMEN",
+  "27176": "OLASO",
+  "27177": "OMANDAM",
+  "27178": "OPLE",
+  "27180": "PADRE",
+  "27182": "PAGGAO",
+  "27183": "PALMA",
+  "27187": "PASAGAD",
+  "27189": "PERCIL",
+  "27191": "PINTO",
+  "27192": "PLANTAR",
+  "27193": "PLAZA",
+  "27194": "PONTILLAS",
+  "27198": "QUEMADO",
+  "27199": "QUILILAN",
+  "27200": "QUIZON",
+  "27202": "RAMIREZ",
+  "27203": "RAÑA",
+  "27205": "REODIQUE",
+  "27206": "REOJA",
+  "27207": "REONAL",
+  "27208": "RICAFORT",
+  "27210": "SAGAAD",
+  "27211": "SAGER",
+  "27213": "SALAZAR",
+  "27214": "SALIPSIP",
+  "27217": "SAPINIT",
+  "27218": "SARMIENTO",
+  "27220": "SESUCA",
+  "27221": "SILAO",
+  "27222": "SIMON",
+  "27223": "SOCIAS",
+  "27224": "STA. RITA",
+  "27225": "STANLEY",
+  "27230": "SUPITER",
+  "27231": "TABAAY",
+  "27232": "TABELIN",
+  "27234": "TAMBADOC",
+  "27235": "TANALLON",
+  "27236": "TAPULAO",
+  "27237": "TAYABAN",
+  "27239": "TE-OD",
+  "27240": "TICAG",
+  "27242": "TIMAJO",
+  "27243": "TIMSAN",
+  "27244": "TITO",
+  "27245": "TOLEDO",
+  "27246": "TRUMATA",
+  "27247": "URQUIZA",
+  "27248": "UY",
+  "27249": "VALDEZ",
+  "27250": "VALENCIA",
+  "27251": "VALENCIA",
+  "27253": "VICENTE",
+  "27254": "VICLAR",
+  "27255": "VIDALLO",
+  "27256": "VILLA",
+  "27257": "VILLAMOR",
+  "27261": "WANIA",
+  "27262": "YBAÑEZ",
+  "27264": "ZERRUDO",
+  "27266": "BIRUNG",
+  "27269": "DEW-ALAN",
+  "27270": "HUSSIN",
+  "27271": "LIBATON",
+  "27272": "MONDA",
+  "27274": "PALERO",
+  "27275": "SINUMLAG",
+  "27276": "SOGO-AN",
+  "27278": "ALBERTO",
+  "27279": "AMBUCAY",
+  "27280": "AVILA",
+  "27281": "BALDONADO",
+  "27282": "BENITEZ",
+  "27283": "CABREROS",
+  "27285": "CASIGAY",
+  "27287": "DE GUZMAN",
+  "27288": "DE VERA",
+  "27290": "DURAN",
+  "27292": "FELIPE",
+  "27293": "KIMAKIM",
+  "27294": "LATUPAN",
+  "27295": "MONTEMAYOR",
+  "27296": "MORETO",
+  "27298": "SALEM",
+  "27299": "SIOCO",
+  "27300": "TAGLE",
+  "27301": "VILLANUEVA",
+  "28001": "ABBAS",
+  "28004": "ACIDO",
+  "28005": "ADACI",
+  "28006": "ADAY",
+  "28007": "ADDUN",
+  "28008": "AGAD",
+  "28009": "AGOD",
+  "28010": "AGUILAR",
+  "28011": "AGUSTIN",
+  "28013": "AGUTAYA",
+  "28014": "ALAUYA",
+  "28015": "ALAYA-AY",
+  "28018": "ALIVEN",
+  "28019": "ALTAVANO",
+  "28021": "AMISTAD",
+  "28022": "AMPALAYOHAN",
+  "28024": "ANDAYA",
+  "28027": "ANGOT",
+  "28028": "ANGULUAN",
+  "28029": "ANICETO",
+  "28031": "ARAOJO",
+  "28032": "ARAWAS",
+  "28033": "ARCIAGA",
+  "28034": "ARELLANO",
+  "28035": "ARENAS",
+  "28036": "ARIÑO",
+  "28038": "AUSTRIA",
+  "28039": "AVISADO",
+  "28040": "BACULI",
+  "28041": "BAET",
+  "28042": "BAGTANG",
+  "28043": "BAJAR",
+  "28045": "BALANIYAN",
+  "28046": "BALANTA",
+  "28047": "BALUYA",
+  "28048": "BANGNGAGAN",
+  "28049": "BANOG",
+  "28050": "BARABONA",
+  "28052": "BAYOD",
+  "28053": "BERBA",
+  "28055": "BERCASIO",
+  "28056": "BERSO",
+  "28057": "BICACA",
+  "28058": "BINWAG",
+  "28060": "BONGAO",
+  "28061": "BORJA",
+  "28062": "BOWAKEN",
+  "28063": "BUCAYU",
+  "28064": "BUENO",
+  "28065": "CALANGI / BUHONG",
+  "28066": "BULAWAN",
+  "28067": "BUYAYO",
+  "28068": "CAHAYON",
+  "28070": "CALAMBRO",
+  "28071": "CALASARA",
+  "28073": "CALINGACION",
+  "28074": "CALIXTO",
+  "28075": "CALUBAD",
+  "28076": "CAMAROTE",
+  "28077": "CAMBA",
+  "28078": "CAMPANA",
+  "28080": "CANGAYO",
+  "28082": "CANUTAB",
+  "28083": "CARIAGA",
+  "28084": "CARIASO",
+  "28085": "CARONAN",
+  "28087": "CARTAGENAS",
+  "28088": "CASAMAYOR",
+  "28090": "CASTRO",
+  "28092": "CEREZO",
+  "28093": "CERVAS",
+  "28094": "COLLADO",
+  "28095": "COLOBONG",
+  "28096": "COMIA",
+  "28097": "CONICONDE",
+  "28099": "CORDOVA",
+  "28100": "CRUCILLO",
+  "28101": "CRUZ",
+  "28102": "CUDIAMAT",
+  "28105": "DABALOS",
+  "28107": "DAPPAY",
+  "28109": "DE GUZMAN",
+  "28110": "DE GUZMAN",
+  "28111": "DE GUZMAN",
+  "28112": "DE LEON",
+  "28113": "DE VENANCIO",
+  "28114": "DEL PRADO",
+  "28115": "DELA PEÑA",
+  "28116": "DELA RAMA",
+  "28117": "DELA TORRE",
+  "28118": "DELIVA",
+  "28120": "DERILO",
+  "28121": "DIOKNO",
+  "28122": "DIONES",
+  "28123": "DIVINA",
+  "28124": "DIVINA",
+  "28126": "DOONG",
+  "28127": "DUENAS",
+  "28128": "DUERO",
+  "28129": "DULAY",
+  "28130": "DULOS",
+  "28134": "ESCALA",
+  "28135": "ESCOBAR",
+  "28136": "ESPIRITU",
+  "28139": "ESTRADA",
+  "28140": "EVANGELISTA",
+  "28141": "FALCON",
+  "28142": "FERANDO",
+  "28143": "FERRER",
+  "28145": "FLORES",
+  "28148": "FULO",
+  "28149": "GALITGUIT",
+  "28151": "GAMAL",
+  "28153": "GANET",
+  "28154": "GARCIA",
+  "28156": "GARCIA",
+  "28157": "GARCIA",
+  "28159": "GARCIA",
+  "28161": "GARCIA",
+  "28163": "GAYANOCHE",
+  "28165": "GOBWAY",
+  "28167": "GOLIS",
+  "28168": "GOMEZ",
+  "28169": "GUANZON",
+  "28171": "GUIEB",
+  "28172": "GUMASING",
+  "28173": "GUTIERREZ",
+  "28174": "GUTING",
+  "28175": "HINDAC",
+  "28177": "ILANO",
+  "28178": "IQUIN",
+  "28179": "IRLANDA",
+  "28181": "JANDONERO",
+  "28182": "JAVELOSA",
+  "28183": "JAVIER",
+  "28184": "JIMENEZ",
+  "28187": "JUNIO",
+  "28188": "LABARINTO",
+  "28190": "LACADEN",
+  "28191": "LADERA",
+  "28193": "LANGAHID",
+  "28194": "LARGO",
+  "28196": "LEBRILLA",
+  "28198": "LLADOC",
+  "28199": "LLAGAS",
+  "28200": "LLANETA",
+  "28201": "LLARENAS",
+  "28202": "LLENAS",
+  "28203": "LLENOS",
+  "28204": "LLONO",
+  "28205": "LOOD",
+  "28206": "LUBAY",
+  "28209": "MAADIL",
+  "28210": "MABILOG",
+  "28211": "MACAS",
+  "28212": "MACLANG",
+  "28215": "MALACA",
+  "28216": "MALOMAY",
+  "28217": "MAMA",
+  "28218": "MAMAED",
+  "28220": "MANANGAN",
+  "28222": "MANAPOL",
+  "28223": "MANODON",
+  "28224": "MANZO",
+  "28225": "MAPACPAC",
+  "28226": "MAQUILAN",
+  "28228": "MARCELO",
+  "28229": "MARTINEZ",
+  "28233": "MENDOZA",
+  "28234": "MENESES",
+  "28237": "MOLINA",
+  "28238": "MORALES",
+  "28239": "MORENO",
+  "28241": "NACARIO",
+  "28242": "NALLIW",
+  "28244": "NAOHA",
+  "28245": "NARAG",
+  "28246": "NARVAL",
+  "28247": "NAVARRO",
+  "28251": "OROPESA",
+  "28252": "OTTAO",
+  "28253": "PACIS",
+  "28254": "PACLIBAR",
+  "28255": "PADALOY",
+  "28256": "PADILLA",
+  "28257": "PAGALILAUAN",
+  "28258": "PAGANAO",
+  "28259": "PAGUIA",
+  "28260": "PALATTAO",
+  "28261": "PALOGAN",
+  "28262": "PAMBID",
+  "28263": "PAMONAG",
+  "28264": "PANAHON",
+  "28265": "PANGOD",
+  "28266": "PARAS",
+  "28268": "PARONE",
+  "28271": "PENALOZA",
+  "28272": "PEREZ",
+  "28273": "PERLAS",
+  "28274": "PIANO",
+  "28276": "PINGOL",
+  "28278": "POGATA",
+  "28279": "POLO",
+  "28280": "PONDANG",
+  "28281": "POQUITA",
+  "28282": "PRACULLOS",
+  "28284": "QUINO",
+  "28285": "RAMIREZ",
+  "28286": "RAMIRO",
+  "28287": "RAMOS",
+  "28288": "RAMOS",
+  "28289": "REGIS",
+  "28290": "REVANTAD",
+  "28292": "REYES",
+  "28294": "REYES",
+  "28295": "RICO",
+  "28296": "ROBRIGADO",
+  "28297": "RODEROS",
+  "28298": "RODRIGUEZ",
+  "28299": "ROLDAN",
+  "28300": "ROSAROSO",
+  "28303": "RUEDAS",
+  "28304": "RULETE",
+  "28305": "SALANG",
+  "28306": "SANGGO",
+  "28308": "SANGGALANG",
+  "28310": "SANSON",
+  "28311": "SAPIGAO",
+  "28312": "SARAPUDDIN",
+  "28314": "SENSANO",
+  "28315": "SEVILLA",
+  "28316": "SIENES",
+  "28317": "SILAPAN",
+  "28318": "SORIANO",
+  "28322": "SUMBID",
+  "28323": "TAJAAL",
+  "28324": "TAKCHANGEN",
+  "28326": "TAMANU",
+  "28327": "TAMAYO",
+  "28328": "TANGCOLO",
+  "28329": "TANONGON",
+  "28330": "TAYOTO",
+  "28331": "TIMOG",
+  "28332": "TIONGCO",
+  "28333": "TOLERO",
+  "28334": "TORREFRANCA",
+  "28335": "TUARIO",
+  "28336": "TUBBAN",
+  "28337": "TUCAQUI",
+  "28338": "TUMARAO",
+  "28339": "UMOSO",
+  "28341": "URELLAN",
+  "28342": "VALENCIA",
+  "28344": "VERGARA",
+  "28345": "VICENTE",
+  "28346": "VILA",
+  "28347": "VILDA",
+  "28348": "VILLAFLOR",
+  "28349": "VIRREY",
+  "28350": "WAYAGWAG",
+  "28351": "YABUT",
+  "28353": "ACOP",
+  "28355": "ALIUD,DEN",
+  "28356": "ALOP",
+  "28357": "AMARILLE",
+  "28358": "BARBOSA",
+  "28359": "BARQUILLA",
+  "28360": "BAYOT",
+  "28361": "BONGOLAN",
+  "28362": "CASINO",
+  "28366": "DIGMA",
+  "28368": "ERMAC",
+  "28370": "GAMAO",
+  "28371": "GUBANTES",
+  "28375": "IRAL",
+  "28376": "LINDA",
+  "28377": "MANODON",
+  "28378": "MANODON",
+  "28382": "MUALLIL",
+  "28383": "PABUNAN",
+  "28385": "REPOLLO",
+  "28387": "RICAFRENTE",
+  "28389": "SALAZAR",
+  "28390": "SOLIVEN",
+  "28391": "TUMAPANG",
+  "29001": "ABONITA",
+  "29003": "ABULENCIA",
+  "29004": "AGGABAO",
+  "29005": "AGONOS",
+  "29006": "AGUILAR",
+  "29008": "ALAVA",
+  "29012": "ALVARADO",
+  "29014": "ANDAL",
+  "29015": "ANGCON",
+  "29017": "ANIMAS",
+  "29019": "ANTIMANO",
+  "29020": "APOSTOL",
+  "29021": "AQUITANIA",
+  "29022": "ARANDA",
+  "29024": "ARIG",
+  "29025": "ARNAIZ",
+  "29026": "ASCURA",
+  "29027": "ASOQUE",
+  "29028": "ASUNCION",
+  "29029": "ASUNCION",
+  "29030": "AURISTELA",
+  "29031": "AUSTRIA",
+  "29032": "BADE",
+  "29034": "BAEL",
+  "29035": "BAG-AO",
+  "29036": "BALAZON",
+  "29038": "BALMERA",
+  "29039": "BANUA",
+  "29040": "BAPTISTA",
+  "29042": "BARROTA",
+  "29043": "BAUTISTA",
+  "29045": "BAWALAN",
+  "29046": "BAYBAYAN",
+  "29047": "BELLEZA",
+  "29048": "BELONIA",
+  "29049": "BERGONIO",
+  "29051": "BETANCOR",
+  "29052": "BICO",
+  "29054": "BORJA",
+  "29055": "BORRES",
+  "29056": "BORRES",
+  "29057": "BRAGA",
+  "29058": "BUENAOBRA",
+  "29059": "BUGAYONG",
+  "29060": "BULQUIREN",
+  "29062": "BUSALPA",
+  "29063": "CAGUIAT / CABAIS",
+  "29064": "CABAUATAN",
+  "29073": "CAMPOSANO",
+  "29074": "CANADA",
+  "29076": "CANOY",
+  "29077": "CARABIO",
+  "29079": "CARPIO",
+  "29080": "CARSON",
+  "29081": "CASIPE",
+  "29082": "CASTILLO",
+  "29083": "CASTRO",
+  "29084": "CATAPANG",
+  "29085": "CATIMBANG",
+  "29086": "CATOLICO",
+  "29087": "CAVADA",
+  "29088": "CENTENO",
+  "29089": "CERBO",
+  "29090": "CERO",
+  "29091": "CESNEROS",
+  "29092": "CHIMMON",
+  "29094": "CORDERO",
+  "29095": "CORPUZ",
+  "29098": "CUARESMA",
+  "29100": "CUNADO",
+  "29101": "CUSTODIO",
+  "29103": "DAET",
+  "29104": "DAMAYON",
+  "29105": "DANGARAN",
+  "29107": "DELARA",
+  "29108": "DELA CRUZ",
+  "29109": "DELA VINA",
+  "29110": "DELICA",
+  "29112": "DILAG",
+  "29114": "DOMALLIG",
+  "29115": "DOSOL",
+  "29116": "DRAPIZA",
+  "29117": "DRIZ",
+  "29118": "DUMALLEG",
+  "29119": "EDURISE",
+  "29121": "ENCIO",
+  "29122": "ERGINA",
+  "29123": "ERGINA",
+  "29126": "ESON",
+  "29127": "ESPENIDA",
+  "29129": "ESTRELLA",
+  "29132": "FERRERAS",
+  "29133": "FERROLINO",
+  "29134": "FLORES",
+  "29135": "FORONDA",
+  "29136": "FUNTILON",
+  "29137": "GABUYA",
+  "29138": "GALILA",
+  "29139": "GALO",
+  "29140": "GALVEZ",
+  "29141": "GAMINDE",
+  "29142": "GARCIA",
+  "29143": "GARCIA",
+  "29144": "GARING",
+  "29145": "GAYAGAY",
+  "29146": "GEDACA",
+  "29147": "GELLANG",
+  "29148": "GERONIMO",
+  "29149": "GEVERO",
+  "29150": "GICOLE",
+  "29151": "GILO",
+  "29153": "GRACIA",
+  "29155": "GUANZON",
+  "29156": "GUIABAO",
+  "29157": "HILARIO",
+  "29158": "HISO",
+  "29159": "HUBILLA",
+  "29160": "HUMIWAT",
+  "29161": "IBRAHIM",
+  "29162": "ILUMIN",
+  "29163": "IMPAS",
+  "29164": "JABAGAT",
+  "29165": "JUANICO",
+  "29169": "LACTUD",
+  "29170": "LADESMA",
+  "29171": "LADRILLO",
+  "29172": "LAGARTEJA",
+  "29173": "LAGUNILLA",
+  "29175": "LAURETA",
+  "29176": "LAYLAY",
+  "29177": "LEYESA",
+  "29178": "LIGERALDE",
+  "29179": "LIMPIOSO",
+  "29180": "LIMSON",
+  "29183": "LIWALIW",
+  "29184": "LIWANAG",
+  "29185": "LOMEREZ",
+  "29186": "LOMIGO",
+  "29187": "LORENZO",
+  "29188": "LORENZO",
+  "29189": "LORICO",
+  "29191": "LUMABAO",
+  "29192": "LUMINES",
+  "29193": "LUMIWES",
+  "29194": "LUNIZO",
+  "29195": "LUSAC",
+  "29196": "MAATA",
+  "29198": "MACALANDA",
+  "29199": "MACALINTAL",
+  "29200": "MACROHON",
+  "29201": "MAGTULIS",
+  "29203": "MALAWANI",
+  "29205": "MANALO",
+  "29206": "MANALOTO",
+  "29207": "MANDIGMA",
+  "29208": "MANGA",
+  "29210": "MANLANGIT",
+  "29211": "MANGALILI",
+  "29212": "MARCIAL",
+  "29213": "MARQUESES",
+  "29215": "MARTINEZ",
+  "29217": "MAULION",
+  "29218": "MEJIA",
+  "29221": "MERIDA",
+  "29223": "MONDING",
+  "29224": "MORETE",
+  "29225": "MURILLO",
+  "29226": "NADAL",
+  "29227": "NAMBONG",
+  "29228": "NASAM",
+  "29230": "NOBELO",
+  "29231": "NUAY",
+  "29233": "OBCEMANE",
+  "29234": "OBELLO",
+  "29236": "OLIVAR",
+  "29237": "OLIVEROS",
+  "29238": "OMOTONG",
+  "29239": "ONDOY",
+  "29240": "ORINE",
+  "29241": "ORTEGA",
+  "29242": "PADILLA",
+  "29243": "PAG-A",
+  "29244": "PALAHANG",
+  "29246": "PALCONGAN",
+  "29247": "PARAWAN",
+  "29250": "PECDASEN",
+  "29251": "PEDRO",
+  "29252": "PEÑAREDONDO",
+  "29254": "PEREZ",
+  "29255": "PICAR",
+  "29256": "PIMENTEL",
+  "29257": "PIRA",
+  "29258": "PIZON",
+  "29259": "POLLESCAS",
+  "29260": "POSTIGO",
+  "29263": "RAMASTA",
+  "29264": "RAMILLANO",
+  "29266": "RAMOGA",
+  "29267": "RAMOS",
+  "29269": "REGANIT",
+  "29270": "REJANO",
+  "29271": "REMO",
+  "29272": "REYES",
+  "29273": "RILLERA",
+  "29274": "RIVERA,",
+  "29276": "RODRIGUEZ",
+  "29277": "ROJAS",
+  "29279": "ROSALES",
+  "29280": "RUBIO",
+  "29281": "RUTE",
+  "29282": "SAA",
+  "29283": "SABAS",
+  "29284": "SABUNGAN",
+  "29285": "SACLOLO",
+  "29286": "SADICON",
+  "29287": "SAGARIO",
+  "29288": "SALGADO",
+  "29290": "SALUNAT",
+  "29292": "SAN DIEGO",
+  "29293": "SANCHEZ",
+  "29294": "SANCHEZ",
+  "29295": "SANCHEZ",
+  "29296": "SANDOVAL",
+  "29297": "SANICO",
+  "29298": "SANTIAGO",
+  "29299": "SANTOS",
+  "29302": "SILOTERIO",
+  "29303": "SILVA",
+  "29305": "SILVERIO",
+  "29306": "SORIO",
+  "29307": "SULTIA",
+  "29309": "SUMAOY",
+  "29310": "SUNER",
+  "29311": "SUNGA",
+  "29312": "SUPLIDO",
+  "29314": "TABINGO",
+  "29315": "TAFALLA",
+  "29316": "TAGAPAN",
+  "29317": "TAN",
+  "29319": "TENA",
+  "29320": "TEÑOSO",
+  "29321": "TIHOK",
+  "29324": "TOLENTINO",
+  "29326": "TRINIDAD",
+  "29327": "TUBERA",
+  "29328": "TUBURAN",
+  "29329": "TUMAPANG",
+  "29331": "UMALI / ALIADO",
+  "29332": "UNDANG",
+  "29333": "URBANO",
+  "29334": "VALENCERINA",
+  "29335": "VALENZUELA",
+  "29336": "VARGAS",
+  "29339": "VILLANUEVA",
+  "29340": "VILLAR",
+  "29341": "VILLARIAZA",
+  "29342": "VILORIA",
+  "29343": "VITAO",
+  "30001": "ABAN",
+  "30002": "ABARICO",
+  "30003": "ABCALEN",
+  "30004": "ABIGA",
+  "30005": "ACLAN",
+  "30006": "ADAWI",
+  "30007": "ADOBE",
+  "30009": "AGON",
+  "30010": "AGOZAR",
+  "30011": "AGPALO",
+  "30012": "AGPAWAN",
+  "30013": "AGUSTIN",
+  "30014": "AGUSTIN",
+  "30015": "ALBUERO",
+  "30016": "GUTIERREZ / ALMONTE",
+  "30017": "ALPUTAN",
+  "30019": "AMBOL",
+  "30021": "ANDRADA",
+  "30022": "ANDRES",
+  "30023": "ANGOLUAN",
+  "30025": "AQUINO",
+  "30026": "ARNADO",
+  "30027": "ASUNCION",
+  "30028": "ATILANO",
+  "30029": "AUSTRIA",
+  "30030": "AVILES",
+  "30031": "BADUYEN",
+  "30032": "BAGO",
+  "30033": "BALICDANG",
+  "30034": "BALILI",
+  "30035": "BALUCOS",
+  "30036": "BALUNOS",
+  "30037": "BANAO",
+  "30038": "BANCALE",
+  "30039": "BANCORO",
+  "30040": "BANGELES",
+  "30041": "BARTOLOME",
+  "30042": "BASILIO",
+  "30043": "BASSIG",
+  "30044": "BATNAG",
+  "30045": "BAUTISTA",
+  "30047": "BAUTISTA",
+  "30048": "BENABESE",
+  "30049": "BENCIO",
+  "30050": "BERBER",
+  "30051": "BERMUNDO",
+  "30052": "BERSAMINA",
+  "30053": "BILANGEL",
+  "30054": "BILLONES",
+  "30055": "BINASOY",
+  "30056": "BOADO",
+  "30057": "BONOS",
+  "30058": "BOQUIL",
+  "30059": "BORIDAS",
+  "30060": "BOTA-ANG",
+  "30061": "BRAZIL",
+  "30062": "BUCIO",
+  "30063": "BUDOD",
+  "30064": "BUENO",
+  "30065": "BUICO",
+  "30066": "BULIYAT",
+  "30067": "BUNDALIAN",
+  "30068": "BURKLEY",
+  "30069": "BUSINOS",
+  "30070": "BUYO",
+  "30071": "CABALLERO",
+  "30072": "CABRAS",
+  "30073": "CAIRO",
+  "30074": "CALAOA",
+  "30075": "CALAO-IT",
+  "30076": "CALIMAG",
+  "30078": "CALOSING",
+  "30079": "CAMACHO",
+  "30080": "CAMPOSANO",
+  "30081": "CANONIGO",
+  "30082": "CANONIO",
+  "30083": "CANTO",
+  "30084": "CAPILI",
+  "30086": "CARANGUIAN",
+  "30087": "CARIÑO",
+  "30088": "CARO",
+  "30089": "CASTRO",
+  "30090": "CASTRO",
+  "30091": "CAWILI",
+  "30092": "CAYABYAB",
+  "30093": "CEJOCO",
+  "30094": "CELMAR",
+  "30095": "CHEN",
+  "30097": "COLIPANO",
+  "30098": "CONALES",
+  "30099": "CONSTANTINO",
+  "30100": "COPREROS",
+  "30102": "CORRE",
+  "30103": "CRUZADA",
+  "30104": "CUA",
+  "30105": "CUADRA",
+  "30106": "CUBIO",
+  "30107": "CUDAL",
+  "30108": "CULTURA",
+  "30110": "DALLEGO",
+  "30112": "DAYAG",
+  "30113": "DE GUIA",
+  "30114": "DE LAS ALAS",
+  "30116": "DE TORRES",
+  "30117": "DE VERA",
+  "30118": "DELA CRUZ",
+  "30119": "DELOS SANTOS",
+  "30120": "DEMAFILES",
+  "30121": "DEMONTAÑO",
+  "30122": "DERIQUITO",
+  "30123": "DICAR",
+  "30124": "CUADRA",
+  "30125": "EDAS",
+  "30126": "EGOS",
+  "30127": "ELEGORES",
+  "30128": "ENDRIGA",
+  "30129": "ENRIQUEZ",
+  "30130": "EROLES",
+  "30131": "ESCALAÑA",
+  "30132": "ESCAT",
+  "30133": "ESLAPOR",
+  "30134": "ESPIRITU",
+  "30135": "ESQUEJO",
+  "30136": "ESTIOCO",
+  "30138": "ESTRADA",
+  "30140": "FACIOL",
+  "30141": "FAILAGO",
+  "30142": "FAJARDO",
+  "30143": "FANGAYEN",
+  "30144": "FAUSTINO",
+  "30145": "FELIPE",
+  "30146": "FERNANDEZ",
+  "30147": "FLOR",
+  "30148": "FLORES",
+  "30149": "FONTANILLA",
+  "30150": "FRESAS",
+  "30151": "FRUELDA",
+  "30152": "GACCAD",
+  "30153": "GACOS",
+  "30154": "GALANDE",
+  "30156": "GALVE",
+  "30157": "GANO",
+  "30158": "GANTE",
+  "30161": "GARINO",
+  "30162": "GAYAO",
+  "30163": "GELVEZON",
+  "30165": "GOMEZ",
+  "30166": "GONZAGA",
+  "30168": "GRANIL",
+  "30169": "GUARDADOS",
+  "30170": "GUIMBANGUNAN",
+  "30172": "GUINANGHAN",
+  "30173": "GUINDALOS",
+  "30174": "GUMOGOD",
+  "30175": "GUNABAN",
+  "30176": "GUTIERREZ",
+  "30178": "HALLARA",
+  "30179": "HERNANDEZ",
+  "30181": "HILARIO",
+  "30182": "HUBILLA",
+  "30183": "IFURUNG",
+  "30184": "JABOLIN",
+  "30185": "JALALON",
+  "30186": "JIMENEZ",
+  "30187": "JOSAL",
+  "30188": "JUMAWAN",
+  "30189": "JUMAWAN",
+  "30190": "KALEY",
+  "30192": "LADERA",
+  "30193": "LADRONA",
+  "30194": "LALEO",
+  "30195": "LANGKIT",
+  "30196": "LARA",
+  "30197": "LATAYAN",
+  "30198": "LAYAGAN",
+  "30199": "LECAROZ",
+  "30201": "LEYESA",
+  "30202": "LIBATIQUE",
+  "30203": "LIMON",
+  "30204": "LOMA / REYES",
+  "30205": "LOMEDA",
+  "30206": "LORENZO",
+  "30207": "LORZANO",
+  "30209": "LUMICQUIO",
+  "30210": "LUMOD",
+  "30211": "LUNZAGA",
+  "30212": "MACADAT",
+  "30213": "MACALISANG",
+  "30214": "MACASIRAY",
+  "30215": "MACO",
+  "30216": "MADRIA",
+  "30217": "MAGBANUA",
+  "30218": "MAGUEN",
+  "30219": "MAHENER",
+  "30220": "MAHUSAY",
+  "30221": "MALASI",
+  "30222": "MALNAWA",
+  "30223": "MAMANGKAS",
+  "30224": "MAMITAG",
+  "30225": "MANABAT",
+  "30226": "MANANGKILA",
+  "30227": "MANGINSAY",
+  "30228": "MANUEL",
+  "30229": "MANZANO",
+  "30230": "MARAMAG",
+  "30231": "MARAPAO",
+  "30232": "MARBELLA",
+  "30233": "MARCELO",
+  "30234": "MARCOS",
+  "30236": "MARIANO",
+  "30237": "MARIÑAS",
+  "30238": "MASCARDO",
+  "30239": "MAYGAY",
+  "30240": "MEDINA",
+  "30241": "MERCADO",
+  "30242": "MERCADO",
+  "30243": "MILLANA",
+  "30244": "MISA",
+  "30245": "MONTEMAYOR",
+  "30246": "MORALES",
+  "30247": "MORATA",
+  "30248": "MORELO",
+  "30249": "MORGA",
+  "30250": "MULA",
+  "30251": "NADIAHAN",
+  "30252": "NAIFE",
+  "30253": "NATO",
+  "30254": "NAWI",
+  "30255": "NERI",
+  "30256": "NILO",
+  "30257": "NOEL",
+  "30259": "NOVERO / NOLLA",
+  "30261": "OJO",
+  "30262": "OLITIN",
+  "30263": "OMPOC",
+  "30264": "PACLIBAR",
+  "30265": "PAESTE",
+  "30266": "PAGHARION",
+  "30268": "PAGPAGUITAN",
+  "30269": "PAGUIO",
+  "30270": "PAGULAYAN",
+  "30271": "PAHIMUTANG",
+  "30272": "PAJE",
+  "30273": "PALABRICA",
+  "30274": "PALLINGAYAN",
+  "30275": "PALTENG",
+  "30276": "PANAGA",
+  "30277": "PANGAN",
+  "30279": "PAREN",
+  "30282": "PATING",
+  "30284": "PEDRON",
+  "30285": "PELAEZ",
+  "30286": "PEÑARANDA",
+  "30288": "PIGGANGAY",
+  "30289": "PILOBELLO",
+  "30290": "PINTO",
+  "30291": "PIQUERO",
+  "30292": "POBLADOR",
+  "30293": "PRIETO",
+  "30294": "PROVIDO",
+  "30295": "PUMIHIC",
+  "30296": "QUINSAY",
+  "30298": "RABARA",
+  "30299": "RACELIS",
+  "30300": "RAMBAUD",
+  "30301": "REBANAL",
+  "30302": "REBITA",
+  "30303": "REBUENO",
+  "30305": "RIDULME",
+  "30306": "ROMERO",
+  "30308": "SABAS",
+  "30310": "SALEM / SAJILI",
+  "30312": "SALES",
+  "30313": "SALORSANO",
+  "30314": "SALUTA",
+  "30315": "SAMBAYAN",
+  "30317": "SANCHEZ",
+  "30318": "SANTIAGO",
+  "30319": "SANTIAGO",
+  "30320": "SAUDAGAL",
+  "30321": "SEGISMUNDO",
+  "30322": "SEMANA",
+  "30323": "SERISOLA",
+  "30324": "SERMONA",
+  "30327": "SISON",
+  "30328": "SODE",
+  "30329": "SONGALIA",
+  "30331": "SUMAYA",
+  "30332": "SUSAS",
+  "30333": "TABUADA",
+  "30334": "TALATTAD",
+  "30336": "TALLUD",
+  "30337": "TANGCAY",
+  "30338": "TANGCAY",
+  "30339": "TARROZA",
+  "30340": "TASI",
+  "30341": "TAYPIN",
+  "30342": "TELAN",
+  "30343": "TEVES",
+  "30344": "TIDALGO",
+  "30345": "TOLENTINO",
+  "30346": "TOLENTINO",
+  "30347": "TORIO",
+  "30348": "TORREFRANCA",
+  "30349": "TORRES",
+  "30352": "VALDEZ",
+  "30355": "TALLONGON / VERGARA",
+  "30356": "VIADO",
+  "30357": "VILLAFLOR",
+  "30358": "VILLALOBOS",
+  "30359": "VILLAVER",
+  "30360": "VILLEGAS",
+  "30361": "VINCOY",
+  "30362": "VINGNO",
+  "30364": "VITE",
+  "30365": "WAHAB",
+  "30366": "WAKING",
+  "30367": "WAYAGWAG",
+  "30368": "YAP",
+  "30369": "YODONG"
+};
+
+if (typeof window !== "undefined") {
+  window.AUTHORIZED_CADETS = AUTHORIZED_CADETS;
+}
 
 /**
  * =========================================================================
@@ -7406,13 +8627,61 @@ class SheetSyncManager {
 
     let isChangesSection = false;
     let inCallsSection = false;
+    let seenCompletenessInspection = false;
+
+    // Standard routine fallback times for morning/daily calls when time column in Google Sheet is left blank
+    const standardCallTimes = [
+      [/entrucking/i, "0330"],
+      [/reveille/i, "0400"],
+      [/spartan/i, "0430"],
+      [/badminton.*bbeal/i, "0445"],
+      [/early mess.*fatigue/i, "0450"],
+      [/early mess.*s4/i, "0450"],
+      [/early mess.*pictorial/i, "0450"],
+      [/flag raising/i, "0500"],
+      [/team dagohoy/i, "0510"],
+      [/prp duty/i, "0520"],
+      [/morning mess/i, "0530"],
+      [/late mess.*holding/i, "0620"],
+      [/late mess.*workout/i, "0620"],
+      [/police call/i, "0650"],
+      [/1st period/i, "0710"],
+      [/2nd period/i, "0835"],
+      [/3rd period/i, "1000"],
+      [/noon mess for cadets from holding/i, "1140"],
+      [/noon mess/i, "1140"],
+      [/4th period/i, "1240"],
+      [/5th period/i, "1405"],
+      [/sick call/i, "1530"],
+      [/consultation/i, "1530"],
+      [/ei for deficient/i, "1530"],
+      [/philhealth/i, "1550"],
+      [/slow drill/i, "1620"],
+      [/pmaicc/i, "1620"],
+      [/honor committee.*workout/i, "1620"],
+      [/flexible evening mess/i, "1730"],
+      [/completeness inspection/i, "2200"]
+    ];
+
+    const inferTime = (act, rawTime) => {
+      if (rawTime && rawTime.trim()) return rawTime.trim();
+      if (!act) return "";
+      for (const [pat, t] of standardCallTimes) {
+        if (pat.test(act)) return t;
+      }
+      return "";
+    };
 
     const postNameMap = {
       "OD": "OD (Officer of the Day)",
-      "OG1": "OG1 (Officer of the Guard 1)",
-      "OG2": "OG2 (Officer of the Guard 2)",
-      "SG1": "SG1 (Sergeant of the Guard 1)",
-      "SG2": "SG2 (Sergeant of the Guard 2)",
+      "OG 1": "OG 1 (Officer of the Guard 1)",
+      "OG1": "OG 1 (Officer of the Guard 1)",
+      "OG 2": "OG 2 (Officer of the Guard 2)",
+      "OG2": "OG 2 (Officer of the Guard 2)",
+      "SG 1": "SG 1 (Sergeant of the Guard 1)",
+      "SG1": "SG 1 (Sergeant of the Guard 1)",
+      "SG 2": "SG 2 (Sergeant of the Guard 2)",
+      "SG2": "SG 2 (Sergeant of the Guard 2)",
       "RCCQ": "RCCQ (Regt Cdt-in-Charge of Quarters)",
       "ARCCQ": "ARCCQ (Asst Regt Cdt-in-Charge)",
       "CCHC": "CCHC (Cdt-in-Charge of Holding Ctr)",
@@ -7457,8 +8726,8 @@ class SheetSyncManager {
         }
       }
 
-      // Section triggers
-      if (/^CHANGES\b/i.test(row[0]?.trim() || fullRowText)) {
+      // Explicit section trigger for Changes
+      if (/^(CHANGES|ADDITIONAL)\b/i.test(row[0]?.trim() || fullRowText)) {
         isChangesSection = true;
         continue;
       }
@@ -7478,9 +8747,15 @@ class SheetSyncManager {
         }
       }
 
-      if (/^TIME\b/i.test(row[0]?.trim())) {
+      // Trigger calls table
+      if (/^TIME\b/i.test(row[0]?.trim()) || (row.length > 2 && /^ACTIVITY\b/i.test(row[1]?.trim()) && /UNIFORM/i.test(row[2]?.trim()))) {
         inCallsSection = true;
         continue;
+      }
+
+      // If completeness inspection has passed, all subsequent activity rows are changes/special formations
+      if (seenCompletenessInspection) {
+        isChangesSection = true;
       }
 
       if (isChangesSection) {
@@ -7490,24 +8765,28 @@ class SheetSyncManager {
         const form = row[3]?.trim() || "-";
         if (time || act) {
           changes.push({
-            time: time ? (time.endsWith("H") ? time : `${time}H`) : "1600H",
+            time: (time ? (time.endsWith("H") ? time : time + "H") : "ADDITIONAL"),
             activity: act,
-            uniform: uni,
-            formation: form
+            uniform: uni || "-",
+            formation: form || "-"
           });
         }
       } else if (inCallsSection) {
-        const time = row[0]?.trim() || "";
+        const rawTime = row[0]?.trim() || "";
         const act = row[1]?.trim() || "";
         const uni = row[2]?.trim() || "-";
         const form = row[3]?.trim() || "-";
-        if (time || act) {
+        if (rawTime || act) {
+          const resolvedTime = inferTime(act, rawTime);
           calls.push({
-            time: time,
+            time: resolvedTime,
             activity: act,
-            uniform: uni,
-            formation: form
+            uniform: uni || "-",
+            formation: form || "-"
           });
+          if (/completeness inspection/i.test(act)) {
+            seenCompletenessInspection = true;
+          }
         }
       }
     }
@@ -8569,6 +9848,8 @@ const CCAFP_DEFAULT_ROLES = [
 ];
 
 if (typeof window !== "undefined") {
+  CCAFP_CONFIG.authorizedCadets = AUTHORIZED_CADETS;
+  window.AUTHORIZED_CADETS = AUTHORIZED_CADETS;
   window.CCAFP_CONFIG = CCAFP_CONFIG;
   window.COUNCIL_SHEET_URLS = COUNCIL_SHEET_URLS;
   window.SheetSyncManager = SheetSyncManager;
@@ -11872,10 +13153,14 @@ if (typeof window !== "undefined") {
     }
     if (dom.socOD) {
       const odEntry = (sched.guardRoster || []).find(g => g.postCode === 'OD' || (g.post && g.post.startsWith('OD')));
-      if (odEntry && odEntry.posted && odEntry.incoming) {
-        dom.socOD.textContent = `${odEntry.posted} ➔ ${odEntry.incoming}`;
+      if (odEntry && odEntry.posted) {
+        if (odEntry.incoming && odEntry.incoming !== '-') {
+          dom.socOD.textContent = `${odEntry.posted} ➔ ${odEntry.incoming}`;
+        } else {
+          dom.socOD.textContent = odEntry.posted;
+        }
       } else {
-        dom.socOD.textContent = "1CL MANGAGOM 'D' ➔ 1CL PLANTAR 'H'";
+        dom.socOD.textContent = "1CL FELIPE 'A'";
       }
     }
 
@@ -11896,13 +13181,15 @@ if (typeof window !== "undefined") {
         dom.socChangesContainer.innerHTML = changes.map(ch => {
           const uFull = (typeof window !== 'undefined' && window.getUniformFullName) ? window.getUniformFullName(ch.uniform) : ch.uniform;
           return `
-            <div class="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-xs space-y-2 hover:border-amber-400 transition-colors">
-              <div class="flex items-center justify-between">
-                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-bold font-mono-clean text-[10px] tracking-wide">${ch.time}</span>
-                <span class="text-[10px] font-mono-clean text-slate-500 uppercase tracking-wider">${ch.formation && ch.formation !== '-' ? 'VENUE: ' + ch.formation : 'CORPS CALL'}</span>
+            <div class="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-xs hover:border-amber-400 transition-all flex flex-col justify-between h-full">
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-bold font-mono-clean text-[10px] tracking-wide shrink-0">${ch.time}</span>
+                  <span class="text-[10px] font-mono-clean text-slate-500 uppercase tracking-wider truncate text-right">${ch.formation && ch.formation !== '-' ? 'VENUE: ' + ch.formation : 'CORPS CALL'}</span>
+                </div>
+                <h5 class="font-bold text-xs text-slate-900 font-mono-clean leading-snug">${ch.activity}</h5>
               </div>
-              <h5 class="font-bold text-xs text-slate-900 font-mono-clean leading-snug">${ch.activity}</h5>
-              <div class="flex items-center gap-2 pt-1 border-t border-slate-100 text-[10px] font-mono-clean text-slate-600 flex-wrap">
+              <div class="flex items-center gap-2 pt-2 mt-2.5 border-t border-slate-100 text-[10px] font-mono-clean text-slate-600 flex-wrap">
                 <span>UNIFORM: <strong class="text-blue-900 font-bold" title="${uFull}">${ch.uniform || '-'}</strong>${uFull && uFull !== ch.uniform ? ` <span class="text-slate-400 font-normal">(${uFull})</span>` : ''}</span>
                 ${ch.formation && ch.formation !== '-' ? `<span>&bull;</span><span>FORMATION: <strong class="text-slate-800 font-bold">${ch.formation}</strong></span>` : ''}
               </div>
@@ -13311,15 +14598,26 @@ if (typeof window !== "undefined") {
 
         if (!u) {
           if (fb) {
-            fb.textContent = 'Please enter your numeric Username ID.';
+            fb.textContent = 'Please enter your Serial Number or account ID.';
             fb.classList.remove('hidden');
           }
           return;
         }
 
-        if (!/^[0-9]+$/.test(u)) {
+        const isExempt = u.toUpperCase().startsWith('0000X') || u.startsWith('0000');
+        const cleanSn = u.replace(/^[C#\-]+/, '').trim();
+
+        if (!isExempt && !/^[0-9]+$/.test(cleanSn)) {
           if (fb) {
-            fb.textContent = 'Username must be strictly numeric (digits 0-9 only).';
+            fb.textContent = 'Username must be a valid numeric Serial Number (e.g. 27002) or an authorized account.';
+            fb.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (!isAuthorizedRegistration(u)) {
+          if (fb) {
+            fb.textContent = `Serial Number ${u} is not authorized. Only official cadets listed in the Cadet Roll are permitted to register.`;
             fb.classList.remove('hidden');
           }
           return;
@@ -13660,6 +14958,60 @@ if (typeof window !== "undefined") {
     roles: ['admin'],
     status: 'active'
   };
+
+  // Authorized Cadets Whitelist and Surname Resolver
+  function getCadetSurname(username) {
+    const u = String(username || '').trim();
+    if (!u) return '—';
+    if (u === PRIMARY_MOTHER_ACCOUNT.username) return 'TIMOG (Primary Admin)';
+    if (u.toUpperCase().startsWith('0000X') || u.startsWith('0000')) return '— (Service Account)';
+
+    const clean = u.replace(/^[C#\-]+/, '').trim();
+    const authList = (typeof window !== 'undefined' && window.AUTHORIZED_CADETS)
+      ? window.AUTHORIZED_CADETS
+      : (typeof AUTHORIZED_CADETS !== 'undefined' ? AUTHORIZED_CADETS : (CCAFP_CONFIG.authorizedCadets || {}));
+
+    if (authList[clean]) return authList[clean];
+    if (authList[u]) return authList[u];
+
+    // Fallback search across S1 cadet rolls
+    const s1 = CCAFP_CONFIG.s1Data;
+    if (s1) {
+      const candidates = [
+        ...(Array.isArray(s1.tin) ? s1.tin : []),
+        ...(Array.isArray(s1.expanded) ? s1.expanded : []),
+        ...(Array.isArray(s1.roster) ? s1.roster : [])
+      ];
+      const match = candidates.find(c => {
+        const cSn = String(c.sn || c.serial || '').replace(/^[C#\-]+/, '').trim();
+        return cSn === clean;
+      });
+      if (match) {
+        const fullName = match.name || match.cadet || '';
+        const parts = fullName.split(/[\s,]+/);
+        return parts[0] || fullName;
+      }
+    }
+    return '—';
+  }
+
+  function isAuthorizedRegistration(username) {
+    const u = String(username || '').trim();
+    if (!u) return false;
+    // Primary Admin account is authorized
+    if (u === PRIMARY_MOTHER_ACCOUNT.username) return true;
+    // Accounts starting with "0000X" or "0000" are exempt from whitelist verification
+    if (u.toUpperCase().startsWith('0000X') || u.startsWith('0000')) return true;
+
+    const clean = u.replace(/^[C#\-]+/, '').trim();
+    if (!/^[0-9]+$/.test(clean)) return false;
+
+    const authList = (typeof window !== 'undefined' && window.AUTHORIZED_CADETS)
+      ? window.AUTHORIZED_CADETS
+      : (typeof AUTHORIZED_CADETS !== 'undefined' ? AUTHORIZED_CADETS : (CCAFP_CONFIG.authorizedCadets || {}));
+
+    return Boolean(authList[clean] || authList[u]);
+  }
 
   // Centralized Multi-Device Database Schema & Reset Migration (V7 Single Primary Admin Reset)
   const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V7_SINGLE_PRIMARY_RESET';
@@ -14437,17 +15789,26 @@ if (typeof window !== "undefined") {
   async function registerAccount(username, password) {
     const cleanUsername = String(username || '').trim();
     const cleanPassword = String(password || '').trim();
-    if (!/^[0-9]+$/.test(cleanUsername)) {
-      throw new Error('Username must be strictly numeric (digits 0-9 only).');
+
+    const isExempt = cleanUsername.toUpperCase().startsWith('0000X') || cleanUsername.startsWith('0000');
+    const cleanSn = cleanUsername.replace(/^[C#\-]+/, '').trim();
+
+    if (!isExempt && !/^[0-9]+$/.test(cleanSn)) {
+      throw new Error('Username must be a valid numeric Serial Number (digits 0-9).');
     }
-    if (cleanUsername === PRIMARY_MOTHER_ACCOUNT.username) {
+
+    if (!isAuthorizedRegistration(cleanUsername)) {
+      throw new Error(`Serial Number ${cleanUsername} is not authorized. Only official cadets listed in the Cadet Roll are permitted to register.`);
+    }
+
+    if (cleanSn === PRIMARY_MOTHER_ACCOUNT.username) {
       if (
         cleanPassword === PRIMARY_MOTHER_ACCOUNT.passwordPlain ||
         cleanPassword.toLowerCase() === PRIMARY_MOTHER_ACCOUNT.passwordPlain.toLowerCase()
       ) {
-        return loginAccount(cleanUsername, cleanPassword);
+        return loginAccount(cleanSn, cleanPassword);
       }
-      throw new Error(`Username ${cleanUsername} is reserved for the Primary Admin. Please log in directly.`);
+      throw new Error(`Username ${cleanSn} is reserved for the Primary Admin. Please log in directly.`);
     }
     if (!cleanPassword || cleanPassword.length < 3) {
       throw new Error('Password must be at least 3 characters long.');
@@ -14557,8 +15918,10 @@ if (typeof window !== "undefined") {
   async function loginAccount(username, password) {
     const cleanUsername = String(username || '').trim();
     const cleanPassword = String(password || '').trim();
-    if (!/^[0-9]+$/.test(cleanUsername)) {
-      throw new Error('Username must be strictly numeric (digits 0-9 only).');
+    const isExempt = cleanUsername.toUpperCase().startsWith('0000X') || cleanUsername.startsWith('0000');
+    const cleanSn = cleanUsername.replace(/^[C#\-]+/, '').trim();
+    if (!isExempt && !/^[0-9]+$/.test(cleanSn)) {
+      throw new Error('Username must be a valid numeric Serial Number or authorized account.');
     }
 
     // Synchronize authentication with Neon Auth (Better Auth)
@@ -14831,6 +16194,7 @@ if (typeof window !== "undefined") {
     };
     localStorage.setItem(AUTH_STORAGE_KEYS.SESSION, JSON.stringify(session));
     authState.currentUser = user;
+    document.documentElement.classList.add('has-auth-session');
     syncAuthUI();
   }
 
@@ -14845,6 +16209,7 @@ if (typeof window !== "undefined") {
       const user = accounts.find(a => a.username === session.username);
       if (user) {
         authState.currentUser = user;
+        document.documentElement.classList.add('has-auth-session');
         syncAuthUI();
         return true;
       }
@@ -14855,6 +16220,7 @@ if (typeof window !== "undefined") {
   function logoutAccount() {
     localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
     authState.currentUser = null;
+    document.documentElement.classList.remove('has-auth-session');
     const loginCard = document.getElementById('authLoginCard');
     const regCard = document.getElementById('authRegisterCard');
     if (loginCard) loginCard.classList.remove('hidden');
@@ -14866,8 +16232,10 @@ if (typeof window !== "undefined") {
     const authScreen = document.getElementById('authScreen');
 
     if (!authState.currentUser) {
+      document.documentElement.classList.remove('has-auth-session');
       if (authScreen) authScreen.classList.remove('hidden');
     } else {
+      document.documentElement.classList.add('has-auth-session');
       if (authScreen) authScreen.classList.add('hidden');
 
       const user = authState.currentUser;
@@ -15039,7 +16407,7 @@ if (typeof window !== "undefined") {
     if (!authState.currentUser || !authState.currentUser.isMother) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="py-8 text-center text-slate-400 font-mono">
+          <td colspan="7" class="py-8 text-center text-slate-400 font-mono">
             <i data-lucide="lock" class="w-6 h-6 mx-auto mb-2 text-rose-500"></i>
             <span class="block font-bold text-white">Access Strictly Restricted</span>
             <span class="text-xs text-slate-500">The registered accounts database is visible exclusively to the Primary Admin.</span>
@@ -15055,7 +16423,8 @@ if (typeof window !== "undefined") {
     const statusFilter = document.getElementById('acFilterStatus')?.value || 'all';
 
     const filtered = accounts.filter(acc => {
-      if (query && !acc.username.toLowerCase().includes(query)) return false;
+      const surname = getCadetSurname(acc.username).toLowerCase();
+      if (query && !acc.username.toLowerCase().includes(query) && !surname.includes(query)) return false;
       if (statusFilter === 'active' && acc.status === 'suspended') return false;
       if (statusFilter === 'suspended' && acc.status !== 'suspended') return false;
       return true;
@@ -15064,7 +16433,7 @@ if (typeof window !== "undefined") {
     if (filtered.length === 0) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="py-8 text-center text-slate-500 font-mono text-xs">
+          <td colspan="7" class="py-8 text-center text-slate-500 font-mono text-xs">
             No accounts matching search criteria.
           </td>
         </tr>
@@ -15126,11 +16495,16 @@ if (typeof window !== "undefined") {
         `;
       }
 
+      const surname = getCadetSurname(acc.username);
+
       return `
         <tr class="hover:bg-slate-800/40 transition-colors">
           <td class="py-3 px-4 font-bold text-white font-mono flex items-center gap-2">
             <i data-lucide="user" class="w-3.5 h-3.5 text-blue-400"></i>
             <span>${acc.username}</span>
+          </td>
+          <td class="py-3 px-4 font-mono font-bold text-amber-300">
+            ${surname}
           </td>
           <td class="py-3 px-4">
             ${isMother 

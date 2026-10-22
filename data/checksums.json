@@ -1,17 +1,18 @@
 {
-  "schedule": "be1c278795b9a9dedc58633867cba5ea",
-  "disposition": "08e249afbd07e244e15d669b26d16e09",
-  "armory": "9f6a87e035349df6b75a781c56c5e5d3",
-  "attachment": "6baffbe057fc4d62aad32ae0869e7a36",
+  "schedule": "263c92624d67b5fcf357914d43f342cd",
+  "disposition": "9a4f27249008c831860d8a268580bed6",
+  "armory": "303bb59b6f635558271ade76ccac0aaa",
+  "attachment": "d04ae5536d61a94b41f0c7ce08fffecc",
   "regiment_staff": "47d7f29a887a3c7f103f74ca583383f0",
-  "punishments_conduct": "f2b383a0e9219dde1d4ec3662734d4dc",
+  "punishments_conduct": "9d9c857c636ab73c0320ee330021bffe",
   "punishments_totals": "ed98bf1e1546a5fe07509c32032c5970",
-  "s1_expanded": "56b44fca2910efad4665406a9d7da23b",
-  "s1_roster": "b21aaaceecc137c57f89237517e1d508",
+  "s1_expanded": "8e998fc88c0207744529db9d4338cf27",
+  "s1_roster": "0828d6ae55548f33fe7f530d5a2f8a99",
   "s1_squads": "7dbc6e3ec37ef3d607c88891bb0b63b4",
-  "s1_ape_1cl": "32abfaf3dd8e70f97640939fed51d985",
-  "s1_ape_2cl": "b3db525cc6fcfab2d9882a6e13a583b2",
+  "s1_ape_1cl": "6e18385a4e8bba4fc061c0f76977761a",
+  "s1_ape_2cl": "48e4788336b7996eb1a980bcceb13c2a",
   "s1_clubs": "8556488a2733c48c8d7aecc493914e02",
   "s1_tin": "9cfef351324d3724e197d83d51c04b36",
-  "spiritual": "b7fbfac89a32f1f228a4f5eef1667b41"
+  "spiritual": "483b693010afee1a2205446d3aa678e7",
+  "authorized_cadets": "528ac1da12d54cc11ea78c8b1d931c40"
 }

@@ -1,7 +1,12 @@
 {
-  "lastSyncTime": "2026-10-07T13:44:03.225655",
+  "lastSyncTime": "2026-10-23T06:47:38.115383",
   "status": "updated",
   "changedSheets": [
-    "schedule"
+    "schedule",
+    "disposition",
+    "armory",
+    "attachment",
+    "s1_expanded",
+    "authorized_cadets"
   ]
 }

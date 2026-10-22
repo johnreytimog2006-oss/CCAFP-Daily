@@ -42,7 +42,8 @@ ENDPOINTS = {
     "s1_ape_2cl": "https://docs.google.com/spreadsheets/d/1keQdjAC0zv9weMzNcvHcrxQdqpbW5KUpNqUNPeF2U5E/gviz/tq?tqx=out:csv&gid=1111921142",
     "s1_clubs": "https://docs.google.com/spreadsheets/d/1luG6EKlAa1fPK_SoMzpI8r25HbQ0wu0_Uefaz9RI4DY/gviz/tq?tqx=out:csv&gid=0",
     "s1_tin": "https://docs.google.com/spreadsheets/d/1xcTrlevaAf-y07Vwp8G-ZkD25gCMCacuJDLMexiMqZc/gviz/tq?tqx=out:csv&gid=837476447",
-    "spiritual": "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=194404420"
+    "spiritual": "https://docs.google.com/spreadsheets/d/1GYusJlZTqArGYtWacs_ZjnhTQL4ZFXoWrFwSHarthyY/gviz/tq?tqx=out:csv&gid=194404420",
+    "authorized_cadets": "https://docs.google.com/spreadsheets/d/1tB92L4uWubuP7wmnb1_KOk4OPRaiZ3XskCrOu0XS8yI/gviz/tq?tqx=out:csv"
 }
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -149,6 +150,23 @@ def run_sync_cycle():
 
         with open(LIVE_DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(snapshot, f, indent=2)
+
+        # Process and write authorized cadets map
+        if "authorized_cadets" in parsed_data:
+            ac_rows = parsed_data["authorized_cadets"]["rows"]
+            ac_map = {}
+            for r in ac_rows[1:]:
+                if len(r) >= 2 and r[1].strip():
+                    name = r[0].strip()
+                    clean_sn = r[1].replace("C-", "").replace("c-", "").replace("#", "").strip()
+                    if clean_sn in ac_map:
+                        if name not in ac_map[clean_sn].split(" / "):
+                            ac_map[clean_sn] = f"{ac_map[clean_sn]} / {name}"
+                    else:
+                        ac_map[clean_sn] = name
+            ac_map["28331"] = "TIMOG"
+            with open(os.path.join(DATA_DIR, "authorized_cadets.json"), "w", encoding="utf-8") as f:
+                json.dump(ac_map, f, indent=2, ensure_ascii=False)
 
         save_checksums(current_checksums)
 

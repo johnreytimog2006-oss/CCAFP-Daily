@@ -3271,10 +3271,14 @@
     }
     if (dom.socOD) {
       const odEntry = (sched.guardRoster || []).find(g => g.postCode === 'OD' || (g.post && g.post.startsWith('OD')));
-      if (odEntry && odEntry.posted && odEntry.incoming) {
-        dom.socOD.textContent = `${odEntry.posted} ➔ ${odEntry.incoming}`;
+      if (odEntry && odEntry.posted) {
+        if (odEntry.incoming && odEntry.incoming !== '-') {
+          dom.socOD.textContent = `${odEntry.posted} ➔ ${odEntry.incoming}`;
+        } else {
+          dom.socOD.textContent = odEntry.posted;
+        }
       } else {
-        dom.socOD.textContent = "1CL MANGAGOM 'D' ➔ 1CL PLANTAR 'H'";
+        dom.socOD.textContent = "1CL FELIPE 'A'";
       }
     }
 
@@ -3295,13 +3299,15 @@
         dom.socChangesContainer.innerHTML = changes.map(ch => {
           const uFull = (typeof window !== 'undefined' && window.getUniformFullName) ? window.getUniformFullName(ch.uniform) : ch.uniform;
           return `
-            <div class="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-xs space-y-2 hover:border-amber-400 transition-colors">
-              <div class="flex items-center justify-between">
-                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-bold font-mono-clean text-[10px] tracking-wide">${ch.time}</span>
-                <span class="text-[10px] font-mono-clean text-slate-500 uppercase tracking-wider">${ch.formation && ch.formation !== '-' ? 'VENUE: ' + ch.formation : 'CORPS CALL'}</span>
+            <div class="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-xs hover:border-amber-400 transition-all flex flex-col justify-between h-full">
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-bold font-mono-clean text-[10px] tracking-wide shrink-0">${ch.time}</span>
+                  <span class="text-[10px] font-mono-clean text-slate-500 uppercase tracking-wider truncate text-right">${ch.formation && ch.formation !== '-' ? 'VENUE: ' + ch.formation : 'CORPS CALL'}</span>
+                </div>
+                <h5 class="font-bold text-xs text-slate-900 font-mono-clean leading-snug">${ch.activity}</h5>
               </div>
-              <h5 class="font-bold text-xs text-slate-900 font-mono-clean leading-snug">${ch.activity}</h5>
-              <div class="flex items-center gap-2 pt-1 border-t border-slate-100 text-[10px] font-mono-clean text-slate-600 flex-wrap">
+              <div class="flex items-center gap-2 pt-2 mt-2.5 border-t border-slate-100 text-[10px] font-mono-clean text-slate-600 flex-wrap">
                 <span>UNIFORM: <strong class="text-blue-900 font-bold" title="${uFull}">${ch.uniform || '-'}</strong>${uFull && uFull !== ch.uniform ? ` <span class="text-slate-400 font-normal">(${uFull})</span>` : ''}</span>
                 ${ch.formation && ch.formation !== '-' ? `<span>&bull;</span><span>FORMATION: <strong class="text-slate-800 font-bold">${ch.formation}</strong></span>` : ''}
               </div>
@@ -4710,15 +4716,26 @@
 
         if (!u) {
           if (fb) {
-            fb.textContent = 'Please enter your numeric Username ID.';
+            fb.textContent = 'Please enter your Serial Number or account ID.';
             fb.classList.remove('hidden');
           }
           return;
         }
 
-        if (!/^[0-9]+$/.test(u)) {
+        const isExempt = u.toUpperCase().startsWith('0000X') || u.startsWith('0000');
+        const cleanSn = u.replace(/^[C#\-]+/, '').trim();
+
+        if (!isExempt && !/^[0-9]+$/.test(cleanSn)) {
           if (fb) {
-            fb.textContent = 'Username must be strictly numeric (digits 0-9 only).';
+            fb.textContent = 'Username must be a valid numeric Serial Number (e.g. 27002) or an authorized account.';
+            fb.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (!isAuthorizedRegistration(u)) {
+          if (fb) {
+            fb.textContent = `Serial Number ${u} is not authorized. Only official cadets listed in the Cadet Roll are permitted to register.`;
             fb.classList.remove('hidden');
           }
           return;
@@ -5059,6 +5076,60 @@
     roles: ['admin'],
     status: 'active'
   };
+
+  // Authorized Cadets Whitelist and Surname Resolver
+  function getCadetSurname(username) {
+    const u = String(username || '').trim();
+    if (!u) return '—';
+    if (u === PRIMARY_MOTHER_ACCOUNT.username) return 'TIMOG (Primary Admin)';
+    if (u.toUpperCase().startsWith('0000X') || u.startsWith('0000')) return '— (Service Account)';
+
+    const clean = u.replace(/^[C#\-]+/, '').trim();
+    const authList = (typeof window !== 'undefined' && window.AUTHORIZED_CADETS)
+      ? window.AUTHORIZED_CADETS
+      : (typeof AUTHORIZED_CADETS !== 'undefined' ? AUTHORIZED_CADETS : (CCAFP_CONFIG.authorizedCadets || {}));
+
+    if (authList[clean]) return authList[clean];
+    if (authList[u]) return authList[u];
+
+    // Fallback search across S1 cadet rolls
+    const s1 = CCAFP_CONFIG.s1Data;
+    if (s1) {
+      const candidates = [
+        ...(Array.isArray(s1.tin) ? s1.tin : []),
+        ...(Array.isArray(s1.expanded) ? s1.expanded : []),
+        ...(Array.isArray(s1.roster) ? s1.roster : [])
+      ];
+      const match = candidates.find(c => {
+        const cSn = String(c.sn || c.serial || '').replace(/^[C#\-]+/, '').trim();
+        return cSn === clean;
+      });
+      if (match) {
+        const fullName = match.name || match.cadet || '';
+        const parts = fullName.split(/[\s,]+/);
+        return parts[0] || fullName;
+      }
+    }
+    return '—';
+  }
+
+  function isAuthorizedRegistration(username) {
+    const u = String(username || '').trim();
+    if (!u) return false;
+    // Primary Admin account is authorized
+    if (u === PRIMARY_MOTHER_ACCOUNT.username) return true;
+    // Accounts starting with "0000X" or "0000" are exempt from whitelist verification
+    if (u.toUpperCase().startsWith('0000X') || u.startsWith('0000')) return true;
+
+    const clean = u.replace(/^[C#\-]+/, '').trim();
+    if (!/^[0-9]+$/.test(clean)) return false;
+
+    const authList = (typeof window !== 'undefined' && window.AUTHORIZED_CADETS)
+      ? window.AUTHORIZED_CADETS
+      : (typeof AUTHORIZED_CADETS !== 'undefined' ? AUTHORIZED_CADETS : (CCAFP_CONFIG.authorizedCadets || {}));
+
+    return Boolean(authList[clean] || authList[u]);
+  }
 
   // Centralized Multi-Device Database Schema & Reset Migration (V7 Single Primary Admin Reset)
   const AUTH_SCHEMA_VERSION = 'CCAFP_AUTH_V7_SINGLE_PRIMARY_RESET';
@@ -5836,17 +5907,26 @@
   async function registerAccount(username, password) {
     const cleanUsername = String(username || '').trim();
     const cleanPassword = String(password || '').trim();
-    if (!/^[0-9]+$/.test(cleanUsername)) {
-      throw new Error('Username must be strictly numeric (digits 0-9 only).');
+
+    const isExempt = cleanUsername.toUpperCase().startsWith('0000X') || cleanUsername.startsWith('0000');
+    const cleanSn = cleanUsername.replace(/^[C#\-]+/, '').trim();
+
+    if (!isExempt && !/^[0-9]+$/.test(cleanSn)) {
+      throw new Error('Username must be a valid numeric Serial Number (digits 0-9).');
     }
-    if (cleanUsername === PRIMARY_MOTHER_ACCOUNT.username) {
+
+    if (!isAuthorizedRegistration(cleanUsername)) {
+      throw new Error(`Serial Number ${cleanUsername} is not authorized. Only official cadets listed in the Cadet Roll are permitted to register.`);
+    }
+
+    if (cleanSn === PRIMARY_MOTHER_ACCOUNT.username) {
       if (
         cleanPassword === PRIMARY_MOTHER_ACCOUNT.passwordPlain ||
         cleanPassword.toLowerCase() === PRIMARY_MOTHER_ACCOUNT.passwordPlain.toLowerCase()
       ) {
-        return loginAccount(cleanUsername, cleanPassword);
+        return loginAccount(cleanSn, cleanPassword);
       }
-      throw new Error(`Username ${cleanUsername} is reserved for the Primary Admin. Please log in directly.`);
+      throw new Error(`Username ${cleanSn} is reserved for the Primary Admin. Please log in directly.`);
     }
     if (!cleanPassword || cleanPassword.length < 3) {
       throw new Error('Password must be at least 3 characters long.');
@@ -5956,8 +6036,10 @@
   async function loginAccount(username, password) {
     const cleanUsername = String(username || '').trim();
     const cleanPassword = String(password || '').trim();
-    if (!/^[0-9]+$/.test(cleanUsername)) {
-      throw new Error('Username must be strictly numeric (digits 0-9 only).');
+    const isExempt = cleanUsername.toUpperCase().startsWith('0000X') || cleanUsername.startsWith('0000');
+    const cleanSn = cleanUsername.replace(/^[C#\-]+/, '').trim();
+    if (!isExempt && !/^[0-9]+$/.test(cleanSn)) {
+      throw new Error('Username must be a valid numeric Serial Number or authorized account.');
     }
 
     // Synchronize authentication with Neon Auth (Better Auth)
@@ -6230,6 +6312,7 @@
     };
     localStorage.setItem(AUTH_STORAGE_KEYS.SESSION, JSON.stringify(session));
     authState.currentUser = user;
+    document.documentElement.classList.add('has-auth-session');
     syncAuthUI();
   }
 
@@ -6244,6 +6327,7 @@
       const user = accounts.find(a => a.username === session.username);
       if (user) {
         authState.currentUser = user;
+        document.documentElement.classList.add('has-auth-session');
         syncAuthUI();
         return true;
       }
@@ -6254,6 +6338,7 @@
   function logoutAccount() {
     localStorage.removeItem(AUTH_STORAGE_KEYS.SESSION);
     authState.currentUser = null;
+    document.documentElement.classList.remove('has-auth-session');
     const loginCard = document.getElementById('authLoginCard');
     const regCard = document.getElementById('authRegisterCard');
     if (loginCard) loginCard.classList.remove('hidden');
@@ -6265,8 +6350,10 @@
     const authScreen = document.getElementById('authScreen');
 
     if (!authState.currentUser) {
+      document.documentElement.classList.remove('has-auth-session');
       if (authScreen) authScreen.classList.remove('hidden');
     } else {
+      document.documentElement.classList.add('has-auth-session');
       if (authScreen) authScreen.classList.add('hidden');
 
       const user = authState.currentUser;
@@ -6438,7 +6525,7 @@
     if (!authState.currentUser || !authState.currentUser.isMother) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="py-8 text-center text-slate-400 font-mono">
+          <td colspan="7" class="py-8 text-center text-slate-400 font-mono">
             <i data-lucide="lock" class="w-6 h-6 mx-auto mb-2 text-rose-500"></i>
             <span class="block font-bold text-white">Access Strictly Restricted</span>
             <span class="text-xs text-slate-500">The registered accounts database is visible exclusively to the Primary Admin.</span>
@@ -6454,7 +6541,8 @@
     const statusFilter = document.getElementById('acFilterStatus')?.value || 'all';
 
     const filtered = accounts.filter(acc => {
-      if (query && !acc.username.toLowerCase().includes(query)) return false;
+      const surname = getCadetSurname(acc.username).toLowerCase();
+      if (query && !acc.username.toLowerCase().includes(query) && !surname.includes(query)) return false;
       if (statusFilter === 'active' && acc.status === 'suspended') return false;
       if (statusFilter === 'suspended' && acc.status !== 'suspended') return false;
       return true;
@@ -6463,7 +6551,7 @@
     if (filtered.length === 0) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="py-8 text-center text-slate-500 font-mono text-xs">
+          <td colspan="7" class="py-8 text-center text-slate-500 font-mono text-xs">
             No accounts matching search criteria.
           </td>
         </tr>
@@ -6525,11 +6613,16 @@
         `;
       }
 
+      const surname = getCadetSurname(acc.username);
+
       return `
         <tr class="hover:bg-slate-800/40 transition-colors">
           <td class="py-3 px-4 font-bold text-white font-mono flex items-center gap-2">
             <i data-lucide="user" class="w-3.5 h-3.5 text-blue-400"></i>
             <span>${acc.username}</span>
+          </td>
+          <td class="py-3 px-4 font-mono font-bold text-amber-300">
+            ${surname}
           </td>
           <td class="py-3 px-4">
             ${isMother 
